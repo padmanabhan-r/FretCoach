@@ -9,7 +9,7 @@ import json
 import os
 import numpy as np
 import time
-from ..core.scales import select_scale_interactive
+from scales import select_scale_interactive
 
 CONFIG_FILE = "audio_config.json"
 
