@@ -36,6 +36,35 @@ All real-time audio analysis and feedback remain **deterministic** and run local
 - **Embodied feedback** - Physical, tangible learning experience
 - **Extensible design** - Architecture can generalize to other instruments and vocal training
 
+## Deployment Options
+
+FretCoach is designed to support multiple deployment architectures:
+
+### Edge Version (Guitar Pedal)
+A standalone physical device similar to a traditional guitar pedal, containing:
+- Raspberry Pi controller
+- Integrated ADC (Analog-to-Digital Converter)
+- LED feedback system
+- Complete on-device processing
+
+This version provides a true pedal experience with no external dependencies, perfect for portability and live practice sessions.
+
+### Desktop Application Version
+A software-based solution that runs on a desktop computer, requiring:
+- External professional ADC (e.g., Focusrite Scarlett interface)
+- Desktop application for processing and visualization
+- Optional cloud connectivity
+
+This version leverages existing studio equipment and provides enhanced visualization options on a larger screen.
+
+### Cloud Integration
+Both versions can optionally push performance data to the cloud, enabling:
+- Historical performance tracking
+- Progress visualization through web dashboard
+- Cross-device synchronization
+- Advanced analytics and insights
+- Long-term learning trend analysis
+
 ## Philosophy
 
 FretCoach transforms unstructured practice into a guided learning loop, acting as a physical, intelligent pedal that trains the player — not the sound. While demonstrated for guitar practice, the architecture is designed to generalize to other instruments and vocal training that benefit from adaptive, embodied feedback.
