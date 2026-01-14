@@ -1,42 +1,13 @@
 import sounddevice as sd
 import numpy as np
-import librosa
 import matplotlib.pyplot as plt
 import colorsys
 import threading
 import time
-import os
 from collections import deque
-import tinytuya
-from dotenv import load_dotenv, find_dotenv
-import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'audio-setup'))
 from audio_setup import get_configuration
-
-# =========================================================
-# ENV / TUYA CONFIG
-# =========================================================
-load_dotenv(find_dotenv())
-
-ACCESS_ID = os.getenv("HAVELLS_ACCESS_ID")
-ACCESS_SECRET = os.getenv("HAVELLS_ACCESS_SECRET")
-DEVICE_ID = os.getenv("HAVELLS_DEVICE_ID")
-REGION = "in"
-
-cloud = tinytuya.Cloud(
-    apiRegion=REGION,
-    apiKey=ACCESS_ID,
-    apiSecret=ACCESS_SECRET
-)
-
-def set_bulb_hsv(h, s=1000, v=1000):
-    cloud.sendcommand(DEVICE_ID, {
-        "commands": [{
-            "code": "colour_data_v2",
-            "value": {"h": int(h), "s": int(s), "v": int(v)}
-        }]
-    })
+from smart_bulb import set_bulb_hsv, bulb_on, bulb_off
+from audio_features import pitch_correctness, pitch_stability, timing_cleanliness, noise_control
 
 # =========================================================
 # AUDIO & SCALE CONFIG - Interactive Setup
@@ -98,45 +69,6 @@ def score_to_hue(score):
     return int(np.clip(score, 0.0, 1.0) * 120)
 
 # =========================================================
-# FEATURE FUNCTIONS (AI)
-# =========================================================
-def pitch_correctness(audio):
-    pitches, mags = librosa.piptrack(y=audio, sr=SAMPLE_RATE)
-    idx = mags.argmax()
-    pitch = pitches.flatten()[idx]
-
-    if pitch <= 0:
-        return 0.0
-
-    midi = librosa.hz_to_midi(pitch)
-    pitch_class = int(round(midi)) % 12
-
-    if pitch_class not in TARGET_PITCH_CLASSES:
-        return 0.0  # HARD FAIL
-
-    intonation_error = abs(midi - round(midi))
-    return np.clip(1 - intonation_error, 0, 1)
-
-def pitch_stability(audio):
-    pitches, mags = librosa.piptrack(y=audio, sr=SAMPLE_RATE)
-    stable = pitches[mags > np.max(mags) * 0.7]
-    if len(stable) < 5:
-        return 0.5
-    return np.exp(-np.std(stable))
-
-def timing_cleanliness(audio):
-    onsets = librosa.onset.onset_detect(y=audio, sr=SAMPLE_RATE)
-    if len(onsets) < 2:
-        return 0.6
-    intervals = np.diff(onsets)
-    return np.exp(-np.var(intervals))
-
-def noise_control(audio):
-    total = np.mean(audio ** 2)
-    noise = np.mean((audio - np.mean(audio)) ** 2)
-    return np.clip(1 - noise / (total + 1e-9), 0, 1)
-
-# =========================================================
 # AUDIO CALLBACK (REAL-TIME SAFE)
 # =========================================================
 def audio_callback(indata, outdata, frames, time_info, status):
@@ -184,14 +116,14 @@ try:
         if energy < 1e-7:
             continue
 
-        p = pitch_correctness(audio)
+        p = pitch_correctness(audio, SAMPLE_RATE, TARGET_PITCH_CLASSES)
 
         # 🚨 INSTANT RED ON WRONG NOTE
         if p == 0.0:
             ema_quality = 0.0
         else:
-            s = pitch_stability(audio)
-            t = timing_cleanliness(audio)
+            s = pitch_stability(audio, SAMPLE_RATE)
+            t = timing_cleanliness(audio, SAMPLE_RATE)
             n = noise_control(audio)
 
             quality = (
