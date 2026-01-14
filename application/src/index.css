@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-white font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .text-glow {
+    text-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+  }
+  
+  .box-glow {
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent;
+  }
+}

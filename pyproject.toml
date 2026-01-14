@@ -16,5 +16,8 @@ dependencies = [
     "sounddevice>=0.5.3",
     "tinytuya>=1.17.4",
     "wheel>=0.45.1",
+    "fastapi>=0.109.0",
+    "uvicorn>=0.27.0",
+    "websockets>=12.0",
 ]
 
