@@ -98,7 +98,7 @@ def test_audio(input_device, output_device, channels, guitar_channel, sample_rat
         energy = np.mean(audio_array ** 2)
         max_amplitude = np.max(np.abs(audio_array))
         
-        print(f"\n✓ Audio test complete!")
+        print("\n✓ Audio test complete!")
         print(f"  Energy level: {energy:.2e}")
         print(f"  Max amplitude: {max_amplitude:.4f}")
         
