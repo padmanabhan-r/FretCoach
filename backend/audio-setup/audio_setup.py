@@ -9,6 +9,8 @@ import json
 import os
 import numpy as np
 import time
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'core'))
 from scales import select_scale_interactive
 
 CONFIG_FILE = "audio_config.json"

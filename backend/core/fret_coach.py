@@ -9,6 +9,9 @@ import os
 from collections import deque
 import tinytuya
 from dotenv import load_dotenv, find_dotenv
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'audio-setup'))
 from audio_setup import get_configuration
 
 # =========================================================
