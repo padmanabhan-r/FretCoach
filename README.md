@@ -40,35 +40,31 @@ All real-time audio analysis and feedback remain **deterministic** and run local
 
 FretCoach consists of three interconnected components, all powered by AI and connected to a central database:
 
-```mermaid
-graph TB
-    subgraph Input["Audio Input"]
-        G1[Guitar + Audio Interface]
-        G2[Guitar Direct]
-    end
-    
-    subgraph Components["FretCoach System"]
-        Desktop[Desktop Application<br/>AI-Powered Personal Trainer<br/>+ Ambient Lighting]
-        Edge[Edge Device - Raspberry Pi<br/>Portable Pedal<br/>+ Ambient Lighting]
-        DB[(Central Database<br/>Performance Data)]
-        Web[Web Dashboard<br/>Analytics & Insights]
-    end
-    
-    G1 -->|Audio| Desktop
-    G2 -->|Audio| Edge
-    
-    Desktop <-->|Sync Data| DB
-    Edge <-->|Sync Data| DB
-    DB -->|Analytics| Web
-    
-    Desktop -.->|AI Analysis| Desktop
-    Edge -.->|AI Feedback| Edge
-    Web -.->|AI Insights| Web
-    
-    style Desktop fill:#4CAF50
-    style Edge fill:#2196F3
-    style Web fill:#FF9800
-    style DB fill:#9C27B0
+```
+                    ┌─────────────────────────────┐
+                    │   🌐 Web Interface          │
+                    │   Analytics & Dashboard     │
+                    └──────────────┬──────────────┘
+                                   │
+                    ┌──────────────▼──────────────┐
+                    │  ☁️  Supabase Database      │
+                    │     Performance Data        │
+                    └──────────┬──────────┬───────┘
+                               │          │
+                ┏━━━━━━━━━━━━━━┷━━━━┓   ┏┷━━━━━━━━━━━━━━━━┓
+                ┃                   ┃   ┃                  ┃
+    ┌───────────▼──────────┐        ┃   ┃        ┌─────────▼─────────┐
+    │ 💻 Desktop App       │        ┃   ┃        │ 🎛️  Portable Pedal │
+    │ ──────────────────   │◄──────►┃💡 ┃◄──────►│ ─────────────────  │
+    │ • AI-Powered Trainer │        ┃   ┃        │ • Raspberry Pi     │
+    │ • Real-time Analysis │        ┗━━━┛        │ • Real-time Analyis│
+    │ • Ambient Lighting   │     Smart Bulb      │ • Ambient Lighting │
+    └──────────▲───────────┘                     └─────────▲──────────┘
+               │                                           │
+      ┌────────┴─────────┐                       ┌────────┴─────────┐
+      │  🎸 ➜ USB Audio  │                       │  🎸 ➜ Direct In  │
+      │     Interface    │                       │                  │
+      └──────────────────┘                       └──────────────────┘
 ```
 
 ### 1. Desktop Application (Main Focus)
