@@ -231,18 +231,75 @@ def setup_configuration():
     audio_config['scale_name'] = scale_name
     audio_config['pitch_classes'] = list(pitch_classes)  # Convert set to list for JSON
     
-    # Step 3: Display configuration summary
+    # Step 3: Ask about ambient lighting
+    print("\n" + "="*60)
+    print("AMBIENT LIGHTING")
+    print("="*60)
+    enable_bulb = input("\nEnable smart bulb ambient lighting? (Y/n): ").strip().lower()
+    audio_config['ambient_lighting'] = (enable_bulb != 'n')
+    print(f"✓ Ambient lighting: {'Enabled' if audio_config['ambient_lighting'] else 'Disabled'}")
+    
+    # Step 4: Ask about strictness
+    print("\n" + "="*60)
+    print("STRICTNESS (0.0 - 1.0)")
+    print("="*60)
+    print("  0.0 = Very forgiving (practice mode)")
+    print("  0.5 = Balanced (default)")
+    print("  1.0 = Very strict (performance mode)")
+    while True:
+        strictness_input = input("\nEnter strictness [0.5]: ").strip()
+        if not strictness_input:
+            audio_config['strictness'] = 0.5
+            break
+        try:
+            strictness = float(strictness_input)
+            if 0.0 <= strictness <= 1.0:
+                audio_config['strictness'] = strictness
+                break
+            else:
+                print("Please enter a value between 0.0 and 1.0")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+    print(f"✓ Strictness: {audio_config['strictness']:.2f}")
+    
+    # Step 5: Ask about sensitivity
+    print("\n" + "="*60)
+    print("SENSITIVITY (0.0 - 1.0)")
+    print("="*60)
+    print("  0.0 = Picks up soft playing")
+    print("  0.5 = Normal volume (default)")
+    print("  1.0 = Only loud playing")
+    while True:
+        sensitivity_input = input("\nEnter sensitivity [0.5]: ").strip()
+        if not sensitivity_input:
+            audio_config['sensitivity'] = 0.5
+            break
+        try:
+            sensitivity = float(sensitivity_input)
+            if 0.0 <= sensitivity <= 1.0:
+                audio_config['sensitivity'] = sensitivity
+                break
+            else:
+                print("Please enter a value between 0.0 and 1.0")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+    print(f"✓ Sensitivity: {audio_config['sensitivity']:.2f}")
+    
+    # Step 6: Display configuration summary
     print("\n" + "="*60)
     print("CONFIGURATION SUMMARY")
     print("="*60)
-    print(f"Input Device:    {audio_config['input_device'] if audio_config['input_device'] is not None else 'Default'}")
-    print(f"Output Device:   {audio_config['output_device'] if audio_config['output_device'] is not None else 'Default'}")
-    print(f"Guitar Channel:  {audio_config['guitar_channel']}")
-    print(f"Stream Channels: {audio_config['channels']}")
-    print(f"Musical Scale:   {scale_name}")
+    print(f"Input Device:     {audio_config['input_device'] if audio_config['input_device'] is not None else 'Default'}")
+    print(f"Output Device:    {audio_config['output_device'] if audio_config['output_device'] is not None else 'Default'}")
+    print(f"Guitar Channel:   {audio_config['guitar_channel']}")
+    print(f"Stream Channels:  {audio_config['channels']}")
+    print(f"Musical Scale:    {scale_name}")
+    print(f"Ambient Lighting: {'Enabled' if audio_config['ambient_lighting'] else 'Disabled'}")
+    print(f"Strictness:       {audio_config['strictness']:.2f}")
+    print(f"Sensitivity:      {audio_config['sensitivity']:.2f}")
     print("="*60)
     
-    # Step 4: Test audio
+    # Step 7: Test audio
     test_passed = test_audio(
         audio_config['input_device'],
         audio_config['output_device'],
@@ -251,7 +308,7 @@ def setup_configuration():
     )
     
     if test_passed:
-        # Step 5: Ask to save audio configuration (without scale)
+        # Step 8: Ask to save audio configuration (without scale)
         save = input("\nSave audio device configuration? (Y/n): ").strip().lower()
         if save != 'n':
             # Save only audio device settings, not the scale
@@ -309,6 +366,61 @@ def get_configuration():
                 scale_name, pitch_classes = select_scale_interactive()
                 existing_config['scale_name'] = scale_name
                 existing_config['pitch_classes'] = list(pitch_classes)
+                
+                # Ask about ambient lighting
+                print("\n" + "="*60)
+                print("AMBIENT LIGHTING")
+                print("="*60)
+                enable_bulb = input("\nEnable smart bulb ambient lighting? (Y/n): ").strip().lower()
+                existing_config['ambient_lighting'] = (enable_bulb != 'n')
+                print(f"✓ Ambient lighting: {'Enabled' if existing_config['ambient_lighting'] else 'Disabled'}")
+                
+                # Ask about strictness
+                print("\n" + "="*60)
+                print("STRICTNESS (0.0 - 1.0)")
+                print("="*60)
+                print("  0.0 = Very forgiving (practice mode)")
+                print("  0.5 = Balanced (default)")
+                print("  1.0 = Very strict (performance mode)")
+                while True:
+                    strictness_input = input("\nEnter strictness [0.5]: ").strip()
+                    if not strictness_input:
+                        existing_config['strictness'] = 0.5
+                        break
+                    try:
+                        strictness = float(strictness_input)
+                        if 0.0 <= strictness <= 1.0:
+                            existing_config['strictness'] = strictness
+                            break
+                        else:
+                            print("Please enter a value between 0.0 and 1.0")
+                    except ValueError:
+                        print("Invalid input. Please enter a number.")
+                print(f"✓ Strictness: {existing_config['strictness']:.2f}")
+                
+                # Ask about sensitivity
+                print("\n" + "="*60)
+                print("SENSITIVITY (0.0 - 1.0)")
+                print("="*60)
+                print("  0.0 = Picks up soft playing")
+                print("  0.5 = Normal volume (default)")
+                print("  1.0 = Only loud playing")
+                while True:
+                    sensitivity_input = input("\nEnter sensitivity [0.5]: ").strip()
+                    if not sensitivity_input:
+                        existing_config['sensitivity'] = 0.5
+                        break
+                    try:
+                        sensitivity = float(sensitivity_input)
+                        if 0.0 <= sensitivity <= 1.0:
+                            existing_config['sensitivity'] = sensitivity
+                            break
+                        else:
+                            print("Please enter a value between 0.0 and 1.0")
+                    except ValueError:
+                        print("Invalid input. Please enter a number.")
+                print(f"✓ Sensitivity: {existing_config['sensitivity']:.2f}")
+                
                 return existing_config
             else:
                 print("\n⚠️  Audio test failed.")

@@ -1,29 +1,46 @@
 """
 FastAPI server for FretCoach
 Provides REST API endpoints for the Electron app to communicate with the Python backend
+Endpoints only - business logic is in separate modules
 """
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List, Dict, Optional
+from typing import List
 import sounddevice as sd
 import asyncio
 import json
 import sys
 import os
+import queue
+import threading
+import numpy as np
+from collections import deque
+
+# Import Opik for tracking (non-blocking)
+try:
+    from opik import track
+    OPIK_ENABLED = True
+    print("✅ Opik tracking enabled")
+except ImportError:
+    # Fallback decorator if opik is not installed
+    def track(name):
+        def decorator(func):
+            return func
+        return decorator
+    OPIK_ENABLED = False
+    print("⚠️  Opik not installed, tracking disabled")
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'core'))
 
-from audio_setup import list_audio_devices
-from scales import ALL_SCALES
-from audio_features import pitch_correctness, pitch_stability, timing_cleanliness, noise_control
-from smart_bulb import set_bulb_hsv, bulb_on, bulb_off
-import numpy as np
-from collections import deque
-import threading
-import time
+from scales import MAJOR_DIATONIC, MINOR_DIATONIC
+from session_logger import get_session_logger
+
+# Import from local modules
+from models import AudioDevice, AudioConfig, SessionMetrics
+from app_state import session_state, audio_state, AUDIO_CONSTANTS
+from audio_processing import audio_callback, process_audio
 
 app = FastAPI(title="FretCoach API")
 
@@ -36,64 +53,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global state
-session_state = {
-    "is_running": False,
-    "config": None,
-    "current_note": "-",
-    "pitch_accuracy": 0,
-    "scale_conformity": 0,
-    "timing_stability": 0,
-}
 
-# Audio processing state
-audio_state = {
-    "stream": None,
-    "buffer": None,
-    "buffer_lock": None,
-    "processing_task": None,
-    "last_sent_hue": None,
-    "last_send_time": 0.0,
-    "ema_quality": 0.0,
-    "last_phrase_time": 0.0,
-}
+# ============================================================================
+# UTILITY ENDPOINTS
+# ============================================================================
 
-AUDIO_CONSTANTS = {
-    "SAMPLE_RATE": 44100,
-    "BLOCK_SIZE": 128,
-    "ANALYSIS_WINDOW_SEC": 0.30,
-    "TUYA_UPDATE_INTERVAL": 0.30,
-    "HUE_EPSILON": 5,
-    "EMA_ALPHA": 0.25,
-    "PHRASE_WINDOW": 0.8,
-}
-
-# Models
-class AudioDevice(BaseModel):
-    index: int
-    name: str
-    max_input_channels: int
-    max_output_channels: int
-    default_samplerate: float
-
-class AudioConfig(BaseModel):
-    input_device: int
-    output_device: int
-    guitar_channel: int
-    channels: int
-    scale_name: str
-
-class SessionMetrics(BaseModel):
-    is_running: bool
-    current_note: str
-    pitch_accuracy: float
-    scale_conformity: float
-    timing_stability: float
-    target_scale: str
-
-# Endpoints
 @app.get("/")
 async def root():
+    """API root endpoint"""
     return {"message": "FretCoach API", "version": "0.1.0"}
 
 @app.get("/audio/devices", response_model=List[AudioDevice])
@@ -114,13 +81,10 @@ async def get_audio_devices():
     
     return device_list
 
+
 @app.post("/audio/test/{device_index}")
 async def test_audio_device(device_index: int, channel: int = 0):
     """Test audio input from a specific device and channel"""
-    import numpy as np
-    import threading
-    import queue
-    
     try:
         # Get device info to determine number of channels
         device_info = sd.query_devices(device_index)
@@ -192,10 +156,19 @@ async def test_audio_device(device_index: int, channel: int = 0):
             "error": str(e)
         }
 
-@app.get("/scales", response_model=List[str])
+
+@app.get("/scales")
 async def get_scales():
-    """Get list of available musical scales"""
-    return sorted(ALL_SCALES.keys())
+    """Get list of available musical scales grouped by type"""
+    return {
+        "major": sorted(MAJOR_DIATONIC.keys()),
+        "minor": sorted(MINOR_DIATONIC.keys())
+    }
+
+
+# ============================================================================
+# CONFIGURATION ENDPOINTS
+# ============================================================================
 
 @app.post("/config")
 async def save_config(config: AudioConfig):
@@ -203,7 +176,6 @@ async def save_config(config: AudioConfig):
     session_state["config"] = config.model_dump()
     
     # Save to file for persistence
-    import json
     config_file = os.path.join(os.path.dirname(__file__), '..', 'core', 'audio_config.json')
     try:
         with open(config_file, 'w') as f:
@@ -212,6 +184,7 @@ async def save_config(config: AudioConfig):
         print(f"Warning: Could not save config to file: {e}")
     
     return {"success": True, "config": session_state["config"]}
+
 
 @app.get("/config")
 async def get_config():
@@ -228,121 +201,13 @@ async def get_config():
     
     return None
 
-def audio_callback(indata, outdata, frames, time_info, status):
-    """Real-time audio callback"""
-    if status:
-        print(f"Audio status: {status}")
-    
-    config = session_state["config"]
-    if not config:
-        return
-    
-    # Handle both mono and stereo input
-    if config["channels"] == 1 or indata.ndim == 1:
-        guitar = indata.flatten()
-    else:
-        guitar = indata[:, config["guitar_channel"]]
-    
-    with audio_state["buffer_lock"]:
-        audio_state["buffer"].extend(guitar)
 
-def score_to_hue(score):
-    """Convert quality score (0-1) to hue (0-120, red to green)"""
-    return int(np.clip(score, 0.0, 1.0) * 120)
-
-def process_audio():
-    """Background task to process audio and update metrics"""
-    config = session_state["config"]
-    sample_rate = AUDIO_CONSTANTS["SAMPLE_RATE"]
-    buffer_size = int(sample_rate * AUDIO_CONSTANTS["ANALYSIS_WINDOW_SEC"])
-    
-    # Get target pitch classes from scale
-    target_pitch_classes = set(ALL_SCALES[config["scale_name"]])
-    
-    print(f"\n🎸 Processing audio for {config['scale_name']}")
-    print(f"Target notes: {sorted(target_pitch_classes)}")
-    
-    audio_state["ema_quality"] = 0.0
-    audio_state["last_phrase_time"] = time.time()
-    audio_state["last_sent_hue"] = None
-    audio_state["last_send_time"] = 0.0
-    
-    # Turn on bulb at start
-    try:
-        bulb_on()
-        print("💡 Smart bulb enabled")
-    except Exception as e:
-        print(f"⚠️  Smart bulb not available: {e}")
-    
-    while session_state["is_running"]:
-        time.sleep(0.15)
-        
-        with audio_state["buffer_lock"]:
-            if len(audio_state["buffer"]) < buffer_size:
-                continue
-            audio = np.array(audio_state["buffer"])
-        
-        # Check if there's enough energy
-        energy = np.mean(audio ** 2)
-        if energy < 1e-7:
-            session_state["current_note"] = "-"
-            continue
-        
-        # Calculate pitch correctness
-        p = pitch_correctness(audio, sample_rate, target_pitch_classes)
-        
-        # Instant red on wrong note
-        if p == 0.0:
-            audio_state["ema_quality"] = 0.0
-            session_state["current_note"] = "Wrong Note"
-        else:
-            # Calculate other metrics
-            s = pitch_stability(audio, sample_rate)
-            t = timing_cleanliness(audio, sample_rate)
-            n = noise_control(audio)
-            
-            quality = (
-                0.45 * p +
-                0.20 * s +
-                0.20 * t +
-                0.15 * n
-            )
-            
-            # Update EMA quality when playing correct notes
-            now = time.time()
-            if now - audio_state["last_phrase_time"] > AUDIO_CONSTANTS["PHRASE_WINDOW"]:
-                audio_state["ema_quality"] = (
-                    AUDIO_CONSTANTS["EMA_ALPHA"] * quality + 
-                    (1 - AUDIO_CONSTANTS["EMA_ALPHA"]) * audio_state["ema_quality"]
-                )
-                audio_state["last_phrase_time"] = now
-            
-            session_state["current_note"] = "In Scale"
-        
-        # Update smart bulb color
-        now = time.time()
-        hue = score_to_hue(audio_state["ema_quality"])
-        brightness = int(300 + 700 * audio_state["ema_quality"])
-        
-        if (
-            (audio_state["last_sent_hue"] is None or 
-             abs(hue - audio_state["last_sent_hue"]) >= AUDIO_CONSTANTS["HUE_EPSILON"])
-            and (now - audio_state["last_send_time"]) >= AUDIO_CONSTANTS["TUYA_UPDATE_INTERVAL"]
-        ):
-            try:
-                set_bulb_hsv(hue, v=brightness)
-                audio_state["last_sent_hue"] = hue
-                audio_state["last_send_time"] = now
-            except Exception as e:
-                # Silently fail - don't spam console
-                pass
-        
-        # Update session state metrics
-        session_state["pitch_accuracy"] = p
-        session_state["scale_conformity"] = audio_state["ema_quality"]
-        session_state["timing_stability"] = t if p > 0 else 0
+# ============================================================================
+# SESSION ENDPOINTS
+# ============================================================================
 
 @app.post("/session/start")
+@track(name="start_practice_session")
 async def start_session():
     """Start the guitar learning session"""
     if not session_state["config"]:
@@ -354,6 +219,28 @@ async def start_session():
     try:
         config = session_state["config"]
         
+        # Initialize session logger
+        logger = get_session_logger()
+        audio_state["session_logger"] = logger
+        audio_state["strictness"] = config.get("strictness", 0.5)
+        audio_state["sensitivity"] = config.get("sensitivity", 0.5)
+        audio_state["ambient_lighting"] = config.get("ambient_lighting", True)
+        
+        # Start session logging
+        session_id = logger.start_session(
+            scale_name=config["scale_name"],
+            strictness=audio_state["strictness"],
+            sensitivity=audio_state["sensitivity"],
+            ambient_lighting=audio_state["ambient_lighting"],
+            scale_type=config.get("scale_type", "diatonic")
+        )
+        audio_state["session_id"] = session_id
+        audio_state["notes_detected_count"] = 0
+        audio_state["notes_in_scale_count"] = 0
+        audio_state["notes_out_of_scale_count"] = 0
+        audio_state["note_counts"] = {}
+        audio_state["note_onset_times_ms"] = []
+        
         # Initialize audio buffer
         buffer_size = int(
             AUDIO_CONSTANTS["SAMPLE_RATE"] * 
@@ -362,14 +249,17 @@ async def start_session():
         audio_state["buffer"] = deque(maxlen=buffer_size)
         audio_state["buffer_lock"] = threading.Lock()
         
-        # Start audio stream
+        # Start audio stream with callback
+        def stream_callback(indata, outdata, frames, time_info, status):
+            audio_callback(indata, outdata, frames, time_info, status, config, audio_state)
+        
         audio_state["stream"] = sd.Stream(
             device=(config["input_device"], config["output_device"]),
             channels=config["channels"],
             samplerate=AUDIO_CONSTANTS["SAMPLE_RATE"],
             blocksize=AUDIO_CONSTANTS["BLOCK_SIZE"],
             dtype="float32",
-            callback=audio_callback,
+            callback=stream_callback,
         )
         audio_state["stream"].start()
         
@@ -377,21 +267,35 @@ async def start_session():
         session_state["is_running"] = True
         audio_state["processing_task"] = threading.Thread(
             target=process_audio,
+            args=(session_state, audio_state, AUDIO_CONSTANTS),
             daemon=True
         )
         audio_state["processing_task"].start()
         
-        print(f"\n✅ Session started: {config['scale_name']}")
-        return {"success": True}
+        print(f"\n✅ Session started: {config['scale_name']} (Session ID: {session_id})")
+        return {"success": True, "session_id": session_id}
         
     except Exception as e:
         session_state["is_running"] = False
         return {"success": False, "error": str(e)}
 
+
 @app.post("/session/stop")
 async def stop_session():
     """Stop the guitar learning session"""
     session_state["is_running"] = False
+    
+    # End session logging
+    if audio_state["session_logger"] and audio_state["session_id"]:
+        try:
+            # Get total number of notes in the scale
+            total_inscale_notes = audio_state.get("total_inscale_notes", 5)
+            audio_state["session_logger"].end_session(
+                session_id=audio_state["session_id"],
+                total_inscale_notes=total_inscale_notes
+            )
+        except Exception as e:
+            print(f"Error ending session: {e}")
     
     # Stop audio stream
     if audio_state["stream"] is not None:
@@ -416,6 +320,11 @@ async def stop_session():
     print("\n🛑 Session stopped")
     return {"success": True}
 
+
+# ============================================================================
+# METRICS ENDPOINTS
+# ============================================================================
+
 @app.get("/session/metrics", response_model=SessionMetrics)
 async def get_metrics():
     """Get current session metrics"""
@@ -425,8 +334,10 @@ async def get_metrics():
         pitch_accuracy=session_state["pitch_accuracy"],
         scale_conformity=session_state["scale_conformity"],
         timing_stability=session_state["timing_stability"],
-        target_scale=session_state["config"]["scale_name"] if session_state["config"] else "Not Set"
+        target_scale=session_state["config"]["scale_name"] if session_state["config"] else "Not Set",
+        debug_info=session_state["debug_info"],
     )
+
 
 @app.websocket("/ws/metrics")
 async def websocket_metrics(websocket: WebSocket):
@@ -445,6 +356,7 @@ async def websocket_metrics(websocket: WebSocket):
             await asyncio.sleep(0.1)  # Update 10 times per second
     except WebSocketDisconnect:
         pass
+
 
 if __name__ == "__main__":
     import uvicorn
