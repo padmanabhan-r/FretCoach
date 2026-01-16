@@ -31,7 +31,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'core'))
 
 from audio_setup import list_audio_devices
 from scales import ALL_SCALES
-from audio_features import pitch_correctness, pitch_stability, timing_cleanliness, noise_control
+from audio_features import pitch_correctness, pitch_stability, timing_cleanliness, noise_control, calculate_scale_coverage
 from smart_bulb import set_bulb_hsv, bulb_on, bulb_off
 import numpy as np
 from collections import deque
@@ -82,6 +82,7 @@ audio_state = {
     "strictness": 0.5,
     "sensitivity": 0.5,
     "ambient_lighting": True,
+    "notes_played_in_scale": set(),  # Track unique pitch classes from scale that have been played
 }
 
 AUDIO_CONSTANTS = {
@@ -322,6 +323,7 @@ def process_audio():
     audio_state["ema_quality"] = 0.0
     audio_state["ema_pitch"] = 0.0
     audio_state["ema_timing"] = 0.0
+    audio_state["notes_played_in_scale"] = set()  # Reset scale coverage tracking
     audio_state["last_phrase_time"] = time.time()
     audio_state["last_sent_hue"] = None
     audio_state["last_send_time"] = 0.0
@@ -352,16 +354,29 @@ def process_audio():
         # Calculate pitch correctness
         p, debug_info = pitch_correctness(audio, sample_rate, target_pitch_classes)
         
+        # Track notes played for scale coverage
+        if debug_info.get("note_detected") and debug_info.get("in_scale") and debug_info.get("pitch_class") is not None:
+            audio_state["notes_played_in_scale"].add(debug_info["pitch_class"])
+        
         # Calculate all metrics
         s = pitch_stability(audio, sample_rate)
         t = timing_cleanliness(audio, sample_rate)
         n = noise_control(audio)
+        
+        # Calculate scale coverage (what % of scale notes have been played)
+        scale_coverage = calculate_scale_coverage(
+            audio_state["notes_played_in_scale"],
+            target_pitch_classes
+        )
         
         # Store debug info
         session_state["debug_info"] = {
             **debug_info,
             "raw_pitch": float(p),
             "raw_timing": float(t),
+            "scale_coverage": float(scale_coverage),
+            "notes_played_count": len(audio_state["notes_played_in_scale"]),
+            "scale_total_notes": len(target_pitch_classes),
         }
         
         # Adjust weights based on strictness
@@ -434,7 +449,7 @@ def process_audio():
         audio_state["ema_timing"] = metric_ema_alpha * t + (1 - metric_ema_alpha) * audio_state["ema_timing"]
         
         session_state["pitch_accuracy"] = audio_state["ema_pitch"]
-        session_state["scale_conformity"] = audio_state["ema_quality"]
+        session_state["scale_conformity"] = scale_coverage  # Use scale coverage instead of ema_quality
         session_state["timing_stability"] = audio_state["ema_timing"]
 
 @app.post("/session/start")

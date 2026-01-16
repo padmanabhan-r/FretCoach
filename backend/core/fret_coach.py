@@ -7,7 +7,7 @@ import time
 from collections import deque
 from audio_setup import get_configuration
 from smart_bulb import set_bulb_hsv, bulb_on, bulb_off
-from audio_features import pitch_correctness, pitch_stability, timing_cleanliness, noise_control
+from audio_features import pitch_correctness, pitch_stability, timing_cleanliness, noise_control, calculate_scale_coverage
 
 # =========================================================
 # AUDIO & SCALE CONFIG - Interactive Setup
@@ -35,6 +35,7 @@ BUFFER_SIZE = int(SAMPLE_RATE * ANALYSIS_WINDOW_SEC)
 
 print(f"\n🎸 Starting Guitar Coach for {SCALE_NAME}")
 print(f"   Target pitch classes: {sorted(TARGET_PITCH_CLASSES)}")
+print(f"   Scale has {len(TARGET_PITCH_CLASSES)} notes - play them all for 100% conformity!")
 print(f"   Ambient lighting: {'Enabled' if AMBIENT_LIGHTING else 'Disabled'}")
 print(f"   Strictness: {STRICTNESS:.2f} | Sensitivity: {SENSITIVITY:.2f}")
 print("="*60)
@@ -44,6 +45,7 @@ print("="*60)
 # =========================================================
 audio_buffer = deque(maxlen=BUFFER_SIZE)
 buffer_lock = threading.Lock()
+notes_played_in_scale = set()  # Track unique pitch classes from scale that have been played
 
 ema_quality = 0.0
 # Adjust EMA based on strictness: lower strictness = slower decay (more forgiving)
@@ -129,6 +131,13 @@ try:
             continue
 
         p, debug_info = pitch_correctness(audio, SAMPLE_RATE, TARGET_PITCH_CLASSES, debug=True)
+
+        # Track notes played for scale coverage
+        if debug_info.get("note_detected") and debug_info.get("in_scale") and debug_info.get("pitch_class") is not None:
+            notes_played_in_scale.add(debug_info["pitch_class"])
+        
+        # Calculate scale coverage (what % of scale notes have been played)
+        scale_coverage = calculate_scale_coverage(notes_played_in_scale, TARGET_PITCH_CLASSES)
 
         # Calculate all metrics
         s = pitch_stability(audio, SAMPLE_RATE)
