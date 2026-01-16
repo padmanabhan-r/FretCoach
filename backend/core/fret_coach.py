@@ -45,7 +45,7 @@ print("="*60)
 # =========================================================
 audio_buffer = deque(maxlen=BUFFER_SIZE)
 buffer_lock = threading.Lock()
-notes_played_in_scale = set()  # Track unique pitch classes from scale that have been played
+note_counts = {}  # Track count of each pitch class played
 
 ema_quality = 0.0
 # Adjust EMA based on strictness: lower strictness = slower decay (more forgiving)
@@ -134,10 +134,11 @@ try:
 
         # Track notes played for scale coverage
         if debug_info.get("note_detected") and debug_info.get("in_scale") and debug_info.get("pitch_class") is not None:
-            notes_played_in_scale.add(debug_info["pitch_class"])
+            pitch_class = debug_info["pitch_class"]
+            note_counts[pitch_class] = note_counts.get(pitch_class, 0) + 1
         
-        # Calculate scale coverage (what % of scale notes have been played)
-        scale_coverage = calculate_scale_coverage(notes_played_in_scale, TARGET_PITCH_CLASSES)
+        # Calculate scale coverage (distribution evenness of played notes)
+        scale_coverage = calculate_scale_coverage(note_counts, TARGET_PITCH_CLASSES)
 
         # Calculate all metrics
         s = pitch_stability(audio, SAMPLE_RATE)
