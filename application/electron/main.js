@@ -75,13 +75,17 @@ function createWindow() {
 }
 
 function startPythonBackend() {
-  const pythonScript = path.join(__dirname, '../../backend/api/server.py');
+  const backendDir = path.join(__dirname, '../../');
   const pythonPath = process.env.PYTHON_PATH || 'python3';
   
   // Load environment variables including smart bulb credentials
   const env = loadEnvFile();
   
-  pythonProcess = spawn(pythonPath, [pythonScript], { env });
+  // Run as a module to support relative imports
+  pythonProcess = spawn(pythonPath, ['-m', 'backend.api.server'], { 
+    cwd: backendDir,
+    env 
+  });
 
   pythonProcess.stdout?.on('data', (data) => {
     console.log(`FastAPI: ${data}`);
