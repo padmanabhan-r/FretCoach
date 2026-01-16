@@ -29,14 +29,12 @@ router = APIRouter()
 
 
 @router.post("/session/start")
-@track(name="start_practice_session")
 async def start_session():
     """Start the guitar learning session"""
     return start_session_impl(session_state, audio_state, AUDIO_CONSTANTS)
 
 
 @router.post("/session/stop")
-@track(name="stop_practice_session")
 async def stop_session():
     """Stop the guitar learning session"""
     return stop_session_impl(session_state, audio_state)

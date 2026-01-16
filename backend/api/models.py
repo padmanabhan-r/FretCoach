@@ -38,3 +38,24 @@ class SessionMetrics(BaseModel):
     timing_stability: float
     target_scale: str
     debug_info: Optional[Dict] = None
+
+
+class AIPracticeRecommendation(BaseModel):
+    """AI-generated practice recommendation"""
+    practice_id: str
+    scale_name: str
+    scale_type: str
+    focus_area: str
+    reasoning: str
+    strictness: float
+    sensitivity: float
+    analysis: Optional[str] = None
+
+
+class AIPracticePlan(BaseModel):
+    """AI practice plan from database"""
+    practice_id: str
+    user_id: str
+    practice_plan: str
+    generated_at: str
+    executed_session_id: Optional[str] = None

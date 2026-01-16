@@ -55,6 +55,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      webSecurity: false,  // Allow requests to localhost backend
       preload: path.join(__dirname, 'preload.js'),
     },
   });
@@ -76,7 +77,7 @@ function createWindow() {
 
 function startPythonBackend() {
   const backendDir = path.join(__dirname, '../../');
-  const pythonPath = process.env.PYTHON_PATH || 'python3';
+  const pythonPath = process.env.PYTHON_PATH || path.join(backendDir, '.venv/bin/python');
   
   // Load environment variables including smart bulb credentials
   const env = loadEnvFile();

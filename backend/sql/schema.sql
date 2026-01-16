@@ -26,3 +26,30 @@ CREATE TABLE IF NOT EXISTS sessions (
 -- Indices for better query performance
 CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_start_timestamp ON sessions(start_timestamp DESC);
+
+
+-- Table: public.ai_practice_plans
+
+-- DROP TABLE IF EXISTS public.ai_practice_plans;
+
+CREATE TABLE IF NOT EXISTS public.ai_practice_plans
+(
+    practice_id uuid NOT NULL,
+    user_id character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    generated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    practice_plan text COLLATE pg_catalog."default" NOT NULL,
+    executed_session_id character varying(255) COLLATE pg_catalog."default",
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT ai_practice_plans_pkey PRIMARY KEY (practice_id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.ai_practice_plans
+    OWNER to paddy;
+
+CREATE INDEX idx_practice_plans_user_time
+ON public.ai_practice_plans (user_id, generated_at DESC);
+
+CREATE INDEX idx_practice_plans_execution
+ON public.ai_practice_plans (executed_session_id);

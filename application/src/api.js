@@ -72,4 +72,31 @@ export const api = {
 
     return ws;
   },
+
+  // AI Mode endpoints
+  async getAIRecommendation(userId = 'default_user') {
+    const response = await fetch(`${API_BASE_URL}/ai/recommend?user_id=${userId}`, {
+      method: 'POST',
+    });
+    return response.json();
+  },
+
+  async startAISession(userId = 'default_user') {
+    const response = await fetch(`${API_BASE_URL}/ai/session/start?user_id=${userId}`, {
+      method: 'POST',
+    });
+    return response.json();
+  },
+
+  async getAIStatus(userId = 'default_user') {
+    const response = await fetch(`${API_BASE_URL}/ai/status?user_id=${userId}`);
+    return response.json();
+  },
+
+  async markPlanExecuted(practiceId, sessionId) {
+    const response = await fetch(`${API_BASE_URL}/ai/plan/${practiceId}/execute?session_id=${sessionId}`, {
+      method: 'POST',
+    });
+    return response.json();
+  },
 };

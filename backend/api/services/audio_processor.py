@@ -67,8 +67,6 @@ def get_target_pitch_classes(scale_name: str, scale_type: str) -> set:
 
     return set(scales_dict[scale_name])
 
-
-@track(name="process_audio_session")
 def process_audio(session_state: SessionState, audio_state: AudioState, audio_constants: dict):
     """
     Background task to process audio and update metrics.
