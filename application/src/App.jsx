@@ -7,6 +7,7 @@ import ControlPanel from './components/ControlPanel';
 import ConsoleOutput from './components/ConsoleOutput';
 import AudioSetup from './components/AudioSetup';
 import ScaleSelection from './components/ScaleSelection';
+import DebugPanel from './components/DebugPanel';
 import { api } from './api';
 
 function App() {
@@ -19,7 +20,9 @@ function App() {
     currentNote: '-',
     targetScale: 'Not Set',
     logs: [],
+    debugInfo: null,
   });
+  const [showDebug, setShowDebug] = useState(false);
   const [ws, setWs] = useState(null);
 
   useEffect(() => {
@@ -93,6 +96,7 @@ function App() {
             pitchAccuracy: Math.round(data.pitch_accuracy * 100),
             scaleConformity: Math.round(data.scale_conformity * 100),
             timingStability: Math.round(data.timing_stability * 100),
+            debugInfo: data.debug_info || null,
           }));
         });
         setWs(websocket);
@@ -175,6 +179,15 @@ function App() {
                   onStop={handleStop}
                   onReconfigure={handleReconfigure}
                 />
+                
+                {state.isRunning && (
+                  <button
+                    onClick={() => setShowDebug(!showDebug)}
+                    className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 px-4 rounded-lg transition-all text-sm font-medium"
+                  >
+                    {showDebug ? '🐛 Hide Debug Info' : '🐛 Show Debug Info'}
+                  </button>
+                )}
               </div>
 
               <div className="lg:col-span-2 space-y-6">
@@ -188,6 +201,8 @@ function App() {
                   scaleConformity={state.scaleConformity}
                   timingStability={state.timingStability}
                 />
+                
+                <DebugPanel debugInfo={state.debugInfo} show={showDebug && state.isRunning} />
               </div>
             </div>
 

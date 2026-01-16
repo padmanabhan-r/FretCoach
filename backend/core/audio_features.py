@@ -6,7 +6,7 @@ import numpy as np
 import librosa
 
 
-def pitch_correctness(audio, sample_rate, target_pitch_classes):
+def pitch_correctness(audio, sample_rate, target_pitch_classes, debug=False):
     """
     Evaluate pitch correctness against target scale.
     
@@ -14,25 +14,44 @@ def pitch_correctness(audio, sample_rate, target_pitch_classes):
         audio: Audio buffer (numpy array)
         sample_rate: Audio sample rate
         target_pitch_classes: Set of valid pitch classes for the scale
+        debug: If True, print debug information
     
     Returns:
-        Score between 0.0 and 1.0 (0.0 for wrong notes)
+        Tuple of (score, debug_dict) where:
+        - score: float between 0.0 and 1.0 (0.0 for wrong notes)
+        - debug_dict: dict with detected_hz, detected_midi, pitch_class, in_scale
     """
     pitches, mags = librosa.piptrack(y=audio, sr=sample_rate)
     idx = mags.argmax()
     pitch = pitches.flatten()[idx]
 
+    debug_dict = {
+        "detected_hz": float(pitch),
+        "detected_midi": 0,
+        "pitch_class": 0,
+        "in_scale": False,
+    }
+
     if pitch <= 0:
-        return 0.0
+        return 0.0, debug_dict
 
     midi = librosa.hz_to_midi(pitch)
     pitch_class = int(round(midi)) % 12
+    in_scale = pitch_class in target_pitch_classes
 
-    if pitch_class not in target_pitch_classes:
-        return 0.0  # HARD FAIL - wrong note for the scale
+    debug_dict["detected_midi"] = float(midi)
+    debug_dict["pitch_class"] = int(pitch_class)
+    debug_dict["in_scale"] = in_scale
+
+    if debug:
+        print(f"DEBUG: Detected {pitch:.2f} Hz | MIDI {midi:.2f} | Pitch class {pitch_class} | In scale: {in_scale}")
+
+    if not in_scale:
+        return 0.0, debug_dict  # HARD FAIL - wrong note for the scale
 
     intonation_error = abs(midi - round(midi))
-    return np.clip(1 - intonation_error, 0, 1)
+    score = np.clip(1 - intonation_error, 0, 1)
+    return score, debug_dict
 
 
 def pitch_stability(audio, sample_rate):

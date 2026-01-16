@@ -8,24 +8,37 @@ let pythonProcess = null;
 
 // Load environment variables from .env file
 function loadEnvFile() {
-  const envPath = path.join(__dirname, '../../.env');
-  const env = { ...process.env };
+  // Try multiple locations for .env file
+  const envPaths = [
+    path.join(__dirname, '../../backend/.env'),  // backend folder
+    path.join(__dirname, '../../.env'),           // project root
+    path.join(__dirname, '../.env'),              // application folder
+  ];
   
-  if (fs.existsSync(envPath)) {
-    const envContent = fs.readFileSync(envPath, 'utf-8');
-    envContent.split('\n').forEach(line => {
-      const trimmed = line.trim();
-      if (trimmed && !trimmed.startsWith('#')) {
-        const [key, ...valueParts] = trimmed.split('=');
-        if (key && valueParts.length > 0) {
-          env[key.trim()] = valueParts.join('=').trim();
+  const env = { ...process.env };
+  let envLoaded = false;
+  
+  for (const envPath of envPaths) {
+    if (fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, 'utf-8');
+      envContent.split('\n').forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#')) {
+          const [key, ...valueParts] = trimmed.split('=');
+          if (key && valueParts.length > 0) {
+            env[key.trim()] = valueParts.join('=').trim();
+          }
         }
-      }
-    });
-    console.log('✅ Loaded .env file with smart bulb configuration');
-  } else {
+      });
+      console.log(`✅ Loaded .env file from ${envPath}`);
+      envLoaded = true;
+      break;
+    }
+  }
+  
+  if (!envLoaded) {
     console.warn('⚠️  No .env file found. Smart bulb features will be disabled.');
-    console.warn('   Create a .env file in the project root with your Tuya credentials.');
+    console.warn('   Create a .env file in backend/ or project root with your Tuya credentials.');
   }
   
   return env;

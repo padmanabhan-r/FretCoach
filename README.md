@@ -14,7 +14,7 @@ FretCoach listens to live guitar input and evaluates:
 - **Pitch accuracy**
 - **Scale conformity**
 - **Timing stability**
-- **Note transitions**
+- **Noise control**
 
 It translates performance quality into immediate visual lighting cues. These cues act as a subconscious training signal, allowing the brain to adapt and self-correct while playing — much like how traditional pedals shape tone.
 
