@@ -82,6 +82,21 @@ class SessionLogger:
                 cursor.execute("DROP TABLE IF EXISTS session_metrics CASCADE;")
                 cursor.execute("DROP TABLE IF EXISTS sessions CASCADE;")
             
+            # Check if scale_type column exists, add it if missing
+            cursor.execute("""
+                SELECT column_name FROM information_schema.columns 
+                WHERE table_name = 'sessions' AND column_name = 'scale_type';
+            """)
+            has_scale_type = cursor.fetchone() is not None
+            
+            if not has_scale_type and has_new_schema:
+                print("⚠️  Adding scale_type column to sessions table...")
+                cursor.execute("""
+                    ALTER TABLE sessions 
+                    ADD COLUMN scale_type VARCHAR(20) DEFAULT 'diatonic';
+                """)
+                self.conn.commit()
+            
             # Create single sessions table with composite primary key
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS sessions (
