@@ -26,14 +26,14 @@ const AudioSetup = ({ onComplete }) => {
 
   const handleTest = async () => {
     if (inputDevice === null) return;
-    
+
     setTesting(true);
     setTestResult(null);
-    
+
     try {
       const result = await api.testAudioDevice(inputDevice, guitarChannel);
       setTestResult(result);
-      
+
       if (result.has_signal) {
         setTimeout(() => setStep('done'), 1500);
       }
@@ -53,7 +53,7 @@ const AudioSetup = ({ onComplete }) => {
       channels: 2,
       scale_name: 'A Minor', // Default, will be changed in next step
     };
-    
+
     await api.saveConfig(config);
     onComplete(config);
   };
@@ -62,23 +62,23 @@ const AudioSetup = ({ onComplete }) => {
   const outputDevices = devices.filter(d => d.max_output_channels > 0);
 
   return (
-    <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-xl p-8">
+    <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-8">
       <h2 className="text-2xl font-bold mb-6 gradient-text">Audio Setup</h2>
 
       {step === 'loading' && (
         <div className="text-center py-12">
-          <div className="text-slate-400">Loading audio devices...</div>
+          <div className="text-muted-foreground">Loading audio devices...</div>
         </div>
       )}
 
       {step === 'devices' && (
         <div className="space-y-6">
           <div>
-            <label className="block text-slate-300 mb-2">Input Device (Guitar)</label>
+            <label className="block text-foreground mb-2">Input Device (Guitar)</label>
             <select
               value={inputDevice !== null ? inputDevice : ''}
               onChange={(e) => setInputDevice(e.target.value === '' ? null : parseInt(e.target.value))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 focus:outline-none focus:border-green-500"
+              className="w-full bg-card border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary"
             >
               <option value="">Select input device...</option>
               {inputDevices.map(device => (
@@ -91,23 +91,23 @@ const AudioSetup = ({ onComplete }) => {
 
           {inputDevice !== null && (
             <div>
-              <label className="block text-slate-300 mb-2">Guitar Channel</label>
+              <label className="block text-foreground mb-2">Guitar Channel</label>
               <input
                 type="number"
                 min="0"
                 value={guitarChannel}
                 onChange={(e) => setGuitarChannel(parseInt(e.target.value))}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 focus:outline-none focus:border-green-500"
+                className="w-full bg-card border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary"
               />
             </div>
           )}
 
           <div>
-            <label className="block text-slate-300 mb-2">Output Device (Optional)</label>
+            <label className="block text-foreground mb-2">Output Device (Optional)</label>
             <select
               value={outputDevice !== null ? outputDevice : ''}
               onChange={(e) => setOutputDevice(e.target.value === '' ? null : parseInt(e.target.value))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 focus:outline-none focus:border-green-500"
+              className="w-full bg-card border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary"
             >
               <option value="">Use same as input...</option>
               {outputDevices.map(device => (
@@ -121,19 +121,19 @@ const AudioSetup = ({ onComplete }) => {
           <button
             onClick={handleTest}
             disabled={inputDevice === null || testing}
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 disabled:from-slate-700 disabled:to-slate-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200"
+            className="w-full bg-gradient-to-r from-secondary to-primary hover:from-primary hover:to-secondary disabled:from-muted disabled:to-muted text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200"
           >
             {testing ? 'Testing... Play your guitar!' : 'Test Audio'}
           </button>
 
           {testResult && (
-            <div className={`p-4 rounded-lg ${testResult.has_signal ? 'bg-green-500/20 border border-green-500' : 'bg-red-500/20 border border-red-500'}`}>
+            <div className={`p-4 rounded-lg ${testResult.has_signal ? 'bg-accent/20 border border-accent' : 'bg-destructive/20 border border-destructive'}`}>
               {testResult.has_signal ? (
-                <div className="text-green-400">
-                  ✓ Signal detected! (Level: {(testResult.rms_level * 100).toFixed(2)}%)
+                <div className="text-accent">
+                  Signal detected! (Level: {(testResult.rms_level * 100).toFixed(2)}%)
                 </div>
               ) : (
-                <div className="text-red-400">
+                <div className="text-destructive">
                   No signal detected. Try playing your guitar or check connections.
                 </div>
               )}
@@ -144,13 +144,13 @@ const AudioSetup = ({ onComplete }) => {
 
       {step === 'done' && (
         <div className="text-center py-8">
-          <div className="text-6xl mb-4">✓</div>
-          <div className="text-xl text-green-400 mb-6">Audio setup complete!</div>
+          <div className="text-6xl mb-4 text-accent">&#10003;</div>
+          <div className="text-xl text-accent mb-6">Audio setup complete!</div>
           <button
             onClick={handleComplete}
-            className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200"
+            className="bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-accent text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200"
           >
-            Continue to Scale Selection
+            Continue to Mode Selection
           </button>
         </div>
       )}

@@ -4,7 +4,7 @@
   "guitar_channel": 1,
   "channels": 2,
   "scale_name": "D Minor",
-  "scale_type": "diatonic",
+  "scale_type": "natural",
   "ambient_lighting": true,
   "strictness": 0.6,
   "sensitivity": 0.5

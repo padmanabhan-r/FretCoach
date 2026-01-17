@@ -3,22 +3,26 @@ import Header from './components/Header';
 import StatusPanel from './components/StatusPanel';
 import VisualFeedback from './components/VisualFeedback';
 import MetricsDisplay from './components/MetricsDisplay';
-import ControlPanel from './components/ControlPanel';
 import ConsoleOutput from './components/ConsoleOutput';
 import AudioSetup from './components/AudioSetup';
 import ScaleSelection from './components/ScaleSelection';
 import DebugPanel from './components/DebugPanel';
 import ModeToggle from './components/ModeToggle';
 import AIRecommendation from './components/AIRecommendation';
+import LiveCoachFeedback from './components/LiveCoachFeedback';
 import { api } from './api';
 
 function App() {
-  const [setupStep, setSetupStep] = useState('checking'); // checking, audio, scale, mode, ai-recommendation, ready
+  const [setupStep, setSetupStep] = useState('launch'); // launch, checking, audio, scale, mode, ai-recommendation, ready
   const [practiceMode, setPracticeMode] = useState('manual'); // 'manual' or 'ai'
   const [aiRecommendation, setAiRecommendation] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
+  const [lastAiRecommendation, setLastAiRecommendation] = useState(null); // Track last recommendation to avoid repeats
   const [currentPracticeId, setCurrentPracticeId] = useState(null);
   const [sessionId, setSessionId] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [audioConfig, setAudioConfig] = useState(null);
   const [state, setState] = useState({
     isRunning: false,
     pitchAccuracy: 0,
@@ -30,7 +34,21 @@ function App() {
     debugInfo: null,
   });
   const [showDebug, setShowDebug] = useState(false);
+  const [showConsole, setShowConsole] = useState(false);
   const [ws, setWs] = useState(null);
+  const [sessionSummary, setSessionSummary] = useState(null); // Session end summary
+  const [sessionStartTime, setSessionStartTime] = useState(null);
+  const [aiFeedbackHistory, setAiFeedbackHistory] = useState([]); // Collect AI feedback during session
+
+  // Launch animation effect
+  useEffect(() => {
+    if (setupStep === 'launch') {
+      const timer = setTimeout(() => {
+        setSetupStep('checking');
+      }, 2500); // 2.5 second animation
+      return () => clearTimeout(timer);
+    }
+  }, [setupStep]);
 
   useEffect(() => {
     // Check if configuration exists
@@ -59,6 +77,7 @@ function App() {
       const config = await api.getConfig();
       if (config && config.scale_name) {
         setState(prev => ({ ...prev, targetScale: config.scale_name }));
+        setAudioConfig(config); // Store config for settings panel
         setSetupStep('mode'); // Go to mode selection
       } else {
         setSetupStep('audio');
@@ -84,24 +103,55 @@ function App() {
     }
   };
 
-  const fetchAIRecommendation = async () => {
+  const fetchAIRecommendation = async (forceNew = false) => {
     setAiLoading(true);
+    setAiError(null);
+
+    // Clear current recommendation when forcing new one
+    if (forceNew) {
+      setAiRecommendation(null);
+    }
+
     try {
+      // Always call startAISession - the backend generates fresh recommendations
       const result = await api.startAISession();
+
       if (result.success) {
-        setAiRecommendation(result);
-        setCurrentPracticeId(result.practice_id);
+        // If forcing new and got the exact same recommendation, try once more
+        if (forceNew && lastAiRecommendation &&
+            result.config?.scale_name === lastAiRecommendation.config?.scale_name &&
+            result.config?.scale_type === lastAiRecommendation.config?.scale_type &&
+            result.focus_area === lastAiRecommendation.focus_area) {
+          // Try one more time for a different recommendation
+          const retryResult = await api.startAISession();
+          if (retryResult.success) {
+            setAiRecommendation(retryResult);
+            setCurrentPracticeId(retryResult.practice_id);
+            setLastAiRecommendation(retryResult);
+          } else {
+            // Fall back to original if retry fails
+            setAiRecommendation(result);
+            setCurrentPracticeId(result.practice_id);
+            setLastAiRecommendation(result);
+          }
+        } else {
+          setAiRecommendation(result);
+          setCurrentPracticeId(result.practice_id);
+          setLastAiRecommendation(result);
+        }
       } else {
-        alert('Failed to get AI recommendation');
-        setSetupStep('mode');
+        setAiError('AI practice suggestions are temporarily unavailable. You can still continue in Manual Mode.');
       }
     } catch (error) {
       console.error('Error getting AI recommendation:', error);
-      alert(`Failed to get AI recommendation: ${error.message}`);
-      setSetupStep('mode');
+      setAiError('AI practice suggestions are temporarily unavailable. You can still continue in Manual Mode.');
     } finally {
       setAiLoading(false);
     }
+  };
+
+  const handleTryAnotherAI = async () => {
+    await fetchAIRecommendation(true);
   };
 
   const handleAcceptAIRecommendation = async (ambientLighting = true) => {
@@ -137,6 +187,18 @@ function App() {
   const handleRejectAIRecommendation = () => {
     setAiRecommendation(null);
     setCurrentPracticeId(null);
+    setAiError(null);
+    setSetupStep('mode');
+  };
+
+  // Navigate back to home (mode selection)
+  const handleGoHome = () => {
+    if (state.isRunning) {
+      handleStop();
+    }
+    setAiRecommendation(null);
+    setCurrentPracticeId(null);
+    setAiError(null);
     setSetupStep('mode');
   };
 
@@ -146,22 +208,30 @@ function App() {
   };
 
   const handleStart = async () => {
-    if (window.electronAPI) {
-      const result = await window.electronAPI.startBackend();
-      if (!result.success) {
-        alert(`Failed to start backend: ${result.error}`);
+    // Backend is already started by Electron main process
+    // Just verify it's still running
+    const isHealthy = await api.healthCheck();
+    if (!isHealthy) {
+      // Try to restart backend if it's not responding
+      if (window.electronAPI) {
+        const result = await window.electronAPI.startBackend();
+        if (!result.success) {
+          alert(`Failed to start backend: ${result.error}`);
+          return;
+        }
+      } else {
+        alert('Backend is not responding. Please restart the application.');
         return;
       }
     }
-
-    // Wait a bit for backend to start
-    await new Promise(resolve => setTimeout(resolve, 2000));
 
     try {
       const result = await api.startSession();
       if (result.success) {
         setState(prev => ({ ...prev, isRunning: true }));
         setSessionId(result.session_id);
+        setSessionStartTime(Date.now());
+        setAiFeedbackHistory([]); // Reset feedback history for new session
 
         // If this is an AI mode session, link it to the practice plan
         if (practiceMode === 'ai' && currentPracticeId && result.session_id) {
@@ -172,7 +242,7 @@ function App() {
             console.error('Failed to link session to practice plan:', error);
           }
         }
-        
+
         // Connect WebSocket for real-time metrics
         const websocket = api.connectWebSocket((data) => {
           setState(prev => ({
@@ -186,10 +256,23 @@ function App() {
         });
         setWs(websocket);
       } else {
-        alert(`Failed to start session: ${result.error}`);
+        // Check for audio-related errors
+        const errorMsg = result.error?.toLowerCase() || '';
+        if (errorMsg.includes('channel') || errorMsg.includes('device') || errorMsg.includes('audio') || errorMsg.includes('stream')) {
+          alert('Audio device configuration changed. Please reconfigure audio settings.');
+          setSetupStep('audio');
+        } else {
+          alert(`Failed to start session: ${result.error}`);
+        }
       }
     } catch (error) {
-      alert(`Error starting session: ${error.message}`);
+      const errorMsg = error.message?.toLowerCase() || '';
+      if (errorMsg.includes('channel') || errorMsg.includes('device') || errorMsg.includes('audio') || errorMsg.includes('stream')) {
+        alert('Audio device configuration changed. Please reconfigure audio settings.');
+        setSetupStep('audio');
+      } else {
+        alert(`Error starting session: ${error.message}`);
+      }
     }
   };
 
@@ -199,26 +282,49 @@ function App() {
       setWs(null);
     }
 
+    // Calculate session duration
+    const duration = sessionStartTime ? Math.round((Date.now() - sessionStartTime) / 1000) : 0;
+    const minutes = Math.floor(duration / 60);
+    const seconds = duration % 60;
+
+    // Create session summary before resetting state
+    const summary = {
+      duration: `${minutes}m ${seconds}s`,
+      durationSeconds: duration,
+      scale: state.targetScale,
+      mode: practiceMode,
+      finalMetrics: {
+        pitchAccuracy: state.pitchAccuracy,
+        scaleConformity: state.scaleConformity,
+        timingStability: state.timingStability,
+        overall: Math.round((state.pitchAccuracy + state.scaleConformity + state.timingStability) / 3)
+      },
+      aiFeedback: practiceMode === 'ai' ? aiFeedbackHistory : [],
+      aiRecommendation: practiceMode === 'ai' ? aiRecommendation : null
+    };
+    setSessionSummary(summary);
+
     try {
       await api.stopSession();
     } catch (error) {
       console.error('Error stopping session:', error);
     }
 
-    if (window.electronAPI) {
-      await window.electronAPI.stopBackend();
-    }
+    // Note: We don't stop the backend here anymore.
+    // Backend stays running while the app is open for faster session restarts.
+    // It's stopped automatically when the Electron app closes.
 
-    setState(prev => ({ 
-      ...prev, 
+    setState(prev => ({
+      ...prev,
       isRunning: false,
       currentNote: '-',
       pitchAccuracy: 0,
       scaleConformity: 0,
       timingStability: 0,
     }));
-    
+
     setSessionId(null);
+    setSessionStartTime(null);
   };
 
   const handleReconfigure = () => {
@@ -231,116 +337,410 @@ function App() {
     setSetupStep('audio');
   };
 
+  // Handle changing practice without full reconfiguration
+  const handleChangePractice = () => {
+    if (state.isRunning) {
+      handleStop();
+    }
+    setAiRecommendation(null);
+    setCurrentPracticeId(null);
+    // Go back to mode selection instead of full reconfigure
+    setSetupStep('mode');
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <div className="container mx-auto px-6 py-4">
-        <Header />
-        
-        {setupStep === 'checking' && (
-          <div className="mt-12 text-center">
-            <div className="text-slate-400">Loading...</div>
+    <div className="min-h-screen bg-background">
+      {/* Launch Animation */}
+      {setupStep === 'launch' && (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center animate-fade-in">
+            <div className="relative">
+              <div className="absolute inset-0 blur-3xl opacity-50 animate-pulse" style={{ background: 'radial-gradient(circle, hsl(14, 98%, 55%) 0%, transparent 70%)' }} />
+              <h1 className="relative text-6xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent animate-scale-in">
+                FretCoach
+              </h1>
+            </div>
+            <p className="mt-4 text-muted-foreground text-lg animate-fade-in-delayed">
+              Your AI-powered guitar practice companion
+            </p>
+            <div className="mt-8 flex justify-center">
+              <div className="w-12 h-1 bg-gradient-to-r from-primary to-accent rounded-full animate-loading-bar" />
+            </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {setupStep === 'audio' && (
-          <div className="mt-12 max-w-2xl mx-auto">
-            <AudioSetup onComplete={handleAudioSetupComplete} />
-          </div>
-        )}
+      {setupStep !== 'launch' && (
+        <div className="container mx-auto px-6 py-4">
+          {/* Show full header only for non-playing screens */}
+          {setupStep !== 'ready' && <Header />}
 
-        {setupStep === 'mode' && (
-          <div className="mt-12 max-w-2xl mx-auto">
-            <ModeToggle 
-              mode={practiceMode} 
-              onModeChange={handleModeChange}
-              disabled={state.isRunning}
-            />
-          </div>
-        )}
+          {setupStep === 'checking' && (
+            <div className="mt-12 text-center">
+              <div className="text-muted-foreground">Loading...</div>
+            </div>
+          )}
 
-        {setupStep === 'ai-recommendation' && (
-          <div className="mt-12 max-w-3xl mx-auto">
-            <AIRecommendation
-              recommendation={aiRecommendation}
-              onAccept={handleAcceptAIRecommendation}
-              onReject={handleRejectAIRecommendation}
-              loading={aiLoading}
-            />
-          </div>
-        )}
+          {setupStep === 'audio' && (
+            <div className="mt-12 max-w-2xl mx-auto">
+              <AudioSetup onComplete={handleAudioSetupComplete} />
+            </div>
+          )}
 
-        {setupStep === 'scale' && (
-          <div className="mt-12 max-w-4xl mx-auto">
-            <ScaleSelection onComplete={handleScaleSelectionComplete} />
-          </div>
-        )}
+          {setupStep === 'mode' && (
+            <div className="min-h-[calc(100vh-120px)] flex flex-col items-center justify-center">
+              <div className="w-full max-w-2xl mx-auto px-4">
+                {/* Welcome Message */}
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-bold text-foreground mb-2">Welcome to FretCoach</h2>
+                  <p className="text-muted-foreground">Choose how you want to practice today.</p>
+                </div>
 
-        {setupStep === 'ready' && (
-          <>
-            {practiceMode === 'ai' && aiRecommendation && (
-              <div className="mt-6 max-w-5xl mx-auto">
-                <div className="bg-purple-900/20 border border-purple-500/50 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-2xl">🤖</span>
-                      <div>
-                        <h3 className="text-purple-300 font-semibold">AI Coach Mode Active</h3>
-                        <p className="text-slate-400 text-sm">
-                          Focus: {aiRecommendation.focus_area} | {aiRecommendation.reasoning}
-                        </p>
+                {/* Mode Toggle with improved layout */}
+                <ModeToggle
+                  mode={practiceMode}
+                  onModeChange={handleModeChange}
+                  disabled={state.isRunning}
+                />
+
+                {/* Settings Button */}
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={() => setShowSettings(!showSettings)}
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Audio Settings
+                  </button>
+                </div>
+
+                {/* Settings Panel */}
+                {showSettings && audioConfig && (
+                  <div className="mt-4 bg-card/50 backdrop-blur-sm border border-border rounded-xl p-4">
+                    <h3 className="text-sm font-semibold text-foreground mb-3">Current Audio Configuration</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Input Device:</span>
+                        <span className="text-foreground">{audioConfig.input_device_name || `Device ${audioConfig.input_device}`}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Channels:</span>
+                        <span className="text-foreground">{audioConfig.channels}</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => { setShowSettings(false); setSetupStep('audio'); }}
+                      className="mt-4 w-full bg-card hover:bg-card/80 text-foreground text-sm py-2 px-4 rounded-lg transition-all border border-border"
+                    >
+                      Reconfigure Audio
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {setupStep === 'ai-recommendation' && (
+            <div className="mt-12 max-w-3xl mx-auto">
+              <AIRecommendation
+                recommendation={aiRecommendation}
+                onAccept={handleAcceptAIRecommendation}
+                onReject={handleRejectAIRecommendation}
+                onTryAnother={handleTryAnotherAI}
+                loading={aiLoading}
+                error={aiError}
+              />
+            </div>
+          )}
+
+          {setupStep === 'scale' && (
+            <div className="mt-12 max-w-4xl mx-auto">
+              <ScaleSelection onComplete={handleScaleSelectionComplete} />
+            </div>
+          )}
+
+          {setupStep === 'ready' && (
+            <>
+              {/* Compact Header Bar for Playing Screen */}
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
+                {/* Left: Logo and Version */}
+                <div className="flex items-center gap-3">
+                  <span className="text-lg font-bold text-foreground">FretCoach</span>
+                  <span className="text-xs text-muted-foreground font-mono">v0.1.0</span>
+                  <span className="text-xs px-1.5 py-0.5 bg-secondary/20 text-secondary rounded">Early Beta</span>
+                </div>
+
+                {/* Right: Navigation Buttons */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleGoHome}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card hover:bg-card/80 border border-border text-foreground transition-colors text-sm font-medium"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    Home
+                  </button>
+                  <button
+                    onClick={handleReconfigure}
+                    disabled={state.isRunning}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card hover:bg-card/80 border border-border text-foreground transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Audio Setup
+                  </button>
+                </div>
+              </div>
+
+              {practiceMode === 'ai' && aiRecommendation && (
+                <div className="mb-4 max-w-5xl mx-auto">
+                  <div className="bg-accent/20 border border-accent/50 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-2xl">🤖</span>
+                        <div>
+                          <h3 className="text-accent font-semibold">AI Coach Mode Active</h3>
+                          <p className="text-muted-foreground text-sm">
+                            Focus: {aiRecommendation.focus_area} | {aiRecommendation.reasoning}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
+              )}
+
+              {/* Main Content Grid - Reorganized */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Left Column - Controls and Status */}
+                <div className="lg:col-span-4 space-y-4">
+                  {/* Session Controls Card */}
+                  <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-6">
+                    <div className="text-center mb-4">
+                      <div className="text-muted-foreground text-sm mb-1">Current Scale</div>
+                      <div className="text-xl font-bold text-primary">{state.targetScale}</div>
+                    </div>
+
+                    {!state.isRunning ? (
+                      <button
+                        onClick={handleStart}
+                        className="w-full bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-accent text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 shadow-lg text-lg flex items-center justify-center gap-3"
+                        style={{ boxShadow: '0 0 30px hsl(14, 98%, 55%, 0.4)' }}
+                      >
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                        </svg>
+                        Start Session
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleStop}
+                        className="w-full bg-gradient-to-r from-destructive to-red-600 hover:from-red-600 hover:to-red-500 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 shadow-lg text-lg flex items-center justify-center gap-3"
+                        style={{ boxShadow: '0 0 30px hsl(0, 84%, 60%, 0.4)' }}
+                      >
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clipRule="evenodd" />
+                        </svg>
+                        Stop Session
+                      </button>
+                    )}
+
+                    {!state.isRunning && (
+                      <button
+                        onClick={handleChangePractice}
+                        className="w-full mt-3 text-sm text-secondary hover:text-accent transition-colors"
+                      >
+                        Change Practice
+                      </button>
+                    )}
+                  </div>
+
+                  <StatusPanel
+                    isRunning={state.isRunning}
+                    currentNote={state.currentNote}
+                    targetScale={state.targetScale}
+                  />
+
+                  {state.isRunning && (
+                    <button
+                      onClick={() => setShowDebug(!showDebug)}
+                      className="w-full bg-card hover:bg-card/80 text-foreground py-2 px-4 rounded-lg transition-all text-sm font-medium border border-border"
+                    >
+                      {showDebug ? 'Hide Debug Info' : 'Show Debug Info'}
+                    </button>
+                  )}
+                </div>
+
+                {/* Right Column - Visual Feedback and Metrics */}
+                <div className="lg:col-span-8 space-y-4">
+                  {/* Visual Feedback with Live Coach beside it */}
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                    <VisualFeedback
+                      pitchAccuracy={state.pitchAccuracy}
+                      scaleConformity={state.scaleConformity}
+                      timingStability={state.timingStability}
+                      isRunning={state.isRunning}
+                    />
+
+                    <LiveCoachFeedback
+                      isRunning={state.isRunning}
+                      pitchAccuracy={state.pitchAccuracy}
+                      scaleConformity={state.scaleConformity}
+                      timingStability={state.timingStability}
+                      scaleName={state.targetScale}
+                      sessionId={sessionId}
+                      onFeedbackReceived={(feedback) => setAiFeedbackHistory(prev => [...prev, feedback])}
+                    />
+                  </div>
+
+                  <MetricsDisplay
+                    pitchAccuracy={state.pitchAccuracy}
+                    scaleConformity={state.scaleConformity}
+                    timingStability={state.timingStability}
+                    isRunning={state.isRunning}
+                  />
+
+                  <DebugPanel debugInfo={state.debugInfo} show={showDebug && state.isRunning} />
+                </div>
               </div>
-            )}
-            
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-              <div className="space-y-6">
-                <StatusPanel 
-                  isRunning={state.isRunning}
-                  currentNote={state.currentNote}
-                  targetScale={state.targetScale}
-                />
-                <ControlPanel
-                  isRunning={state.isRunning}
-                  onStart={handleStart}
-                  onStop={handleStop}
-                  onReconfigure={handleReconfigure}
-                />
-                
-                {state.isRunning && (
+
+              {/* Console Output with Toggle */}
+              <div className="mt-6">
+                <div className="flex items-center justify-between mb-2">
                   <button
-                    onClick={() => setShowDebug(!showDebug)}
-                    className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 px-4 rounded-lg transition-all text-sm font-medium"
+                    onClick={() => setShowConsole(!showConsole)}
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {showDebug ? '🐛 Hide Debug Info' : '🐛 Show Debug Info'}
+                    <svg className={`w-4 h-4 transition-transform ${showConsole ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                    Console Output
+                    {state.logs.length > 0 && (
+                      <span className="text-xs bg-card px-1.5 py-0.5 rounded">{state.logs.length}</span>
+                    )}
                   </button>
+                </div>
+                {showConsole && <ConsoleOutput logs={state.logs} />}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Session Summary Modal */}
+      {sessionSummary && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-card border border-border rounded-xl max-w-lg w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-foreground">Session Complete</h2>
+                <button
+                  onClick={() => setSessionSummary(null)}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Session Stats */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-background rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold text-primary">{sessionSummary.duration}</div>
+                    <div className="text-sm text-muted-foreground">Duration</div>
+                  </div>
+                  <div className="bg-background rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold text-foreground">{sessionSummary.scale}</div>
+                    <div className="text-sm text-muted-foreground">Scale</div>
+                  </div>
+                </div>
+
+                {/* Final Metrics */}
+                <div className="bg-background rounded-lg p-4">
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Final Performance</h3>
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <div>
+                      <div className="text-xl font-bold text-primary">{sessionSummary.finalMetrics.pitchAccuracy}%</div>
+                      <div className="text-xs text-muted-foreground">Pitch</div>
+                    </div>
+                    <div>
+                      <div className="text-xl font-bold text-secondary">{sessionSummary.finalMetrics.scaleConformity}%</div>
+                      <div className="text-xs text-muted-foreground">Scale</div>
+                    </div>
+                    <div>
+                      <div className="text-xl font-bold text-accent">{sessionSummary.finalMetrics.timingStability}%</div>
+                      <div className="text-xs text-muted-foreground">Timing</div>
+                    </div>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-border text-center">
+                    <div className={`text-2xl font-bold ${
+                      sessionSummary.finalMetrics.overall >= 70 ? 'text-green-500' :
+                      sessionSummary.finalMetrics.overall >= 50 ? 'text-yellow-500' :
+                      sessionSummary.finalMetrics.overall >= 30 ? 'text-orange-500' :
+                      'text-red-500'
+                    }`}>
+                      {sessionSummary.finalMetrics.overall >= 70 ? 'Excellent' :
+                       sessionSummary.finalMetrics.overall >= 50 ? 'Good' :
+                       sessionSummary.finalMetrics.overall >= 30 ? 'Average' : 'Needs Work'}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Overall: {sessionSummary.finalMetrics.overall}%</div>
+                  </div>
+                </div>
+
+                {/* AI Mode: Show AI Recommendation and Feedback */}
+                {sessionSummary.mode === 'ai' && sessionSummary.aiRecommendation && (
+                  <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
+                    <h3 className="text-sm font-semibold text-accent mb-2 flex items-center gap-2">
+                      <span>🤖</span> AI Coach Focus
+                    </h3>
+                    <p className="text-sm text-foreground">{sessionSummary.aiRecommendation.focus_area}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{sessionSummary.aiRecommendation.reasoning}</p>
+                  </div>
                 )}
+
+                {/* AI Feedback History */}
+                {sessionSummary.aiFeedback && sessionSummary.aiFeedback.length > 0 && (
+                  <div className="bg-background rounded-lg p-4">
+                    <h3 className="text-sm font-semibold text-foreground mb-3">AI Coach Feedback</h3>
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                      {sessionSummary.aiFeedback.map((fb, index) => (
+                        <div key={index} className="text-sm text-muted-foreground bg-card rounded p-2">
+                          {fb}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Mode Badge */}
+                <div className="text-center">
+                  <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm ${
+                    sessionSummary.mode === 'ai' ? 'bg-accent/20 text-accent' : 'bg-primary/20 text-primary'
+                  }`}>
+                    {sessionSummary.mode === 'ai' ? '🤖 AI Coach' : '🎯 Manual'} Mode
+                  </span>
+                </div>
               </div>
 
-              <div className="lg:col-span-2 space-y-6">
-                <VisualFeedback
-                  pitchAccuracy={state.pitchAccuracy}
-                  scaleConformity={state.scaleConformity}
-                  timingStability={state.timingStability}
-                />
-                <MetricsDisplay
-                  pitchAccuracy={state.pitchAccuracy}
-                  scaleConformity={state.scaleConformity}
-                  timingStability={state.timingStability}
-                />
-                
-                <DebugPanel debugInfo={state.debugInfo} show={showDebug && state.isRunning} />
-              </div>
+              {/* Close Button */}
+              <button
+                onClick={() => setSessionSummary(null)}
+                className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 px-6 rounded-lg transition-all"
+              >
+                Done
+              </button>
             </div>
-
-            <div className="mt-6">
-              <ConsoleOutput logs={state.logs} />
-            </div>
-          </>
-        )}
-      </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

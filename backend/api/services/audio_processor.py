@@ -60,7 +60,7 @@ def get_target_pitch_classes(scale_name: str, scale_type: str) -> set:
     """Get the pitch classes for a given scale."""
     is_major = "Major" in scale_name
 
-    if scale_type == "diatonic":
+    if scale_type == "natural":
         scales_dict = MAJOR_DIATONIC if is_major else MINOR_DIATONIC
     else:
         scales_dict = MAJOR_PENTATONIC if is_major else MINOR_PENTATONIC
@@ -78,7 +78,7 @@ def process_audio(session_state: SessionState, audio_state: AudioState, audio_co
 
     # Get target scale
     scale_name = config["scale_name"]
-    scale_type = config.get("scale_type", "diatonic")
+    scale_type = config.get("scale_type", "natural")
     target_pitch_classes = get_target_pitch_classes(scale_name, scale_type)
 
     # Create quality config

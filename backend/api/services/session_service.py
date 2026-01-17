@@ -51,7 +51,7 @@ def start_session_impl(session_state: SessionState, audio_state: AudioState, aud
             strictness=audio_state.strictness,
             sensitivity=audio_state.sensitivity,
             ambient_lighting=audio_state.ambient_lighting,
-            scale_type=config.get("scale_type", "diatonic")
+            scale_type=config.get("scale_type", "natural")
         )
         audio_state.session_id = session_id
 
@@ -114,7 +114,7 @@ def stop_session_impl(session_state: SessionState, audio_state: AudioState) -> d
             config = session_state.config
             if config:
                 scale_name = config["scale_name"]
-                scale_type = config.get("scale_type", "diatonic")
+                scale_type = config.get("scale_type", "natural")
                 target_pitch_classes = get_target_pitch_classes(scale_name, scale_type)
                 total_inscale_notes = len(target_pitch_classes)
             else:

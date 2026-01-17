@@ -48,7 +48,7 @@ model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 class PracticeRecommendation(BaseModel):
     """Structured output for practice recommendations"""
     scale_name: str = Field(description="The recommended scale to practice (e.g., 'C Major', 'D Minor', 'E Major')")
-    scale_type: str = Field(description="Type of scale: 'diatonic' or 'pentatonic'")
+    scale_type: str = Field(description="Type of scale: 'natural' or 'pentatonic'")
     focus_area: str = Field(description="The area to focus on: 'pitch', 'scale', or 'timing'")
     reasoning: str = Field(description="Brief explanation for why this practice session is recommended")
     strictness: float = Field(description="Recommended strictness level (0.0-1.0)", ge=0.0, le=1.0)

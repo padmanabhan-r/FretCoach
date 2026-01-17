@@ -186,7 +186,7 @@ class SessionLogger:
                 else:
                     cursor.execute("""
                         ALTER TABLE sessions
-                        ADD COLUMN scale_type VARCHAR(20) DEFAULT 'diatonic';
+                        ADD COLUMN scale_type VARCHAR(20) DEFAULT 'natural';
                     """)
                 self.conn.commit()
 
@@ -205,7 +205,7 @@ class SessionLogger:
                         scale_conformity FLOAT,
                         timing_stability FLOAT,
                         scale_chosen VARCHAR(100) NOT NULL,
-                        scale_type VARCHAR(20) DEFAULT 'diatonic',
+                        scale_type VARCHAR(20) DEFAULT 'natural',
                         sensitivity FLOAT NOT NULL,
                         strictness FLOAT NOT NULL,
                         total_notes_played INT DEFAULT 0,
@@ -241,7 +241,7 @@ class SessionLogger:
         sensitivity: float,
         user_id: Optional[str] = None,
         ambient_lighting: bool = True,
-        scale_type: str = "diatonic"
+        scale_type: str = "natural"
     ) -> str:
         """
         Create a new session record in memory (not in database yet).
@@ -252,7 +252,7 @@ class SessionLogger:
             sensitivity: Sensitivity level (0.0-1.0)
             user_id: Optional user identifier
             ambient_lighting: Whether ambient lighting is enabled
-            scale_type: Type of scale - 'diatonic' or 'pentatonic'
+            scale_type: Type of scale - 'natural' or 'pentatonic'
 
         Returns:
             session_id: Unique session ID for tracking
@@ -332,7 +332,7 @@ class SessionLogger:
     def end_session(
         self,
         session_id: str,
-        total_inscale_notes: int = 5  # Total number of notes in the scale (e.g., 5 for pentatonic, 7 for diatonic)
+        total_inscale_notes: int = 5  # Total number of notes in the scale (e.g., 5 for pentatonic, 7 for natural)
     ) -> None:
         """
         End a session, calculate final averages, and save to database.

@@ -1,6 +1,19 @@
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
 export const api = {
+  // Health check endpoint
+  async healthCheck() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(2000)
+      });
+      return response.ok;
+    } catch (error) {
+      return false;
+    }
+  },
+
   // Audio device endpoints
   async getAudioDevices() {
     const response = await fetch(`${API_BASE_URL}/audio/devices`);
@@ -96,6 +109,29 @@ export const api = {
   async markPlanExecuted(practiceId, sessionId) {
     const response = await fetch(`${API_BASE_URL}/ai/plan/${practiceId}/execute?session_id=${sessionId}`, {
       method: 'POST',
+    });
+    return response.json();
+  },
+
+  // Live Coach endpoints
+  async getLiveCoachFeedback(stats) {
+    const response = await fetch(`${API_BASE_URL}/live-coach/feedback`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(stats),
+    });
+    return response.json();
+  },
+
+  async getSessionSummary(stats) {
+    const response = await fetch(`${API_BASE_URL}/live-coach/summary`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(stats),
     });
     return response.json();
   },
