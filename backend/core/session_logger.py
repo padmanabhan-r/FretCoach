@@ -13,14 +13,15 @@ import json
 
 # Import Opik for tracking (non-blocking)
 try:
-    from opik import track
+    from opik import track, opik_context
     OPIK_ENABLED = True
 except ImportError:
     # Fallback decorator if opik is not installed
-    def track(name):
+    def track(name=None, **kwargs):
         def decorator(func):
             return func
         return decorator
+    opik_context = None
     OPIK_ENABLED = False
 
 # Load environment variables from .env file
@@ -341,6 +342,10 @@ class SessionLogger:
             session_id: Session UUID
             total_inscale_notes: Total number of notes in the scale (not how many were played, but how many exist in the scale)
         """
+        # Set thread_id for Opik tracking
+        if OPIK_ENABLED and opik_context:
+            opik_context.update_current_trace(thread_id=f"session-{session_id}")
+
         if session_id not in self.session_data:
             print(f"[ERR] Session {session_id} not found in memory")
             return

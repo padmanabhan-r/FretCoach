@@ -11,7 +11,7 @@ try:
     OPIK_ENABLED = True
 except ImportError:
     # Fallback decorator if opik is not installed
-    def track(name):
+    def track(name=None, **kwargs):
         def decorator(func):
             return func
         return decorator

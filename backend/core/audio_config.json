@@ -3,9 +3,9 @@
   "output_device": 0,
   "guitar_channel": 1,
   "channels": 2,
-  "scale_name": "C Major",
+  "scale_name": "D Minor",
   "scale_type": "diatonic",
   "ambient_lighting": true,
-  "strictness": 0.7,
-  "sensitivity": 0.6
+  "strictness": 0.6,
+  "sensitivity": 0.5
 }

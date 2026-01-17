@@ -104,11 +104,11 @@ function App() {
     }
   };
 
-  const handleAcceptAIRecommendation = async () => {
+  const handleAcceptAIRecommendation = async (ambientLighting = true) => {
     try {
       // Get current config to preserve device settings
       const currentConfig = await api.getConfig();
-      
+
       // Merge AI recommendation with existing device config
       const config = {
         ...currentConfig,  // Preserve input_device, output_device, channels
@@ -116,16 +116,16 @@ function App() {
         scale_type: aiRecommendation.config.scale_type,
         strictness: aiRecommendation.config.strictness,
         sensitivity: aiRecommendation.config.sensitivity,
-        ambient_lighting: true,
+        ambient_lighting: ambientLighting,
       };
 
       console.log('Applying AI recommendation config:', config);
 
       const result = await api.saveConfig(config);
       console.log('Config saved successfully:', result);
-      setState(prev => ({ 
-        ...prev, 
-        targetScale: `${config.scale_name} ${config.scale_type}` 
+      setState(prev => ({
+        ...prev,
+        targetScale: `${config.scale_name} ${config.scale_type}`
       }));
       setSetupStep('ready');
     } catch (error) {

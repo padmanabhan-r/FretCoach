@@ -48,8 +48,8 @@ TABLESPACE pg_default;
 ALTER TABLE IF EXISTS public.ai_practice_plans
     OWNER to paddy;
 
-CREATE INDEX idx_practice_plans_user_time
+CREATE INDEX IF NOT EXISTS idx_practice_plans_user_time
 ON public.ai_practice_plans (user_id, generated_at DESC);
 
-CREATE INDEX idx_practice_plans_execution
+CREATE INDEX IF NOT EXISTS idx_practice_plans_execution
 ON public.ai_practice_plans (executed_session_id);
