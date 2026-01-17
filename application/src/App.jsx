@@ -8,10 +8,17 @@ import ConsoleOutput from './components/ConsoleOutput';
 import AudioSetup from './components/AudioSetup';
 import ScaleSelection from './components/ScaleSelection';
 import DebugPanel from './components/DebugPanel';
+import ModeToggle from './components/ModeToggle';
+import AIRecommendation from './components/AIRecommendation';
 import { api } from './api';
 
 function App() {
-  const [setupStep, setSetupStep] = useState('checking'); // checking, audio, scale, ready
+  const [setupStep, setSetupStep] = useState('checking'); // checking, audio, scale, mode, ai-recommendation, ready
+  const [practiceMode, setPracticeMode] = useState('manual'); // 'manual' or 'ai'
+  const [aiRecommendation, setAiRecommendation] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [currentPracticeId, setCurrentPracticeId] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
   const [state, setState] = useState({
     isRunning: false,
     pitchAccuracy: 0,
@@ -52,7 +59,7 @@ function App() {
       const config = await api.getConfig();
       if (config && config.scale_name) {
         setState(prev => ({ ...prev, targetScale: config.scale_name }));
-        setSetupStep('ready');
+        setSetupStep('mode'); // Go to mode selection
       } else {
         setSetupStep('audio');
       }
@@ -63,7 +70,74 @@ function App() {
   };
 
   const handleAudioSetupComplete = () => {
-    setSetupStep('scale');
+    setSetupStep('mode'); // Go to mode selection instead of scale
+  };
+
+  const handleModeChange = async (mode) => {
+    setPracticeMode(mode);
+    
+    if (mode === 'manual') {
+      setSetupStep('scale');
+    } else if (mode === 'ai') {
+      setSetupStep('ai-recommendation');
+      await fetchAIRecommendation();
+    }
+  };
+
+  const fetchAIRecommendation = async () => {
+    setAiLoading(true);
+    try {
+      const result = await api.startAISession();
+      if (result.success) {
+        setAiRecommendation(result);
+        setCurrentPracticeId(result.practice_id);
+      } else {
+        alert('Failed to get AI recommendation');
+        setSetupStep('mode');
+      }
+    } catch (error) {
+      console.error('Error getting AI recommendation:', error);
+      alert(`Failed to get AI recommendation: ${error.message}`);
+      setSetupStep('mode');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleAcceptAIRecommendation = async (ambientLighting = true) => {
+    try {
+      // Get current config to preserve device settings
+      const currentConfig = await api.getConfig();
+
+      // Merge AI recommendation with existing device config
+      const config = {
+        ...currentConfig,  // Preserve input_device, output_device, channels
+        scale_name: aiRecommendation.config.scale_name,
+        scale_type: aiRecommendation.config.scale_type,
+        strictness: aiRecommendation.config.strictness,
+        sensitivity: aiRecommendation.config.sensitivity,
+        ambient_lighting: ambientLighting,
+      };
+
+      console.log('Applying AI recommendation config:', config);
+
+      const result = await api.saveConfig(config);
+      console.log('Config saved successfully:', result);
+      setState(prev => ({
+        ...prev,
+        targetScale: `${config.scale_name} ${config.scale_type}`
+      }));
+      setSetupStep('ready');
+    } catch (error) {
+      console.error('Error applying AI config:', error);
+      alert('Failed to apply AI recommendation');
+    }
+  };
+
+  const handleRejectAIRecommendation = () => {
+    setAiRecommendation(null);
+    setCurrentPracticeId(null);
+    setSetupStep('mode');
   };
 
   const handleScaleSelectionComplete = (scaleName) => {
@@ -87,6 +161,17 @@ function App() {
       const result = await api.startSession();
       if (result.success) {
         setState(prev => ({ ...prev, isRunning: true }));
+        setSessionId(result.session_id);
+
+        // If this is an AI mode session, link it to the practice plan
+        if (practiceMode === 'ai' && currentPracticeId && result.session_id) {
+          try {
+            await api.markPlanExecuted(currentPracticeId, result.session_id);
+            console.log('Linked session to AI practice plan');
+          } catch (error) {
+            console.error('Failed to link session to practice plan:', error);
+          }
+        }
         
         // Connect WebSocket for real-time metrics
         const websocket = api.connectWebSocket((data) => {
@@ -132,12 +217,17 @@ function App() {
       scaleConformity: 0,
       timingStability: 0,
     }));
+    
+    setSessionId(null);
   };
 
   const handleReconfigure = () => {
     if (state.isRunning) {
       handleStop();
     }
+    setAiRecommendation(null);
+    setCurrentPracticeId(null);
+    setPracticeMode('manual');
     setSetupStep('audio');
   };
 
@@ -158,6 +248,27 @@ function App() {
           </div>
         )}
 
+        {setupStep === 'mode' && (
+          <div className="mt-12 max-w-2xl mx-auto">
+            <ModeToggle 
+              mode={practiceMode} 
+              onModeChange={handleModeChange}
+              disabled={state.isRunning}
+            />
+          </div>
+        )}
+
+        {setupStep === 'ai-recommendation' && (
+          <div className="mt-12 max-w-3xl mx-auto">
+            <AIRecommendation
+              recommendation={aiRecommendation}
+              onAccept={handleAcceptAIRecommendation}
+              onReject={handleRejectAIRecommendation}
+              loading={aiLoading}
+            />
+          </div>
+        )}
+
         {setupStep === 'scale' && (
           <div className="mt-12 max-w-4xl mx-auto">
             <ScaleSelection onComplete={handleScaleSelectionComplete} />
@@ -166,6 +277,24 @@ function App() {
 
         {setupStep === 'ready' && (
           <>
+            {practiceMode === 'ai' && aiRecommendation && (
+              <div className="mt-6 max-w-5xl mx-auto">
+                <div className="bg-purple-900/20 border border-purple-500/50 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-2xl">🤖</span>
+                      <div>
+                        <h3 className="text-purple-300 font-semibold">AI Coach Mode Active</h3>
+                        <p className="text-slate-400 text-sm">
+                          Focus: {aiRecommendation.focus_area} | {aiRecommendation.reasoning}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
               <div className="space-y-6">
                 <StatusPanel 

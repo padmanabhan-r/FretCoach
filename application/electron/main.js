@@ -55,6 +55,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      webSecurity: false,  // Allow requests to localhost backend
       preload: path.join(__dirname, 'preload.js'),
     },
   });
@@ -75,13 +76,17 @@ function createWindow() {
 }
 
 function startPythonBackend() {
-  const pythonScript = path.join(__dirname, '../../backend/api/server.py');
-  const pythonPath = process.env.PYTHON_PATH || 'python3';
+  const backendDir = path.join(__dirname, '../../');
+  const pythonPath = process.env.PYTHON_PATH || path.join(backendDir, '.venv/bin/python');
   
   // Load environment variables including smart bulb credentials
   const env = loadEnvFile();
   
-  pythonProcess = spawn(pythonPath, [pythonScript], { env });
+  // Run as a module to support relative imports
+  pythonProcess = spawn(pythonPath, ['-m', 'backend.api.server'], { 
+    cwd: backendDir,
+    env 
+  });
 
   pythonProcess.stdout?.on('data', (data) => {
     console.log(`FastAPI: ${data}`);
