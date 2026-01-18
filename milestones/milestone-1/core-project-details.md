@@ -16,10 +16,10 @@ The primary training environment—a standalone desktop application for focused 
 
 **How It Works:**
 
-The input audio signal from the guitar (via USB audio interface or microphone) is processed using DSP techniques. An audio analysis engine continuously evaluates performance on four key metrics:
+The input audio signal from the guitar (via USB audio interface or microphone) is processed using DSP techniques. An audio analysis agent engine continuously evaluates performance on four key metrics:
 
-- **Pitch Accuracy** — How correctly notes are fretted against the target scale
-- **Scale Conformity** — Coverage of notes within the chosen scale pattern
+- **Pitch Accuracy** — How correctly notes are played against the target scale
+- **Scale Conformity** — Coverage of notes within the chosen scale
 - **Timing Stability** — Consistency of note spacing and rhythmic precision
 - **Noise Control** — Detection of unwanted artifacts and clarity of playing
 
@@ -36,7 +36,7 @@ During sessions, the AI coach provides real-time verbal feedback based on the pe
 
 **Ambient Lighting:**
 
-A connected smart bulb is continuously controlled by the audio analysis engine. The bulb color reflects performance quality (green for good, red for needs improvement), providing subconscious feedback that drives the brain to "keep the lights green" and reinforces motor skill development.
+A connected smart bulb is continuously controlled by the audio analysis agent engine. The bulb color reflects performance quality (green for good, red for needs improvement), providing subconscious feedback that drives the brain to "keep the lights green" and reinforces motor skill development.
 
 **Session Logging:**
 
@@ -94,9 +94,10 @@ FretCoach is designed as a foundation that can generalize to other instruments a
 | Desktop Frontend | Electron, React |
 | Desktop Backend | Python, FastAPI |
 | Web Frontend | React, Vite, Tailwind CSS |
-| Web Backend | FastAPI |
+| Web Backend | Python, FastAPI |
 | Database | PostgreSQL (Supabase) |
-| Agent Orchestration | Custom orchestration for audio analysis, LangChain/LangGraph for AI coach |
+| File Storage | Buckets (Supabase) |
+| Agent Orchestration | Custom orchestration for audio analysis agent engine, LangChain/LangGraph for AI coach |
 | Portable Hardware | Raspberry Pi 5, Scarlett Solo USB Audio Interface |
 | Observability | Comet Opik |
 | Deployment | Vercel (web frontend), Render (web backend) |
