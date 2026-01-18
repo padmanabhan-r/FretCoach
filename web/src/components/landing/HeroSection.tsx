@@ -1,19 +1,20 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Play } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-guitar.jpg";
 
 const HeroSection = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
-      <div 
+      <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${heroImage})` }}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/40" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
       </div>
-      
+
       {/* Content */}
       <div className="container relative z-10 px-4 md:px-6 py-20">
         <div className="max-w-3xl space-y-8">
@@ -28,25 +29,40 @@ const HeroSection = () => {
 
           {/* Main Heading */}
           <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight">
-            Train Your Brain,{" "}
-            <span className="text-primary">Not Your Tone</span>
+            Practice Until You{" "}
+            <span className="text-primary">Can't Get It Wrong</span>
           </h1>
-          
+
           {/* Description */}
           <p className="text-lg text-foreground/80 max-w-xl">
-            Transform unstructured practice into a guided learning loop with real-time visual feedback, 
-            adaptive AI coaching, and ambient lighting cues that help you self-correct as you play.
+            FretCoach listens to every note, flags mistakes instantly, and delivers feedback through
+            screen, voice, and ambient lighting. Stop reinforcing bad habits. Make every minute of practice count.
           </p>
-          
+
+          {/* CTA Buttons */}
+          <div className="flex flex-wrap gap-4 pt-4">
+            <Link to="/dashboard">
+              <Button variant="hero" size="xl">
+                View Dashboard
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <a href="#how-it-works">
+              <Button variant="outline" size="xl">
+                See How It Works
+              </Button>
+            </a>
+          </div>
+
           {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-8 pt-8 border-t border-border/50 max-w-lg">
             <div className="min-w-0">
               <div className="text-2xl sm:text-3xl font-bold text-primary truncate">Real-time</div>
-              <div className="text-xs sm:text-sm text-muted-foreground">Visual Feedback</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Audio Analysis</div>
             </div>
             <div className="min-w-0">
-              <div className="text-2xl sm:text-3xl font-bold text-primary truncate">Edge-first</div>
-              <div className="text-xs sm:text-sm text-muted-foreground">& Desktop</div>
+              <div className="text-2xl sm:text-3xl font-bold text-primary truncate">Instant</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Feedback</div>
             </div>
             <div className="min-w-0 col-span-2 sm:col-span-1">
               <div className="text-2xl sm:text-3xl font-bold text-primary truncate">Adaptive</div>

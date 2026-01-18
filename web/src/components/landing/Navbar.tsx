@@ -8,7 +8,7 @@ const navLinks = [
   { href: "#features", label: "Features" },
   { href: "#how-it-works", label: "How It Works" },
   { href: "#ecosystem", label: "FretCoach Ecosystem" },
-  { href: "#future-products", label: "Future Products" },
+  { href: "#roadmap", label: "Roadmap" },
 ];
 
 const Navbar = () => {

@@ -1,46 +1,46 @@
-import { Lightbulb, Cpu, Brain, Sparkles, Layers, Activity, Smartphone, BarChart3 } from "lucide-react";
+import { Activity, MessageSquare, Lightbulb, BarChart3, Brain, Globe, Monitor, Zap } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const features = [
   {
-    icon: Lightbulb,
-    title: "Real-time Visual Feedback",
-    description: "Instant ambient lighting cues guide your playing with physical, tangible feedback that your brain naturally responds to, translating performance quality into immediate visual signals.",
-  },
-  {
-    icon: Cpu,
-    title: "Edge-first Architecture",
-    description: "All real-time audio analysis runs deterministically on a Raspberry Pi — no cloud latency, just pure speed.",
-  },
-  {
-    icon: Brain,
-    title: "Adaptive AI Learning",
-    description: "LLM-powered coaching synthesizes your performance metrics and adapts future training strategies.",
-  },
-  {
-    icon: Sparkles,
-    title: "Intelligent Analysis",
-    description: "Evaluates pitch accuracy, scale conformity, timing stability, and note transitions in real-time.",
-  },
-  {
-    icon: Layers,
-    title: "Extensible Design",
-    description: "Architecture designed to generalize to other instruments and vocal training that benefit from adaptive feedback.",
-  },
-  {
     icon: Activity,
-    title: "Digital Signal Processing",
-    description: "Advanced DSP algorithms extract musical features and analyze acoustic characteristics with precision.",
+    title: "Real-time Audio Analysis",
+    description: "Every note is evaluated across four dimensions: pitch accuracy, scale conformity, timing stability, and noise control. Know instantly if you're playing the right notes, at the right time, cleanly.",
   },
   {
-    icon: Smartphone,
-    title: "Cross-Platform Support",
-    description: "Run on portable Edge devices like Raspberry Pi or use the Desktop app — choose your learning environment.",
+    icon: MessageSquare,
+    title: "Live AI Coach",
+    description: "Get verbal feedback during practice like \"Your timing is drifting—lock in with the beat\" or \"Pitch is solid, watch the string noise.\" Mistakes don't go unnoticed.",
+  },
+  {
+    icon: Lightbulb,
+    title: "Ambient Lighting Feedback",
+    description: "Smart bulbs shift from red to green based on your performance. Color changes are processed faster than conscious thought, training your muscle memory subconsciously.",
   },
   {
     icon: BarChart3,
-    title: "Cloud-Based Analytics",
-    description: "Optional cloud sync collects performance statistics regularly for long-term progress tracking and insights.",
+    title: "Session Logging",
+    description: "Every session is recorded: notes played, accuracy, duration, and trends. See exactly how you're improving over time with real data, not guesswork.",
+  },
+  {
+    icon: Brain,
+    title: "AI Practice Planning",
+    description: "The AI analyzes your history and recommends what to practice next. No more wondering what to work on—get personalized practice plans that adapt to your weak spots.",
+  },
+  {
+    icon: Globe,
+    title: "Web Dashboard",
+    description: "Review sessions from anywhere, chat with the AI coach about your progress, and generate practice plans that sync across all your devices.",
+  },
+  {
+    icon: Monitor,
+    title: "Desktop Application",
+    description: "The primary training environment with on-screen metrics, live AI coaching, and ambient lighting control. Connect via USB audio interface and start practicing.",
+  },
+  {
+    icon: Zap,
+    title: "Portable Device",
+    description: "A Raspberry Pi-powered device running the same analysis engine. Practice anywhere without a laptop—your progress syncs automatically when online.",
   },
 ];
 
@@ -54,16 +54,16 @@ const FeaturesSection = () => {
             Key <span className="text-primary">Features</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            FretCoach combines real-time audio processing with cutting-edge AI to create 
-            a learning experience that adapts to you.
+            FretCoach closes the feedback loop. Every session is analyzed, every metric is tracked,
+            and the AI adapts to guide you toward measurable improvement.
           </p>
         </div>
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => (
-            <Card 
-              key={index} 
+            <Card
+              key={index}
               className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-card border-border/50"
             >
               <CardHeader>
