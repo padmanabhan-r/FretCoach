@@ -10,14 +10,14 @@ FretCoach is a comprehensive AI practice system that combines real-time audio an
 
 Think of it as having a professional coach watching every note you play, providing real-time guidance, tracking your progress across sessions, and adapting your practice plan based on your unique strengths and weaknesses.
 
-## Real-Time Analysis Engine
+## Real-Time Audio Analysis Agent Engine
 
 FretCoach's audio analysis agent processes live guitar input and evaluates four key performance metrics:
 
 | Metric | What It Measures |
 |--------|------------------|
 | **Pitch Accuracy** | Correctness of fretted notes against the target scale |
-| **Scale Conformity** | Coverage and adherence to the chosen scale pattern |
+| **Scale Conformity** | Coverage and adherence to the chosen scale |
 | **Timing Stability** | Consistency of note spacing and rhythmic precision |
 | **Noise Control** | Clarity of playing and detection of unwanted artifacts |
 
@@ -28,7 +28,7 @@ These metrics power a multi-channel feedback system:
 
 ## Intelligent Coaching
 
-FretCoach operates as an autonomous practice coach powered by LLM:
+FretCoach operates as an autonomous practice coach powered by LLM (Gemini 2.5 Flash, OpenAI GPT 4o Mini, Minimax 2.1 and Deepseek Chat 3.1):
 - **AI Practice Mode** — Analyzes your history and curates personalized practice routines through conversation
 - **Live Session Feedback** — Provides real-time coaching insights based on your performance metrics
 - **Progress Tracking** — Aggregates data across sessions to identify patterns and bottlenecks
@@ -58,7 +58,7 @@ FretCoach consists of three interconnected components connected to a central dat
 │  Python FastAPI        │  │                     │  │  Python FastAPI        │
 │                        │  │  • AI Coach Chat    │  │                        │
 │  • Audio Analysis      │  │  • Session History  │  │  • Audio Analysis      │
-│  • Live AI Coaching    │  │  • Analytics        │  │  • Live AI Coaching    │
+│  • Live AI Coaching    │  │  • Analytics        │  │  • AI Assited Mode     │
 │  • On-screen Metrics   │  │  • Practice Plans   │  │  • Ambient Lighting    │
 │  • Ambient Lighting    │  │                     │  │                        │
 └───────────┬────────────┘  └─────────────────────┘  └───────────┬────────────┘
