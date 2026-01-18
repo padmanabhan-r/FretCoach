@@ -6,28 +6,35 @@
 
 ## Overview
 
-FretCoach is an AI-powered learning system that transforms guitar practice through real-time audio analysis and adaptive feedback. By translating performance metrics into immediate ambient lighting cues, FretCoach enables subconscious motor skill development—allowing your brain to self-correct while playing.
+FretCoach is a comprehensive AI practice system that combines real-time audio analysis, live performance metrics, intelligent coaching, and multi-sensory feedback to transform how guitarists learn. It listens to your playing, evaluates your technique across multiple dimensions, and delivers instant feedback through on-screen visuals, AI coaching insights, and ambient lighting—creating a continuous learning loop that trains muscle memory without interrupting your flow.
 
-## How It Works
+Think of it as having a professional coach watching every note you play, providing real-time guidance, tracking your progress across sessions, and adapting your practice plan based on your unique strengths and weaknesses.
 
-FretCoach processes live guitar audio and evaluates four key metrics:
-- **Pitch Accuracy** — Correctness of fretted notes against the target scale
-- **Scale Conformity** — Coverage and adherence to the chosen scale pattern
-- **Timing Stability** — Consistency of note spacing and rhythmic precision
-- **Noise Control** — Detection of unwanted artifacts and clean playing
+## Real-Time Analysis Engine
 
-These metrics drive real-time visual feedback through connected smart bulbs, creating a feedback loop that trains muscle memory without interrupting your playing flow.
+FretCoach's audio analysis agent processes live guitar input and evaluates four key performance metrics:
+
+| Metric | What It Measures |
+|--------|------------------|
+| **Pitch Accuracy** | Correctness of fretted notes against the target scale |
+| **Scale Conformity** | Coverage and adherence to the chosen scale pattern |
+| **Timing Stability** | Consistency of note spacing and rhythmic precision |
+| **Noise Control** | Clarity of playing and detection of unwanted artifacts |
+
+These metrics power a multi-channel feedback system:
+- **On-screen visualizations** — Live metrics display, performance scoring, and note detection
+- **AI coach commentary** — Real-time verbal guidance during practice, like a coach standing courtside
+- **Ambient lighting** — Smart bulb color shifts from red to green based on performance quality
 
 ## Intelligent Coaching
 
-Beyond real-time feedback, FretCoach acts as an autonomous practice coach:
-- Aggregates performance metrics across sessions
-- Identifies patterns and learning bottlenecks
-- Generates personalized practice recommendations using LLM
-- Provides live coaching feedback during sessions—like a coach standing courtside
-- Adapts training strategies based on historical performance
+FretCoach operates as an autonomous practice coach powered by LLM:
+- **AI Practice Mode** — Analyzes your history and curates personalized practice routines through conversation
+- **Live Session Feedback** — Provides real-time coaching insights based on your performance metrics
+- **Progress Tracking** — Aggregates data across sessions to identify patterns and bottlenecks
+- **Adaptive Recommendations** — Generates practice plans that evolve with your skill level
 
-All real-time audio analysis runs **locally and deterministically**. AI coaching features connect to cloud services for enhanced insights.
+All real-time audio analysis runs **locally and deterministically**. AI coaching features connect to cloud services for enhanced insights and cross-device synchronization.
 
 ---
 
@@ -36,34 +43,41 @@ All real-time audio analysis runs **locally and deterministically**. AI coaching
 FretCoach consists of three interconnected components connected to a central database:
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              CLOUD LAYER                                    │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                    PostgreSQL (Supabase)                            │   │
-│  │         Sessions • Practice Plans • Performance History             │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
-│                    ▲                  ▲                  ▲                  │
-└────────────────────│──────────────────│──────────────────│──────────────────┘
-                     │                  │                  │
-        ┌────────────┴───────┐    ┌─────┴─────┐    ┌───────┴────────┐
-        │                    │    │           │    │                │
-┌───────▼────────┐   ┌───────▼────────┐   ┌───▼───────────┐   ┌─────▼─────┐
-│  Desktop App   │   │  Web Dashboard │   │ Portable Pedal│   │   Smart   │
-│  ────────────  │   │  ────────────  │   │ ────────────  │   │   Bulb    │
-│ Electron+React │   │ React+FastAPI  │   │ Raspberry Pi  │   │  ──────   │
-│ Python Backend │   │ Analytics &    │   │ Edge Audio    │   │  Ambient  │
-│ Audio Analysis │   │ AI Coach Chat  │   │ Processing    │   │  Lighting │
-│ Live AI Coach  │   │ Practice Plans │   │ Portable Mode │   │  Feedback │
-└───────┬────────┘   └────────────────┘   └───────┬───────┘   └───────────┘
-        │                                         │                  ▲
-        │                                         │                  │
-   ┌────▼────┐                               ┌────▼────┐             │
-   │ USB     │                               │ Direct  │    ◄────────┘
-   │ Audio   │                               │ Audio   │    Real-time Color
-   │Interface│                               │ Input   │    Performance Cues
-   └────┬────┘                               └────┬────┘
-        │                                         │
-      🎸 Guitar                                 🎸 Guitar
+                        ┌───────────────────────────────────┐
+                        │      PostgreSQL (Supabase)        │
+                        │  Sessions • Plans • Performance   │
+                        └───────────────┬───────────────────┘
+                                        │
+                 ┌──────────────────────┼──────────────────────┐
+                 │                      │                      │
+                 ▼                      ▼                      ▼
+┌────────────────────────┐  ┌─────────────────────┐  ┌────────────────────────┐
+│     Desktop App        │  │    Web Dashboard    │  │    Portable Pedal      │
+│  ────────────────────  │  │  ─────────────────  │  │  ────────────────────  │
+│  Electron + React      │  │  React + FastAPI    │  │  Raspberry Pi 5        │
+│  Python FastAPI        │  │                     │  │  Python FastAPI        │
+│                        │  │  • AI Coach Chat    │  │                        │
+│  • Audio Analysis      │  │  • Session History  │  │  • Audio Analysis      │
+│  • Live AI Coaching    │  │  • Analytics        │  │  • Live AI Coaching    │
+│  • On-screen Metrics   │  │  • Practice Plans   │  │  • Ambient Lighting    │
+│  • Ambient Lighting    │  │                     │  │                        │
+└───────────┬────────────┘  └─────────────────────┘  └───────────┬────────────┘
+            │                                                    │
+            ▼                                                    ▼
+   ┌─────────────────┐                                  ┌─────────────────┐
+   │   USB Audio     │                                  │   USB Audio     │
+   │   Interface     │                                  │   Interface     │
+   └────────┬────────┘                                  └────────┬────────┘
+            │                                                    │
+           🎸                                                   🎸
+        Guitar                                               Guitar
+
+
+                    ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+                      💡 Smart Bulb (Tuya API)
+                    │   Controlled by Desktop &     │
+                        Portable for ambient feedback
+                    └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
 ```
 
 ---
