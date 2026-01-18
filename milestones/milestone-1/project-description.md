@@ -17,4 +17,4 @@ Think of it as having a professional coach watching your practice—providing re
 
 Traditional practice is unstructured—you play, but you don't know what's working and what isn't. FretCoach closes the feedback loop. Every session is analyzed, every metric is tracked, and the AI adapts to guide you toward measurable improvement.
 
-Finally master the skill you've been putting off. Make learning embodied, measurable, and sustainable.
+Finally master the skill you've been putting off. Turn your resolutions into a reality. Make learning embodied, measurable, and sustainable.
