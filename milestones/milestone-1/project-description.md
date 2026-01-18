@@ -1,20 +1,15 @@
-# Project Name:
-## FretCoach — AI-Powered Adaptive Guitar Training
+# FretCoach
 
-### Description
+We all know the struggle: You buy a guitar, you promise to practice regularly, but practicing alone is frustrating. You don't know if you're rushing the beat, buzzing the strings, or playing out of tune - so you reinforce bad habits.
 
-FretCoach is a comprehensive AI practice system that transforms how guitarists learn. It combines real-time audio analysis, live performance metrics, intelligent coaching, and multi-sensory feedback into a unified learning experience. The system listens to every note you play, evaluates your technique across four dimensions (pitch accuracy, scale conformity, timing stability, and noise control), and delivers instant feedback through on-screen visualizations, AI coaching commentary, and ambient lighting cues.
-
-Think of it as having a professional coach watching your practice—providing real-time guidance, tracking progress across sessions, and adapting your training based on your unique strengths and weaknesses.
+Enter **FretCoach**. We built a system that finally closes the feedback loop. FretCoach listens to your guitar signal and analyzes it across four dimensions: pitch, scale conformity, timing, and cleanliness. It doesn't just show you a graph; it speaks to you like a real coach (*'You're rushing the beat!'*) and uses ambient smart lights to give you subconscious, peripheral feedback. Whether you're at your desk or using our portable Raspberry Pi pedal, FretCoach makes sure every minute of practice actually counts.
 
 ### The Learning Ecosystem
 
-- **Desktop App** — The primary training environment with real-time audio analysis, live AI coaching feedback during sessions, on-screen performance metrics, ambient lighting control, and session logging.
-- **Portable Device** — A Raspberry Pi-powered device (like a guitar pedal) running the same analysis agent engine at the edge, enabling practice anywhere with full AI coaching capabilities.
-- **Web Dashboard** — Cloud-based analytics platform to review sessions, chat with the AI coach, generate practice plans, and track progress over time.
-
-### Why FretCoach?
-
-Traditional practice is unstructured—you play, but you don't know what's working and what isn't. FretCoach closes the feedback loop. Every session is analyzed, every metric is tracked, and the AI adapts to guide you toward measurable improvement.
+1. **Desktop App** - The primary training environment with real time audio analysis, live AI coaching feedback during sessions, on-screen performance metrics, ambient lighting control, and session logging.
+2. **Portable Device** - A Raspberry Pi-powered device (like a guitar pedal) running the same analysis engine at the edge, enabling practice anywhere with full AI coaching capabilities.
+3. **Web Dashboard** - Cloud based analytics platform to review sessions, chat with the AI coach, generate practice plans, and track progress over time.
 
 Finally master the skill you've been putting off. Turn your resolutions into a reality. Make learning embodied, measurable, and sustainable.
+
+> Don't just practice until you get it right. Practice until you can't get it wrong.
