@@ -127,3 +127,9 @@ Two core tables in the `fretcoach` schema:
 | Web Dashboard | ~90% | Nearly complete. Deployment pending. |
 | Portable Pedal | ~30% | Hardware setup complete (RPi 5 + Scarlett Solo). Audio analysis engine adaptation in progress. |
 | Database | Complete | Supabase schema fully set up and operational. |
+
+---
+
+## Source Code
+
+The GitHub repository will be made public closer to the submission deadline.
