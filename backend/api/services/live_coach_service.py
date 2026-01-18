@@ -10,8 +10,6 @@ import os
 from dotenv import load_dotenv, find_dotenv
 
 from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
 
 # Import Opik for tracking with LangChain integration
 try:
@@ -46,9 +44,8 @@ def get_opik_config(session_id: str, trace_name: str) -> dict:
         "configurable": {"thread_id": f"session-{session_id}"}
     }
 
-# Coaching prompt template
-COACHING_PROMPT = ChatPromptTemplate.from_messages([
-    ("system", """You are a direct, practical guitar coach analyzing real-time playing data.
+# System prompt for coaching
+COACHING_SYSTEM_PROMPT = """You are a direct, practical guitar coach analyzing real-time playing data.
 
 Your feedback must be:
 - CORRECTIVE: Address the actual problem shown in the metrics
@@ -66,8 +63,9 @@ Interpretation guide:
 - Scale Conformity: Whether notes are in the chosen scale. Low = playing wrong notes, not knowing the scale positions
 - Timing Stability: Consistency of note spacing. Low = rushing, dragging, or uneven rhythm
 
-For the WEAKEST metric, provide a specific corrective instruction."""),
-    ("human", """Session metrics after {elapsed_time} practicing {scale_name}:
+For the WEAKEST metric, provide a specific corrective instruction."""
+
+COACHING_USER_TEMPLATE = """Session metrics after {elapsed_time} practicing {scale_name}:
 
 Pitch Accuracy: {pitch_accuracy}% ({pitch_assessment})
 Scale Conformity: {scale_conformity}% ({scale_assessment})
@@ -77,11 +75,7 @@ Weakest area: {weakest_area_name} at {weakest_score}%
 Notes played so far: {notes_played}
 Correct notes: {correct_notes} | Wrong notes: {wrong_notes}
 
-Give ONE specific corrective instruction for the weakest metric:""")
-])
-
-# Create the chain
-coaching_chain = COACHING_PROMPT | live_coach_model | StrOutputParser()
+Give ONE specific corrective instruction for the weakest metric:"""
 
 
 def get_performance_label(score: float) -> str:
@@ -172,25 +166,32 @@ async def generate_coaching_feedback(
     # Get Opik config tied to session_id for tracing
     opik_config = get_opik_config(session_id or "unknown", "live-feedback")
 
-    # Generate feedback using the chain (traced with OpikTracer)
-    feedback = await coaching_chain.ainvoke(
-        {
-            "pitch_accuracy": round(pitch_accuracy),
-            "scale_conformity": round(scale_conformity),
-            "timing_stability": round(timing_stability),
-            "pitch_assessment": pitch_assessment,
-            "scale_assessment": scale_assessment,
-            "timing_assessment": timing_assessment,
-            "scale_name": scale_name,
-            "elapsed_time": elapsed_time,
-            "weakest_area_name": weakest_area_name,
-            "weakest_score": round(weakest_score),
-            "notes_played": total_notes_played,
-            "correct_notes": correct_notes,
-            "wrong_notes": wrong_notes
-        },
+    # Format the user message with all metrics
+    user_message = COACHING_USER_TEMPLATE.format(
+        pitch_accuracy=round(pitch_accuracy),
+        scale_conformity=round(scale_conformity),
+        timing_stability=round(timing_stability),
+        pitch_assessment=pitch_assessment,
+        scale_assessment=scale_assessment,
+        timing_assessment=timing_assessment,
+        scale_name=scale_name,
+        elapsed_time=elapsed_time,
+        weakest_area_name=weakest_area_name,
+        weakest_score=round(weakest_score),
+        notes_played=total_notes_played,
+        correct_notes=correct_notes,
+        wrong_notes=wrong_notes
+    )
+
+    # Generate feedback with explicit messages (better Opik tracing visibility)
+    response = await live_coach_model.ainvoke(
+        [
+            {"role": "system", "content": COACHING_SYSTEM_PROMPT},
+            {"role": "user", "content": user_message}
+        ],
         config=opik_config
     )
+    feedback = response.content
 
     # Map to simple key for frontend
     weakest_key_map = {

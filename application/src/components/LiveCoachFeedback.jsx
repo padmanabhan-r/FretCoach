@@ -10,6 +10,7 @@ const INTERVAL_OPTIONS = [
 
 const LiveCoachFeedback = ({
   isRunning,
+  isPaused = false,
   pitchAccuracy,
   scaleConformity,
   timingStability,
@@ -81,7 +82,7 @@ const LiveCoachFeedback = ({
   useEffect(() => {
     let timer = null;
 
-    if (isRunning && enabled) {
+    if (isRunning && enabled && !isPaused) {
       timer = window.setInterval(() => {
         setElapsedSeconds(prev => {
           const newElapsed = prev + 1;
@@ -117,7 +118,7 @@ const LiveCoachFeedback = ({
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [isRunning, enabled, feedbackInterval, fetchFeedback]);
+  }, [isRunning, isPaused, enabled, feedbackInterval, fetchFeedback]);
 
   // Handle enable toggle
   const handleToggle = () => {
@@ -133,15 +134,21 @@ const LiveCoachFeedback = ({
   };
 
   return (
-    <div className={`backdrop-blur-sm border rounded-xl p-6 h-fit ${enabled && isRunning ? 'bg-accent/10 border-accent/50' : 'bg-card/50 border-border'}`}>
+    <div className={`backdrop-blur-sm border rounded-xl p-6 h-full flex flex-col ${enabled && isRunning ? 'bg-accent/10 border-accent/50' : 'bg-card/50 border-border'}`}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
           <span className="text-2xl">🎤</span>
           Live AI Coach
-          {enabled && isRunning && (
+          {enabled && isRunning && !isPaused && (
             <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-accent/20 text-accent rounded-full flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
               Active
+            </span>
+          )}
+          {enabled && isRunning && isPaused && (
+            <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-muted/20 text-muted-foreground rounded-full flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground"></span>
+              Paused
             </span>
           )}
         </h2>
@@ -190,9 +197,9 @@ const LiveCoachFeedback = ({
 
       {/* Feedback Display */}
       {enabled && isRunning && (
-        <div className="space-y-4">
-          {/* Current Feedback */}
-          <div className="bg-gradient-to-r from-accent/20 to-secondary/20 rounded-lg p-4 border border-accent/30">
+        <div className="space-y-4 flex-1 flex flex-col">
+          {/* Current Feedback - Grows to fill available space */}
+          <div className="bg-gradient-to-r from-accent/20 to-secondary/20 rounded-lg p-4 border border-accent/30 min-h-[80px] flex-1 overflow-y-auto">
             {loading && !feedback && (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <div className="animate-spin w-4 h-4 border-2 border-accent border-t-transparent rounded-full" />
@@ -207,9 +214,9 @@ const LiveCoachFeedback = ({
             {feedback && (
               <div>
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl">💬</span>
-                  <div className="flex-1">
-                    <p className="text-foreground font-medium leading-relaxed">
+                  <span className="text-2xl flex-shrink-0">💬</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-foreground font-medium leading-relaxed text-sm">
                       {feedback.feedback}
                     </p>
                     {loading && (
@@ -230,28 +237,30 @@ const LiveCoachFeedback = ({
             )}
           </div>
 
-          {/* Feedback History - Hidden by default */}
+          {/* Feedback History - Popover */}
           {feedbackHistory.length > 1 && (
-            <div>
+            <div className="relative">
               <button
                 onClick={() => setShowHistory(!showHistory)}
                 className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
               >
-                <svg className={`w-3 h-3 transition-transform ${showHistory ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <svg className={`w-3 h-3 transition-transform ${showHistory ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                 </svg>
                 Previous ({feedbackHistory.length - 1})
               </button>
               {showHistory && (
-                <div className="mt-2 space-y-2">
-                  {feedbackHistory.slice(-3, -1).reverse().map((fb, index) => (
-                    <div
-                      key={index}
-                      className="bg-card rounded-lg p-3 text-sm text-muted-foreground"
-                    >
-                      {fb.feedback}
-                    </div>
-                  ))}
+                <div className="absolute bottom-full left-0 right-0 mb-2 bg-card border border-border rounded-lg shadow-xl z-10 max-h-40 overflow-y-auto">
+                  <div className="p-2 space-y-2">
+                    {feedbackHistory.slice(-3, -1).reverse().map((fb, index) => (
+                      <div
+                        key={index}
+                        className="bg-background rounded-lg p-2 text-xs text-muted-foreground"
+                      >
+                        {fb.feedback}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -261,18 +270,22 @@ const LiveCoachFeedback = ({
 
       {/* Disabled State */}
       {!enabled && (
-        <p className="text-muted-foreground text-sm">
-          Enable to receive real-time coaching feedback during your practice session.
-          The AI coach will give you brief, motivational tips at your chosen interval.
-        </p>
+        <div className="flex-1 flex items-center">
+          <p className="text-muted-foreground text-sm">
+            Enable to receive real-time coaching feedback during your practice session.
+            The AI coach will give you brief, motivational tips at your chosen interval.
+          </p>
+        </div>
       )}
 
       {/* Not Running State */}
       {enabled && !isRunning && (
-        <div className="bg-card rounded-lg p-4 text-center">
-          <p className="text-muted-foreground">
-            Start a session to receive live coaching feedback
-          </p>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="bg-card rounded-lg p-4 text-center w-full">
+            <p className="text-muted-foreground">
+              Start a session to receive live coaching feedback
+            </p>
+          </div>
         </div>
       )}
     </div>

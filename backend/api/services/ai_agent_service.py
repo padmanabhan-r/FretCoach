@@ -308,7 +308,7 @@ There is an unexecuted practice plan from {pending_plan['generated_at']}:
 
 DECISION REQUIRED:
 Review this pending plan in context of the current practice history. You have two options:
-1. If the pending plan is still relevant and appropriate, you can continue with it (same or similar recommendation)
+1. If the pending plan is still relevant and it is the recent one, it must be given the priority and you can continue with it (same or similar recommendation)
 2. If the user's needs have changed or a different focus would be better, generate a new recommendation
 """
 

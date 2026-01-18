@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 
-const ConsoleOutput = ({ logs }) => {
+const ConsoleOutput = ({ logs, onClear }) => {
   const consoleRef = useRef(null);
 
   useEffect(() => {
@@ -15,7 +15,7 @@ const ConsoleOutput = ({ logs }) => {
         <h2 className="text-xl font-semibold text-foreground">Console Output</h2>
         <button
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          onClick={() => {}}
+          onClick={onClear}
         >
           Clear
         </button>

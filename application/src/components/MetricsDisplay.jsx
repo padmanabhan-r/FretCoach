@@ -49,7 +49,7 @@ const MetricsDisplay = ({ pitchAccuracy, scaleConformity, timingStability, isRun
   };
 
   return (
-    <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-6">
+    <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-6 pb-11">
       <h2 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
         Metrics
         {isRunning && <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>}

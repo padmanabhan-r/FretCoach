@@ -77,7 +77,7 @@
   }
 
   .animate-loading-bar {
-    animation: loadingBar 2s ease-in-out infinite;
+    animation: loadingBar 4s ease-in-out infinite;
   }
 
   .animate-pulse-slow {

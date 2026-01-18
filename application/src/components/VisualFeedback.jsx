@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
 
-const VisualFeedback = ({ pitchAccuracy, scaleConformity, timingStability, isRunning }) => {
+const VisualFeedback = ({ pitchAccuracy, scaleConformity, timingStability, isRunning, isPaused = false }) => {
   const [sessionSeconds, setSessionSeconds] = useState(0);
   const WARMUP_SECONDS = 10; // Wait 10 seconds before showing performance
 
-  // Timer for warmup period
+  // Timer for warmup period - pauses when isPaused
   useEffect(() => {
     let timer = null;
-    if (isRunning) {
+    if (isRunning && !isPaused) {
       timer = setInterval(() => {
         setSessionSeconds(prev => prev + 1);
       }, 1000);
-    } else {
+    } else if (!isRunning) {
       setSessionSeconds(0);
     }
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [isRunning]);
+  }, [isRunning, isPaused]);
 
   const overallScore = Math.round((pitchAccuracy + scaleConformity + timingStability) / 3);
   const isWarmingUp = isRunning && sessionSeconds < WARMUP_SECONDS;
@@ -41,7 +41,7 @@ const VisualFeedback = ({ pitchAccuracy, scaleConformity, timingStability, isRun
   // Pre-session state
   if (!isRunning) {
     return (
-      <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-6">
+      <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-6 h-full">
         <h2 className="text-xl font-semibold mb-4 text-foreground">Live Feedback</h2>
 
         <div className="flex items-center justify-center">
@@ -85,7 +85,7 @@ const VisualFeedback = ({ pitchAccuracy, scaleConformity, timingStability, isRun
   if (isWarmingUp) {
     const warmupColor = 'hsl(200, 70%, 50%)'; // Blue for warmup
     return (
-      <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-6">
+      <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-6 h-full">
         <h2 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
           Live Feedback
           <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
@@ -125,8 +125,52 @@ const VisualFeedback = ({ pitchAccuracy, scaleConformity, timingStability, isRun
     );
   }
 
+  // Paused state
+  if (isPaused) {
+    const pausedColor = 'hsl(45, 90%, 50%)'; // Yellow for paused
+    return (
+      <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-6 h-full">
+        <h2 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+          Live Feedback
+          <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+        </h2>
+
+        <div className="flex items-center justify-center">
+          <div className="relative">
+            <div
+              className="absolute inset-0 rounded-full blur-2xl opacity-30"
+              style={{ backgroundColor: pausedColor }}
+            />
+
+            <div
+              className="relative w-48 h-48 rounded-full flex items-center justify-center border-4 transition-all duration-500"
+              style={{
+                backgroundColor: `${pausedColor}15`,
+                borderColor: pausedColor,
+                boxShadow: `0 0 40px ${pausedColor}30`
+              }}
+            >
+              <div className="text-center px-4">
+                <div className="text-2xl font-bold mb-1" style={{ color: pausedColor }}>
+                  Paused
+                </div>
+                <div className="text-muted-foreground text-sm mt-2">
+                  Press Resume to continue
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 text-center text-muted-foreground text-sm">
+          Session paused
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-6">
+    <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-6 h-full">
       <h2 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
         Live Feedback
         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>

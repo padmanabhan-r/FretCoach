@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   stopBackend: () => ipcRenderer.invoke('stop-backend'),
   checkBackend: () => ipcRenderer.invoke('check-backend'),
   getConfig: () => ipcRenderer.invoke('get-config'),
+  quitApp: () => ipcRenderer.invoke('quit-app'),
   onPythonOutput: (callback) => {
     ipcRenderer.on('python-output', (_event, data) => callback(data));
   },

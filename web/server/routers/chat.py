@@ -10,8 +10,8 @@ import os
 import json
 import uuid
 import re
-import psycopg2
 from psycopg2.extras import RealDictCursor
+from database import get_db_connection
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
@@ -92,59 +92,45 @@ class ChartData(BaseModel):
     plan_id: Optional[str] = None  # For tracking pending plans
 
 
-def get_db_connection():
-    """Create database connection"""
-    conn = psycopg2.connect(
-        host=os.getenv("DB_HOST", "localhost"),
-        port=os.getenv("DB_PORT", "5432"),
-        database=os.getenv("DB_NAME", "fretcoach"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        options="-c search_path=fretcoach,public"
-    )
-    return conn
-
-
 def get_user_practice_data(user_id: str) -> Dict[str, Any]:
     """Fetch user's practice data for context"""
-    conn = get_db_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    with get_db_connection() as conn:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    # Get aggregates
-    cursor.execute("""
-        SELECT
-            COUNT(*) as total_sessions,
-            COALESCE(AVG(pitch_accuracy), 0) as avg_pitch_accuracy,
-            COALESCE(AVG(scale_conformity), 0) as avg_scale_conformity,
-            COALESCE(AVG(timing_stability), 0) as avg_timing_stability,
-            COALESCE(SUM(duration_seconds), 0) as total_practice_time
-        FROM fretcoach.sessions WHERE user_id = %s
-    """, (user_id,))
-    agg = cursor.fetchone()
+        # Get aggregates
+        cursor.execute("""
+            SELECT
+                COUNT(*) as total_sessions,
+                COALESCE(AVG(pitch_accuracy), 0) as avg_pitch_accuracy,
+                COALESCE(AVG(scale_conformity), 0) as avg_scale_conformity,
+                COALESCE(AVG(timing_stability), 0) as avg_timing_stability,
+                COALESCE(SUM(duration_seconds), 0) as total_practice_time
+            FROM fretcoach.sessions WHERE user_id = %s
+        """, (user_id,))
+        agg = cursor.fetchone()
 
-    # Get recent sessions
-    cursor.execute("""
-        SELECT session_id, start_timestamp, pitch_accuracy, scale_conformity,
-               timing_stability, scale_chosen, scale_type, duration_seconds
-        FROM fretcoach.sessions WHERE user_id = %s
-        ORDER BY start_timestamp DESC LIMIT 10
-    """, (user_id,))
-    recent = cursor.fetchall()
+        # Get recent sessions
+        cursor.execute("""
+            SELECT session_id, start_timestamp, pitch_accuracy, scale_conformity,
+                   timing_stability, scale_chosen, scale_type, duration_seconds
+            FROM fretcoach.sessions WHERE user_id = %s
+            ORDER BY start_timestamp DESC LIMIT 10
+        """, (user_id,))
+        recent = cursor.fetchall()
 
-    # Get scales with performance
-    cursor.execute("""
-        SELECT scale_chosen, scale_type, COUNT(*) as count,
-               AVG(pitch_accuracy) as avg_pitch,
-               AVG(scale_conformity) as avg_scale,
-               AVG(timing_stability) as avg_timing
-        FROM fretcoach.sessions WHERE user_id = %s
-        GROUP BY scale_chosen, scale_type
-        ORDER BY count DESC
-    """, (user_id,))
-    scales = cursor.fetchall()
+        # Get scales with performance
+        cursor.execute("""
+            SELECT scale_chosen, scale_type, COUNT(*) as count,
+                   AVG(pitch_accuracy) as avg_pitch,
+                   AVG(scale_conformity) as avg_scale,
+                   AVG(timing_stability) as avg_timing
+            FROM fretcoach.sessions WHERE user_id = %s
+            GROUP BY scale_chosen, scale_type
+            ORDER BY count DESC
+        """, (user_id,))
+        scales = cursor.fetchall()
 
-    cursor.close()
-    conn.close()
+        cursor.close()
 
     # Determine weakest area
     metrics = {
@@ -168,19 +154,18 @@ def get_user_practice_data(user_id: str) -> Dict[str, Any]:
 
 def get_performance_chart_data(user_id: str, metric: str = "all") -> Dict[str, Any]:
     """Generate chart data for performance trends"""
-    conn = get_db_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    with get_db_connection() as conn:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    cursor.execute("""
-        SELECT start_timestamp, pitch_accuracy, scale_conformity, timing_stability,
-               scale_chosen, duration_seconds
-        FROM fretcoach.sessions WHERE user_id = %s
-        ORDER BY start_timestamp DESC LIMIT 20
-    """, (user_id,))
+        cursor.execute("""
+            SELECT start_timestamp, pitch_accuracy, scale_conformity, timing_stability,
+                   scale_chosen, duration_seconds
+            FROM fretcoach.sessions WHERE user_id = %s
+            ORDER BY start_timestamp DESC LIMIT 20
+        """, (user_id,))
 
-    rows = cursor.fetchall()
-    cursor.close()
-    conn.close()
+        rows = cursor.fetchall()
+        cursor.close()
 
     # Reverse for chronological order
     rows = list(reversed(rows))
@@ -205,18 +190,17 @@ def get_performance_chart_data(user_id: str, metric: str = "all") -> Dict[str, A
 
 def get_comparison_chart_data(user_id: str, practice_data: Dict) -> Dict[str, Any]:
     """Generate comparison chart data (latest vs average)"""
-    conn = get_db_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    with get_db_connection() as conn:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    cursor.execute("""
-        SELECT pitch_accuracy, scale_conformity, timing_stability
-        FROM fretcoach.sessions WHERE user_id = %s
-        ORDER BY start_timestamp DESC LIMIT 1
-    """, (user_id,))
+        cursor.execute("""
+            SELECT pitch_accuracy, scale_conformity, timing_stability
+            FROM fretcoach.sessions WHERE user_id = %s
+            ORDER BY start_timestamp DESC LIMIT 1
+        """, (user_id,))
 
-    latest = cursor.fetchone()
-    cursor.close()
-    conn.close()
+        latest = cursor.fetchone()
+        cursor.close()
 
     if not latest:
         return None
@@ -384,23 +368,22 @@ def generate_practice_recommendation(practice_data: Dict, user_id: str, thread_i
 def save_practice_plan_to_db(plan_id: str, user_id: str, plan_json: dict) -> bool:
     """Save a confirmed practice plan to the database as JSON (matching ai_agent_service format)"""
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
 
-        print(f"[INFO] Saving practice plan {plan_id} for user {user_id}")
+            print(f"[INFO] Saving practice plan {plan_id} for user {user_id}")
 
-        # Serialize to JSON string for storage
-        plan_json_str = json.dumps(plan_json)
+            # Serialize to JSON string for storage
+            plan_json_str = json.dumps(plan_json)
 
-        cursor.execute("""
-            INSERT INTO fretcoach.ai_practice_plans (practice_id, user_id, practice_plan)
-            VALUES (%s, %s, %s)
-        """, (plan_id, user_id, plan_json_str))
+            cursor.execute("""
+                INSERT INTO fretcoach.ai_practice_plans (practice_id, user_id, practice_plan, executed_session_id)
+                VALUES (%s, %s, %s, %s)
+            """, (plan_id, user_id, plan_json_str, "N/A - Generated from Web Practice Coach"))
 
-        conn.commit()
-        print(f"[INFO] Practice plan {plan_id} saved successfully")
-        cursor.close()
-        conn.close()
+            conn.commit()
+            print(f"[INFO] Practice plan {plan_id} saved successfully")
+            cursor.close()
         return True
     except Exception as e:
         print(f"[ERROR] Failed to save practice plan: {e}")

@@ -45,9 +45,6 @@ CREATE TABLE IF NOT EXISTS public.ai_practice_plans
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.ai_practice_plans
-    OWNER to paddy;
-
 CREATE INDEX IF NOT EXISTS idx_practice_plans_user_time
 ON public.ai_practice_plans (user_id, generated_at DESC);
 

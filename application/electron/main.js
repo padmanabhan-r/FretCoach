@@ -1,8 +1,22 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, nativeImage } = require('electron');
 const path = require('path');
 const { spawn, execSync } = require('child_process');
 const fs = require('fs');
 const http = require('http');
+
+// Get icon path based on environment
+function getIconPath() {
+  const iconPath = path.join(__dirname, '../build/icon.png');
+  if (fs.existsSync(iconPath)) {
+    return iconPath;
+  }
+  // Fallback to SVG (works on some systems)
+  const svgPath = path.join(__dirname, '../build/icon.svg');
+  if (fs.existsSync(svgPath)) {
+    return svgPath;
+  }
+  return null;
+}
 
 let mainWindow = null;
 let pythonProcess = null;
@@ -84,6 +98,7 @@ function loadEnvFile() {
 
 function createWindow() {
   const isDev = !app.isPackaged;
+  const iconPath = getIconPath();
 
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -92,6 +107,7 @@ function createWindow() {
     minHeight: 600,
     backgroundColor: '#141414',
     titleBarStyle: 'hiddenInset',
+    icon: iconPath ? iconPath : undefined,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -101,6 +117,18 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
     },
   });
+
+  // Set dock icon on macOS
+  if (process.platform === 'darwin' && iconPath) {
+    try {
+      const icon = nativeImage.createFromPath(iconPath);
+      if (!icon.isEmpty()) {
+        app.dock.setIcon(icon);
+      }
+    } catch (e) {
+      console.warn('Could not set dock icon:', e.message);
+    }
+  }
   
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
@@ -390,4 +418,15 @@ ipcMain.handle('get-config', async () => {
   return {
     backendPath: path.join(__dirname, '../../backend'),
   };
+});
+
+ipcMain.handle('quit-app', async () => {
+  console.log('Quit requested from renderer');
+  // Stop backend gracefully
+  stopPythonBackend();
+  // Kill any remaining processes
+  killExistingBackend();
+  // Quit the app
+  app.quit();
+  return { success: true };
 });

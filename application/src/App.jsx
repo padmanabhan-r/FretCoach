@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Header from './components/Header';
 import StatusPanel from './components/StatusPanel';
 import VisualFeedback from './components/VisualFeedback';
@@ -41,6 +41,10 @@ function App() {
   const [ws, setWs] = useState(null);
   const [sessionSummary, setSessionSummary] = useState(null); // Session end summary
   const [sessionStartTime, setSessionStartTime] = useState(null);
+  const [sessionElapsedTime, setSessionElapsedTime] = useState(0); // Track elapsed time in seconds
+  const [isPaused, setIsPaused] = useState(false); // Pause state
+  const [pausedTime, setPausedTime] = useState(0); // Track total paused time
+  const pauseStartRef = useRef(null); // When pause started
   const [aiFeedbackHistory, setAiFeedbackHistory] = useState([]); // Collect AI feedback during session
 
   // Launch animation effect
@@ -50,10 +54,33 @@ function App() {
         setSetupStep('checking');
         // Only check config after the launch animation completes
         checkConfig();
-      }, 2500); // 2.5 second animation
+      }, 4500); // 4.5 second animation
       return () => clearTimeout(timer);
     }
   }, [setupStep]);
+
+  // Session timer effect
+  useEffect(() => {
+    let timer = null;
+    if (state.isRunning && sessionStartTime && !isPaused) {
+      timer = setInterval(() => {
+        setSessionElapsedTime(Math.floor((Date.now() - sessionStartTime - pausedTime) / 1000));
+      }, 1000);
+    } else if (!state.isRunning) {
+      setSessionElapsedTime(0);
+      setPausedTime(0);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [state.isRunning, sessionStartTime, isPaused, pausedTime]);
+
+  // Format elapsed time as MM:SS
+  const formatElapsedTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   useEffect(() => {
 
@@ -285,11 +312,31 @@ function App() {
     }
   };
 
+  const handlePause = () => {
+    if (isPaused) {
+      // Resume - add the paused duration to total paused time
+      if (pauseStartRef.current) {
+        setPausedTime(prev => prev + (Date.now() - pauseStartRef.current));
+        pauseStartRef.current = null;
+      }
+      setIsPaused(false);
+    } else {
+      // Pause - record when we started pausing
+      pauseStartRef.current = Date.now();
+      setIsPaused(true);
+    }
+  };
+
   const handleStop = async () => {
     if (ws) {
       ws.close();
       setWs(null);
     }
+
+    // Reset pause state
+    setIsPaused(false);
+    setPausedTime(0);
+    pauseStartRef.current = null;
 
     // Calculate session duration
     const duration = sessionStartTime ? Math.round((Date.now() - sessionStartTime) / 1000) : 0;
@@ -358,6 +405,16 @@ function App() {
     setSetupStep('mode');
   };
 
+  // Handle quitting the application
+  const handleQuit = async () => {
+    if (state.isRunning) {
+      await handleStop();
+    }
+    if (window.electronAPI) {
+      await window.electronAPI.quitApp();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Launch Animation */}
@@ -383,7 +440,7 @@ function App() {
       {setupStep !== 'launch' && (
         <div className="container mx-auto px-6 py-4">
           {/* Show full header only for non-playing screens */}
-          {setupStep !== 'ready' && <Header />}
+          {setupStep !== 'ready' && <Header onQuit={handleQuit} />}
 
           {setupStep === 'checking' && (
             <div className="mt-12 text-center">
@@ -473,9 +530,9 @@ function App() {
           )}
 
           {setupStep === 'ready' && (
-            <>
+            <div className="flex flex-col h-[calc(100vh-2rem)]">
               {/* Compact Header Bar for Playing Screen */}
-              <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-border flex-shrink-0">
                 {/* Left: Logo and Version */}
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-bold text-foreground">FretCoach</span>
@@ -505,11 +562,21 @@ function App() {
                     </svg>
                     Audio Setup
                   </button>
+                  <button
+                    onClick={handleQuit}
+                    disabled={state.isRunning}
+                    className="flex items-center gap-1 px-2 py-2 rounded-lg bg-destructive/10 hover:bg-destructive/20 border border-destructive/30 text-destructive transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Quit Application"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
               </div>
 
               {practiceMode === 'ai' && aiRecommendation && (
-                <div className="mb-4 max-w-5xl mx-auto">
+                <div className="mb-8 max-w-5xl mx-auto flex-shrink-0">
                   <div className="bg-accent/20 border border-accent/50 rounded-lg p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
@@ -526,8 +593,26 @@ function App() {
                 </div>
               )}
 
+              {practiceMode === 'manual' && (
+                <div className="mb-8 max-w-5xl mx-auto flex-shrink-0">
+                  <div className="bg-primary/20 border border-primary/50 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-2xl">🎯</span>
+                        <div>
+                          <h3 className="text-primary font-semibold">Manual Practice Mode</h3>
+                          <p className="text-muted-foreground text-sm">
+                            Practice at your own pace | Live AI Coach available for real-time feedback
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Main Content Grid - Reorganized */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0">
                 {/* Left Column - Controls and Status */}
                 <div className="lg:col-span-4 space-y-4">
                   {/* Session Controls Card */}
@@ -549,23 +634,64 @@ function App() {
                         Start Session
                       </button>
                     ) : (
-                      <button
-                        onClick={handleStop}
-                        className="w-full bg-gradient-to-r from-destructive to-red-600 hover:from-red-600 hover:to-red-500 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 shadow-lg text-lg flex items-center justify-center gap-3"
-                        style={{ boxShadow: '0 0 30px hsl(0, 84%, 60%, 0.4)' }}
-                      >
-                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clipRule="evenodd" />
-                        </svg>
-                        Stop Session
-                      </button>
+                      <div className="space-y-2">
+                        {/* Session Timer Bar */}
+                        <div className="flex items-center justify-between bg-card/50 rounded-lg px-4 py-2 border border-border">
+                          <div className="flex items-center gap-2">
+                            <span className={`w-2 h-2 rounded-full ${isPaused ? 'bg-yellow-500' : 'bg-red-500 animate-pulse'}`}></span>
+                            <span className="text-sm text-muted-foreground">{isPaused ? 'Paused' : 'Session Time'}</span>
+                          </div>
+                          <span className="text-lg font-mono font-bold text-foreground">{formatElapsedTime(sessionElapsedTime)}</span>
+                        </div>
+                        {/* Pause and Stop Buttons */}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handlePause}
+                            className={`flex-1 font-bold py-4 px-4 rounded-xl transition-all duration-300 shadow-lg text-lg flex items-center justify-center gap-2 ${
+                              isPaused
+                                ? 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white'
+                                : 'bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white'
+                            }`}
+                            style={{ boxShadow: isPaused ? '0 0 30px hsl(142, 76%, 45%, 0.4)' : '0 0 30px hsl(45, 90%, 50%, 0.4)' }}
+                          >
+                            {isPaused ? (
+                              <>
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                                </svg>
+                                Resume
+                              </>
+                            ) : (
+                              <>
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                                </svg>
+                                Pause
+                              </>
+                            )}
+                          </button>
+                          <button
+                            onClick={handleStop}
+                            className="flex-1 bg-gradient-to-r from-destructive to-red-600 hover:from-red-600 hover:to-red-500 text-white font-bold py-4 px-4 rounded-xl transition-all duration-300 shadow-lg text-lg flex items-center justify-center gap-2"
+                            style={{ boxShadow: '0 0 30px hsl(0, 84%, 60%, 0.4)' }}
+                          >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clipRule="evenodd" />
+                            </svg>
+                            Stop
+                          </button>
+                        </div>
+                      </div>
                     )}
 
                     {!state.isRunning && (
                       <button
                         onClick={handleChangePractice}
-                        className="w-full mt-3 text-sm text-secondary hover:text-accent transition-colors"
+                        className="w-full mt-3 py-2 px-4 text-sm font-medium text-secondary border border-secondary/50 rounded-lg hover:bg-secondary/10 hover:border-secondary transition-all flex items-center justify-center gap-2"
                       >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
                         Change Practice
                       </button>
                     )}
@@ -576,15 +702,6 @@ function App() {
                     currentNote={state.currentNote}
                     targetScale={state.targetScale}
                   />
-
-                  {state.isRunning && (
-                    <button
-                      onClick={() => setShowDebug(!showDebug)}
-                      className="w-full bg-card hover:bg-card/80 text-foreground py-2 px-4 rounded-lg transition-all text-sm font-medium border border-border"
-                    >
-                      {showDebug ? 'Hide Debug Info' : 'Show Debug Info'}
-                    </button>
-                  )}
                 </div>
 
                 {/* Right Column - Visual Feedback and Metrics */}
@@ -596,10 +713,12 @@ function App() {
                       scaleConformity={state.scaleConformity}
                       timingStability={state.timingStability}
                       isRunning={state.isRunning}
+                      isPaused={isPaused}
                     />
 
                     <LiveCoachFeedback
                       isRunning={state.isRunning}
+                      isPaused={isPaused}
                       pitchAccuracy={state.pitchAccuracy}
                       scaleConformity={state.scaleConformity}
                       timingStability={state.timingStability}
@@ -618,12 +737,12 @@ function App() {
                     timingStability={state.timingStability}
                     isRunning={state.isRunning}
                   />
-
-                  <DebugPanel debugInfo={state.debugInfo} show={showDebug && state.isRunning} />
                 </div>
               </div>
 
-            </>
+              {/* Debug Panel - Below all cards */}
+              {showDebug && state.isRunning && <DebugPanel debugInfo={state.debugInfo} show={true} />}
+            </div>
           )}
         </div>
       )}
@@ -737,22 +856,38 @@ function App() {
         </div>
       )}
 
-      {/* Console Overlay Button - Fixed in bottom-right */}
+      {/* Bottom-right buttons - Debug and Console */}
       {setupStep !== 'launch' && (
-        <button
-          onClick={() => setShowConsole(!showConsole)}
-          className="fixed bottom-4 right-4 z-40 bg-card/80 backdrop-blur-sm border border-border hover:bg-card hover:border-primary/50 text-muted-foreground hover:text-foreground p-2 rounded-lg shadow-lg transition-all group"
-          title="Toggle Console"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          {state.logs.length > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-medium rounded-full flex items-center justify-center">
-              {state.logs.length > 99 ? '99' : state.logs.length}
-            </span>
+        <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2">
+          {/* Debug Button - Only show when session is running */}
+          {setupStep === 'ready' && state.isRunning && (
+            <button
+              onClick={() => setShowDebug(!showDebug)}
+              className={`bg-card/80 backdrop-blur-sm border hover:bg-card hover:border-primary/50 text-muted-foreground hover:text-foreground p-2 rounded-lg shadow-lg transition-all ${showDebug ? 'border-primary/50 text-foreground' : 'border-border'}`}
+              title="Toggle Debug Info"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              </svg>
+            </button>
           )}
-        </button>
+
+          {/* Console Button */}
+          <button
+            onClick={() => setShowConsole(!showConsole)}
+            className="relative bg-card/80 backdrop-blur-sm border border-border hover:bg-card hover:border-primary/50 text-muted-foreground hover:text-foreground p-2 rounded-lg shadow-lg transition-all"
+            title="Toggle Console"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            {state.logs.length > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-medium rounded-full flex items-center justify-center">
+                {state.logs.length > 99 ? '99' : state.logs.length}
+              </span>
+            )}
+          </button>
+        </div>
       )}
 
       {/* Console Overlay Panel */}
@@ -775,7 +910,7 @@ function App() {
             </button>
           </div>
           <div className="max-h-[350px] overflow-y-auto">
-            <ConsoleOutput logs={state.logs} />
+            <ConsoleOutput logs={state.logs} onClear={() => setState(prev => ({ ...prev, logs: [] }))} />
           </div>
         </div>
       )}
