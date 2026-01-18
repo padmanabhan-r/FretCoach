@@ -2,7 +2,7 @@
 
 We all know the struggle: You buy a guitar, you promise to practice regularly, but practicing alone is frustrating. You don't know if you're rushing the beat, buzzing the strings, or playing out of tune - so you reinforce bad habits.
 
-Enter **FretCoach**. We built a system that finally closes the feedback loop. FretCoach listens to your guitar signal and analyzes it across four dimensions: pitch, scale conformity, timing, and cleanliness. It doesn't just show you a graph; it speaks to you like a real coach (*'You're rushing the beat!'*) and uses ambient smart lights to give you subconscious, peripheral feedback. Whether you're at your desk or using our portable Raspberry Pi pedal, FretCoach makes sure every minute of practice actually counts.
+Enter **FretCoach**. We built a system that finally closes the feedback loop. FretCoach listens to your guitar signal and analyzes it across four dimensions: pitch, scale conformity, timing, and cleanliness. It doesn't just show you a graph; it speaks to you like a real coach (*'You're rushing the beat!'*) and uses ambient smart lights to give you subconscious, peripheral feedback. Whether you're at your desk or using our portable device, FretCoach makes sure every minute of practice actually counts.
 
 ### The Learning Ecosystem
 
