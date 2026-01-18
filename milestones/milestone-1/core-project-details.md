@@ -84,7 +84,7 @@ A dedicated, Raspberry Pi-powered pedal-like device for practice on the go.
 
 **Concept:**
 
-Imagine having a guitar coach you can carry anywhere. Powered by a Raspberry Pi 5, it runs the same audio analysis engine as the desktop application. It runs the same analysis engine as the desktop app, supports Manual and AI modes, and syncs practice history automatically.
+Imagine having a guitar coach you can carry anywhere. Powered by a Raspberry Pi 5, it runs the same audio analysis agent engine as the desktop application. It runs the same analysis engine as the desktop app, supports Manual and AI modes, and syncs practice history automatically.
 
 **Use Case**
 
@@ -155,7 +155,7 @@ Two core tables in the `fretcoach` schema:
 |-----------|--------|-------|
 | Desktop Application | ~60% | Core functionality complete. Fine-tuning and evaluation with Opik in progress. |
 | Web Dashboard | ~90% | Nearly complete. Deployment pending. |
-| Portable Device | ~30% | Hardware setup complete (RPi 5 + Scarlett Solo). Audio analysis engine adaptation in progress. |
+| Portable Device | ~30% | Hardware setup complete (RPi 5 + Scarlett Solo). audio analysis agent engine adaptation in progress. |
 | Database | Complete | Supabase schema fully set up and operational. |
 
 ---
