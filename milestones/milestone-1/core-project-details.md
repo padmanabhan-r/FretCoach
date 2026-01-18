@@ -78,9 +78,9 @@ Every session is logged: notes played, accuracy, duration, and trends. This data
 
 ---
 
-### 2. Portable Pedal Device
+### 2. Portable Device
 
-A dedicated, Raspberry Pi-powered device for practice on the go.
+A dedicated, Raspberry Pi-powered pedal-like device for practice on the go.
 
 **Concept:**
 
@@ -109,7 +109,9 @@ All data from both devices continuously aggregates in the central database, maki
 
 ## Expandability
 
-FretCoach is designed as a foundation that can generalize to other instruments and training contexts—vocals, keyboards, drums—any skill that benefits from adaptive, embodied feedback.
+The current implementation focuses on **scales**—the foundational building blocks of music. Future versions can expand to chord progressions, song learning, and improvisation training.
+
+Beyond guitar, FretCoach is designed as a foundation that can generalize to other instruments and training contexts—vocals, keyboards, drums—any skill that benefits from adaptive, embodied feedback.
 
 ---
 
@@ -153,7 +155,7 @@ Two core tables in the `fretcoach` schema:
 |-----------|--------|-------|
 | Desktop Application | ~60% | Core functionality complete. Fine-tuning and evaluation with Opik in progress. |
 | Web Dashboard | ~90% | Nearly complete. Deployment pending. |
-| Portable Pedal | ~30% | Hardware setup complete (RPi 5 + Scarlett Solo). Audio analysis engine adaptation in progress. |
+| Portable Device | ~30% | Hardware setup complete (RPi 5 + Scarlett Solo). Audio analysis engine adaptation in progress. |
 | Database | Complete | Supabase schema fully set up and operational. |
 
 ---

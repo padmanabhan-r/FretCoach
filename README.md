@@ -52,7 +52,7 @@ FretCoach consists of three interconnected components connected to a central dat
                  │                      │                      │
                  ▼                      ▼                      ▼
 ┌────────────────────────┐  ┌─────────────────────┐  ┌────────────────────────┐
-│     Desktop App        │  │    Web Dashboard    │  │    Portable Pedal      │
+│     Desktop App        │  │    Web Dashboard    │  │   Portable Device      │
 │  ────────────────────  │  │  ─────────────────  │  │  ────────────────────  │
 │  Electron + React      │  │  React + FastAPI    │  │  Raspberry Pi 5        │
 │  Python FastAPI        │  │                     │  │  Python FastAPI        │
@@ -115,7 +115,7 @@ uvicorn backend.api.server:app --reload --host 127.0.0.1 --port 8000
 
 ---
 
-## 2. Portable Pedal (Raspberry Pi)
+## 2. Portable Device (Raspberry Pi)
 
 **Location:** `/portable/`
 
