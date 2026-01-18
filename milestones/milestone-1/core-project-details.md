@@ -2,7 +2,7 @@
 
 ## Overview
 
-FretCoach is a comprehensive AI practice system that transforms how guitarists learn. It combines real-time audio analysis, live performance metrics, intelligent coaching, and multi-sensory feedback into a unified learning experience.
+FretCoach is a comprehensive AI practice system that transforms how guitarists learn. It combines real-time audio analysis, live performance metrics, intelligent coaching, and multi-sensory feedback into a unified learning experience. The system listens to every note you play, evaluates your technique across four dimensions (pitch accuracy, scale conformity, timing stability, and noise control), and delivers instant feedback through on-screen visualizations, AI coaching commentary, and ambient lighting cues.
 
 FretCoach acts as an always-available coach that listens to every note, identifies what needs improvement, and provides instant feedback through multiple channels:
 
