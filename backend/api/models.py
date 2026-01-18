@@ -23,7 +23,7 @@ class AudioConfig(BaseModel):
     guitar_channel: int
     channels: int
     scale_name: str
-    scale_type: Optional[str] = "diatonic"  # "diatonic" or "pentatonic"
+    scale_type: Optional[str] = "natural"  # "natural" or "pentatonic"
     ambient_lighting: Optional[bool] = True
     strictness: Optional[float] = 0.5
     sensitivity: Optional[float] = 0.5

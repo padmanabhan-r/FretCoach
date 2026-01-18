@@ -5,7 +5,7 @@ Contains all major and minor keys with their pitch classes.
 
 # Pitch class numbers: C=0, C#=1, D=2, D#=3, E=4, F=5, F#=6, G=7, G#=8, A=9, A#=10, B=11
 
-# Diatonic scales (7 notes)
+# Natural scales (7 notes)
 MAJOR_DIATONIC = {
     "C Major": {0, 2, 4, 5, 7, 9, 11},
     "C# Major": {1, 3, 5, 6, 8, 10, 0},
@@ -87,7 +87,7 @@ def select_scale_interactive():
     """
     Interactive scale selection with two-step process:
     1. Select the scale (key and mode)
-    2. Choose diatonic or pentatonic
+    2. Choose natural or pentatonic
     
     Returns tuple of (scale_name, pitch_classes).
     """
@@ -95,7 +95,7 @@ def select_scale_interactive():
     print("SELECT MUSICAL SCALE")
     print("="*60)
     
-    # Step 1: Display scale choices (without diatonic/pentatonic distinction)
+    # Step 1: Display scale choices (without natural/pentatonic distinction)
     print("\nMAJOR SCALES:")
     major_scales = sorted(MAJOR_DIATONIC.keys())
     for i, scale in enumerate(major_scales, 1):
@@ -126,11 +126,11 @@ def select_scale_interactive():
         except ValueError:
             print("Invalid input. Please enter a number.")
     
-    # Step 2: Choose diatonic or pentatonic
+    # Step 2: Choose natural or pentatonic
     print("\n" + "="*60)
     print("SELECT SCALE TYPE")
     print("="*60)
-    print("\n  1. Diatonic (7 notes) - Complete scale")
+    print("\n  1. Natural (7 notes) - Complete scale")
     print("  2. Pentatonic (5 notes) - Simplified scale for blues/rock")
     print("="*60)
     
@@ -138,7 +138,7 @@ def select_scale_interactive():
     while True:
         choice = input("\nEnter choice (1 or 2): ").strip()
         if choice == "1":
-            scale_type = "diatonic"
+            scale_type = "natural"
             break
         elif choice == "2":
             scale_type = "pentatonic"
@@ -149,9 +149,9 @@ def select_scale_interactive():
     # Get the appropriate pitch classes
     is_major = "Major" in selected_scale
     
-    if scale_type == "diatonic":
+    if scale_type == "natural":
         pitch_classes = MAJOR_DIATONIC[selected_scale] if is_major else MINOR_DIATONIC[selected_scale]
-        full_name = f"{selected_scale} (Diatonic)"
+        full_name = f"{selected_scale} (Natural)"
     else:
         pitch_classes = MAJOR_PENTATONIC[selected_scale] if is_major else MINOR_PENTATONIC[selected_scale]
         full_name = f"{selected_scale} (Pentatonic)"

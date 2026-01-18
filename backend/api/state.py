@@ -40,6 +40,8 @@ class DebugInfo:
     unique_notes_used: int = 0
     scale_total_notes: int = 0
     notes_for_timing_analysis: int = 0
+    correct_notes: int = 0
+    wrong_notes: int = 0
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -55,6 +57,8 @@ class DebugInfo:
             "unique_notes_used": self.unique_notes_used,
             "scale_total_notes": self.scale_total_notes,
             "notes_for_timing_analysis": self.notes_for_timing_analysis,
+            "correct_notes": self.correct_notes,
+            "wrong_notes": self.wrong_notes,
         }
 
 

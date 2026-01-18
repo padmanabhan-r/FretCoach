@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     scale_conformity FLOAT,
     timing_stability FLOAT,
     scale_chosen VARCHAR(100) NOT NULL,
-    scale_type VARCHAR(20) DEFAULT 'diatonic',
+    scale_type VARCHAR(20) DEFAULT 'natural',
     sensitivity FLOAT NOT NULL,
     strictness FLOAT NOT NULL,
     total_notes_played INT DEFAULT 0,
@@ -44,9 +44,6 @@ CREATE TABLE IF NOT EXISTS public.ai_practice_plans
 )
 
 TABLESPACE pg_default;
-
-ALTER TABLE IF EXISTS public.ai_practice_plans
-    OWNER to paddy;
 
 CREATE INDEX IF NOT EXISTS idx_practice_plans_user_time
 ON public.ai_practice_plans (user_id, generated_at DESC);

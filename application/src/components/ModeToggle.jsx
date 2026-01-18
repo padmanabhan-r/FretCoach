@@ -2,50 +2,85 @@ import React from 'react';
 
 function ModeToggle({ mode, onModeChange, disabled }) {
   return (
-    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-6">
-      <div className="flex flex-col space-y-4">
-        <h3 className="text-lg font-semibold text-slate-200">Practice Mode</h3>
-        
-        <div className="flex space-x-4">
-          <button
-            onClick={() => onModeChange('manual')}
-            disabled={disabled}
-            className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Manual Mode Card */}
+        <button
+          onClick={() => onModeChange('manual')}
+          disabled={disabled}
+          className={`group relative overflow-hidden rounded-xl border-2 p-6 text-left transition-all duration-300 ${
+            disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-[1.02]'
+          } ${
+            mode === 'manual'
+              ? 'border-primary bg-primary/10'
+              : 'border-border bg-card/50 hover:border-primary/50 hover:bg-card'
+          }`}
+        >
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-3xl">🎯</span>
+              <h3 className="text-xl font-bold text-foreground">Manual Mode</h3>
+            </div>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              You fully control the practice settings. Perfect for focused practice on specific areas.
+            </p>
+          </div>
+          {mode === 'manual' && (
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
+          )}
+          <div
+            className={`absolute top-3 right-3 w-4 h-4 rounded-full border-2 transition-all ${
               mode === 'manual'
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/50'
-                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-            } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                ? 'border-primary bg-primary'
+                : 'border-muted-foreground'
+            }`}
           >
-            <div className="flex flex-col items-center space-y-1">
-              <span className="text-xl">🎯</span>
-              <span>Manual</span>
-              <span className="text-xs opacity-75">Choose your scale</span>
-            </div>
-          </button>
+            {mode === 'manual' && (
+              <svg className="w-full h-full text-primary-foreground" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            )}
+          </div>
+        </button>
 
-          <button
-            onClick={() => onModeChange('ai')}
-            disabled={disabled}
-            className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
+        {/* AI Coach Mode Card */}
+        <button
+          onClick={() => onModeChange('ai')}
+          disabled={disabled}
+          className={`group relative overflow-hidden rounded-xl border-2 p-6 text-left transition-all duration-300 ${
+            disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-[1.02]'
+          } ${
+            mode === 'ai'
+              ? 'border-accent bg-accent/10'
+              : 'border-border bg-card/50 hover:border-accent/50 hover:bg-card'
+          }`}
+        >
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-3xl">🤖</span>
+              <h3 className="text-xl font-bold text-foreground">AI Coach</h3>
+            </div>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              AI analyzes your performance history and automatically selects the optimal scale and practice routine.
+            </p>
+          </div>
+          {mode === 'ai' && (
+            <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-transparent" />
+          )}
+          <div
+            className={`absolute top-3 right-3 w-4 h-4 rounded-full border-2 transition-all ${
               mode === 'ai'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50'
-                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-            } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                ? 'border-accent bg-accent'
+                : 'border-muted-foreground'
+            }`}
           >
-            <div className="flex flex-col items-center space-y-1">
-              <span className="text-xl">🤖</span>
-              <span>AI Coach</span>
-              <span className="text-xs opacity-75">AI recommends</span>
-            </div>
-          </button>
-        </div>
-
-        <p className="text-sm text-slate-400">
-          {mode === 'manual' 
-            ? 'You select the scale and settings for your practice session.'
-            : 'AI analyzes your performance and recommends optimal practice sessions.'
-          }
-        </p>
+            {mode === 'ai' && (
+              <svg className="w-full h-full text-accent-foreground" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            )}
+          </div>
+        </button>
       </div>
     </div>
   );

@@ -68,3 +68,4 @@ application/out/
 *.bak
 *.tmp
 .cache/
+.backup/

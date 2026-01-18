@@ -6,7 +6,7 @@ Provides REST API endpoints for the Electron app to communicate with the Python 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import devices, config, session, metrics, scales, ai_mode
+from .routers import devices, config, session, metrics, scales, ai_mode, live_coach
 
 app = FastAPI(title="FretCoach API")
 
@@ -26,6 +26,7 @@ app.include_router(session.router, tags=["session"])
 app.include_router(metrics.router, tags=["metrics"])
 app.include_router(scales.router, tags=["scales"])
 app.include_router(ai_mode.router, tags=["ai"])
+app.include_router(live_coach.router, tags=["live-coach"])
 
 
 @app.get("/")

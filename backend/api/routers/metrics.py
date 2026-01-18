@@ -37,6 +37,7 @@ async def websocket_metrics(websocket: WebSocket):
                     "pitch_accuracy": session_state.pitch_accuracy,
                     "scale_conformity": session_state.scale_conformity,
                     "timing_stability": session_state.timing_stability,
+                    "debug_info": session_state.debug_info.to_dict(),
                 }
                 await websocket.send_json(metrics)
             await asyncio.sleep(0.1)  # Update 10 times per second
