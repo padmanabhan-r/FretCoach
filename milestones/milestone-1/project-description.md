@@ -10,7 +10,7 @@ Think of it as having a professional coach watching your practice—providing re
 ### The Learning Ecosystem
 
 - **Desktop App** — The primary training environment with real-time audio analysis, live AI coaching feedback during sessions, on-screen performance metrics, ambient lighting control, and session logging.
-- **Portable Device** — A Raspberry Pi-powered device (like a guitar pedal) running the same analysis engine at the edge, enabling practice anywhere with full AI coaching capabilities.
+- **Portable Device** — A Raspberry Pi-powered device (like a guitar pedal) running the same analysis agent engine at the edge, enabling practice anywhere with full AI coaching capabilities.
 - **Web Dashboard** — Cloud-based analytics platform to review sessions, chat with the AI coach, generate practice plans, and track progress over time.
 
 ### Why FretCoach?

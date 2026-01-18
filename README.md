@@ -125,7 +125,7 @@ A standalone physical device designed as an intelligent guitar pedal for practic
 
 ### Concept
 - Raspberry Pi 5-based controller
-- Real-time audio processing at the edge (same analysis engine as desktop)
+- Real-time audio processing at the edge (same analysis agent engine as desktop)
 - Ambient lighting feedback via smart bulbs
 - Syncs with central database for seamless experience across devices
 - Battery-powered for true portability

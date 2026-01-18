@@ -84,7 +84,7 @@ A dedicated, Raspberry Pi-powered pedal-like device for practice on the go.
 
 **Concept:**
 
-Imagine having a guitar coach you can carry anywhere. Powered by a Raspberry Pi 5, it runs the same audio analysis agent engine as the desktop application. It runs the same analysis engine as the desktop app, supports Manual and AI modes, and syncs practice history automatically.
+Imagine having a guitar coach you can carry anywhere. Powered by a Raspberry Pi 5, it runs the same audio analysis agent engine as the desktop application. It runs the same analysis agent engine as the desktop app, supports Manual and AI modes, and syncs practice history automatically.
 
 **Use Case**
 
