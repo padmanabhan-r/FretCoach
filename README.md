@@ -36,33 +36,33 @@ All real-time audio analysis and feedback remain **deterministic** and run local
 FretCoach consists of **four interconnected components**, all powered by AI and connected to a central database:
 
 ```
-                    ┌─────────────────────────────┐
-                    │   🌐 Web Dashboard          │
-                    │   AI Practice Coach         │
-                    │   Analytics & Insights      │
-                    └──────────────┬──────────────┘
-                                   │
-                    ┌──────────────▼──────────────┐
-                    │  ☁️  Supabase Database      │
-                    │     Performance Data        │
-                    │     Practice Plans          │
-                    └──────────┬──────────┬───────┘
-                               │          │
-                ┏━━━━━━━━━━━━━━┷━━━━┓   ┏┷━━━━━━━━━━━━━━━━┓
-                ┃                   ┃   ┃                  ┃
-    ┌───────────▼──────────┐        ┃   ┃        ┌─────────▼─────────┐
-    │ 💻 Desktop App       │        ┃   ┃        │ 🎛️  Portable Pedal │
-    │ ──────────────────   │◄──────►┃💡 ┃◄──────►│ ─────────────────  │
-    │ • Electron + React   │        ┃   ┃        │ • Raspberry Pi     │
-    │ • Real-time Analysis │        ┗━━━┛        │ • Edge Processing  │
-    │ • AI Coach Mode      │     Ambient         │ • Standalone Mode  │
-    │ • Live Feedback      │     Lighting        │ • Stage Ready      │
-    └──────────▲───────────┘                     └─────────▲──────────┘
-               │                                           │
-      ┌────────┴─────────┐                       ┌────────┴─────────┐
-      │  🎸 ➜ USB Audio  │                       │  🎸 ➜ Direct In  │
-      │     Interface    │                       │                  │
-      └──────────────────┘                       └──────────────────┘
+                 ┌─────────────────────────────┐
+                 │   🌐 Web Dashboard          │
+                 │   AI Practice Coach         │
+                 │   Analytics & Insights      │
+                 └──────────────┬──────────────┘
+                                │
+                 ┌──────────────▼──────────────┐
+                 │  ☁️  Postgres Database      │
+                 │     Performance Data        │
+                 │     Practice Plans          │
+                 └──────────┬──────────┬───────┘
+                            │          │
+             ┏━━━━━━━━━━━━━━┷━━━━┓   ┏┷━━━━━━━━━━━━━━━━┓
+             ┃                   ┃   ┃                  ┃
+ ┌───────────▼──────────┐        ┃   ┃        ┌─────────▼─────────┐
+ │ 💻 Desktop App       │        ┃   ┃        │ 🎛️  Portable Pedal │
+ │ ──────────────────   │◄──────►┃💡 ┃◄──────►│ ─────────────────  │
+ │ • Electron + React   │        ┃   ┃        │ • Raspberry Pi     │
+ │ • Real-time Analysis │        ┗━━━┛        │ • Edge Processing  │
+ │ • AI Coach Mode      │     Ambient         │ • Standalone Mode  │
+ │ • Live Feedback      │     Lighting        │ • Practice Ready   │
+ └──────────▲───────────┘                     └─────────▲──────────┘
+            │                                           │
+   ┌────────┴─────────┐                       ┌────────┴─────────┐
+   │  🎸 ➜ USB Audio  │                       │  🎸 ➜ Direct In  │
+   │     Interface    │                       │                  │
+   └──────────────────┘                       └──────────────────┘
 ```
 
 ---
@@ -71,33 +71,26 @@ FretCoach consists of **four interconnected components**, all powered by AI and 
 
 **Location:** `/application/`
 
-The primary training environment running as an Electron application with React frontend.
+The primary training environment running as a standalone application.
 
 ### Features
-- **Real-time audio analysis** via USB audio interface (e.g., Focusrite Scarlett)
+- **Real-time audio analysis** via USB audio interface (e.g., Focusrite Scarlett) or microphone
 - **Live visual feedback** with performance scoring (Excellent, Good, Average, Needs Work)
 - **AI Coach Mode** - Generates personalized practice recommendations using LLM
-- **Live AI Coaching** - Real-time motivational feedback during sessions
+- **Live AI Coaching** - Real-time AI feedback during sessions based on performance. More like a basketball coach standing next to the court
 - **Ambient lighting control** - Syncs smart bulbs to performance quality
 - **Manual & AI Practice Modes** - Choose your own scale or let AI recommend
 - **Session logging** - All practice sessions saved to database
 - **Session summary** - Detailed metrics at the end of each session
 
-### Tech Stack
-- Electron 28.0.0
-- React 18.2.0
-- Vite (bundler)
-- Tailwind CSS
-- FastAPI Python backend (audio processing)
-
 ### Getting Started
 ```bash
 cd application
 npm install
-npm run dev  # Starts Vite + Electron in development mode
+npm run dev  # Automatically starts backend too
 ```
 
-### Backend
+### Backend (If you want to start it separately)
 ```bash
 cd backend
 source .venv/bin/activate
@@ -112,13 +105,17 @@ uvicorn backend.api.server:app --reload --host 127.0.0.1 --port 8000
 
 A standalone physical device designed as an intelligent guitar pedal for on-the-go practice.
 
+**Status:** Prototyping phase. Currently showing the capability and opportunities.
+
 ### Features
-- Raspberry Pi-based controller with integrated ADC
+- Raspberry Pi-based controller with integrated ADC (now using Scarlett Solo - just explaining the possibility)
 - Real-time audio processing at the edge
 - Ambient lighting feedback via smart bulbs
 - Database connectivity for session sync
 - Battery-powered portable operation
-- Stage-ready design
+- Practice-ready design
+- **Manual & AI Practice Modes** - Choose your own scale or let AI recommend based on your practice sessions
+
 
 ### Status
 Framework ready for development. Hardware specifications and schematics in progress.
@@ -129,7 +126,7 @@ Framework ready for development. Hardware specifications and schematics in progr
 
 **Location:** `/web/`
 
-Cloud-based analytics platform with AI Practice Coach.
+Cloud-based analytics platform with AI Practice Coach. Discuss with the coach on your performance, curate plans while you are away from your instrument. Check your stats on the go.
 
 ### Features
 - **AI Practice Coach** - Chat-based coach that analyzes your practice data
@@ -139,28 +136,23 @@ Cloud-based analytics platform with AI Practice Coach.
 - **Date range filtering** - Analyze specific time periods
 - **Aggregate statistics** - Total practice time, notes played, average scores
 
-### Tech Stack
-- React 18.3.1 + TypeScript
-- Vite (bundler)
-- Tailwind CSS + shadcn/ui components
-- Recharts (data visualization)
-- React Query
-- Supabase integration
-- LangChain with Gemini/Claude for AI Coach
-
 ### Getting Started
+
+**Web Backend:**
+```bash
+cd web/server
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+**Web Frontend:**
 ```bash
 cd web
 npm install
 npm run dev  # Frontend on http://localhost:5173
 ```
 
-### Web Backend
-```bash
-cd web/server
-pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-```
+**Demo:** Visit [fretcoach.online](https://fretcoach.online)
 
 ---
 
@@ -278,10 +270,3 @@ FretCoach transforms unstructured practice into a guided learning loop, acting a
 
 ---
 
-## Contributing
-
-Contributions welcome! Please open an issue or submit a PR.
-
-## License
-
-MIT License
