@@ -56,18 +56,18 @@ FretCoach consists of three interconnected components connected to a central dat
 │  ────────────────────  │  │  ─────────────────  │  │  ────────────────────  │
 │  Electron + React      │  │  React + FastAPI    │  │  Raspberry Pi 5        │
 │  Python FastAPI        │  │                     │  │  Python FastAPI        │
-│                        │  │  • AI Coach Chat    │  │                        │
-│  • Audio Analysis      │  │  • Session History  │  │  • Audio Analysis      │
-│  • Live AI Coaching    │  │  • Analytics        │  │  • AI Assited Mode     │
-│  • On-screen Metrics   │  │  • Practice Plans   │  │  • Ambient Lighting    │
-│  • Ambient Lighting    │  │                     │  │                        │
+│                        │  │  • AI Coach Chat    │  │  Integrated Audio I/O  │
+│  • Audio Analysis      │  │  • Session History  │  │                        │
+│  • Live AI Coaching    │  │  • Analytics        │  │  • Audio Analysis      │
+│  • On-screen Metrics   │  │  • Practice Plans   │  │  • AI Assisted Mode    │
+│  • Ambient Lighting    │  │                     │  │  • Ambient Lighting    │
 └───────────┬────────────┘  └─────────────────────┘  └───────────┬────────────┘
             │                                                    │
-            ▼                                                    ▼
-   ┌─────────────────┐                                  ┌─────────────────┐
-   │   USB Audio     │                                  │   USB Audio     │
-   │   Interface     │                                  │   Interface     │
-   └────────┬────────┘                                  └────────┬────────┘
+            ▼                                                    │
+   ┌─────────────────┐                                           │
+   │   USB Audio     │                                           │
+   │   Interface     │                                           │
+   └────────┬────────┘                                           │
             │                                                    │
            🎸                                                   🎸
         Guitar                                               Guitar
@@ -132,7 +132,7 @@ A standalone physical device designed as an intelligent guitar pedal for practic
 - Supports both Manual and AI practice modes
 
 ### Current Progress
-Hardware setup complete with Raspberry Pi 5 and Scarlett Solo USB interface. Audio analysis engine adaptation in progress.
+Hardware setup complete with Raspberry Pi 5 and integrated audio I/O. Audio analysis agent engine adaptation in progress.
 
 ---
 
@@ -241,7 +241,7 @@ FretCoach/
 │   └── build/            # App icons
 ├── backend/              # Shared Python Backend
 │   ├── api/              # FastAPI routes & services
-│   ├── core/             # Audio analysis engine
+│   ├── core/             # audio analysis agent engine
 │   └── sql/              # Database schemas
 ├── web/                  # Web Dashboard
 │   ├── src/              # React frontend
