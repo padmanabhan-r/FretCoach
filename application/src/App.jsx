@@ -32,6 +32,9 @@ function App() {
     targetScale: 'Not Set',
     logs: [],
     debugInfo: null,
+    totalNotesPlayed: 0,
+    correctNotes: 0,
+    wrongNotes: 0,
   });
   const [showDebug, setShowDebug] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
@@ -45,14 +48,14 @@ function App() {
     if (setupStep === 'launch') {
       const timer = setTimeout(() => {
         setSetupStep('checking');
+        // Only check config after the launch animation completes
+        checkConfig();
       }, 2500); // 2.5 second animation
       return () => clearTimeout(timer);
     }
   }, [setupStep]);
 
   useEffect(() => {
-    // Check if configuration exists
-    checkConfig();
 
     // Set up Python backend output listeners
     if (window.electronAPI) {
@@ -64,9 +67,11 @@ function App() {
       });
 
       window.electronAPI.onPythonError((data) => {
+        // Don't prefix with ERROR - uvicorn sends INFO logs to stderr
+        // The data already contains the log level (INFO, WARNING, ERROR, etc.)
         setState(prev => ({
           ...prev,
-          logs: [...prev.logs, `ERROR: ${data}`].slice(-100),
+          logs: [...prev.logs, data].slice(-100),
         }));
       });
     }
@@ -245,13 +250,17 @@ function App() {
 
         // Connect WebSocket for real-time metrics
         const websocket = api.connectWebSocket((data) => {
+          const debugInfo = data.debug_info || {};
           setState(prev => ({
             ...prev,
             currentNote: data.current_note || '-',
             pitchAccuracy: Math.round(data.pitch_accuracy * 100),
             scaleConformity: Math.round(data.scale_conformity * 100),
             timingStability: Math.round(data.timing_stability * 100),
-            debugInfo: data.debug_info || null,
+            debugInfo: debugInfo,
+            totalNotesPlayed: debugInfo.notes_played_count || 0,
+            correctNotes: debugInfo.correct_notes || 0,
+            wrongNotes: debugInfo.wrong_notes || 0,
           }));
         });
         setWs(websocket);
@@ -299,7 +308,8 @@ function App() {
         timingStability: state.timingStability,
         overall: Math.round((state.pitchAccuracy + state.scaleConformity + state.timingStability) / 3)
       },
-      aiFeedback: practiceMode === 'ai' ? aiFeedbackHistory : [],
+      // Include AI coach feedback for both modes (Live AI Coach is always available)
+      aiFeedback: aiFeedbackHistory,
       aiRecommendation: practiceMode === 'ai' ? aiRecommendation : null
     };
     setSessionSummary(summary);
@@ -595,6 +605,9 @@ function App() {
                       timingStability={state.timingStability}
                       scaleName={state.targetScale}
                       sessionId={sessionId}
+                      totalNotesPlayed={state.totalNotesPlayed}
+                      correctNotes={state.correctNotes}
+                      wrongNotes={state.wrongNotes}
                       onFeedbackReceived={(feedback) => setAiFeedbackHistory(prev => [...prev, feedback])}
                     />
                   </div>
@@ -610,24 +623,6 @@ function App() {
                 </div>
               </div>
 
-              {/* Console Output with Toggle */}
-              <div className="mt-6">
-                <div className="flex items-center justify-between mb-2">
-                  <button
-                    onClick={() => setShowConsole(!showConsole)}
-                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <svg className={`w-4 h-4 transition-transform ${showConsole ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                    Console Output
-                    {state.logs.length > 0 && (
-                      <span className="text-xs bg-card px-1.5 py-0.5 rounded">{state.logs.length}</span>
-                    )}
-                  </button>
-                </div>
-                {showConsole && <ConsoleOutput logs={state.logs} />}
-              </div>
             </>
           )}
         </div>
@@ -636,7 +631,7 @@ function App() {
       {/* Session Summary Modal */}
       {sessionSummary && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border rounded-xl max-w-lg w-full max-h-[80vh] overflow-y-auto">
+          <div className="bg-card border border-border rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-foreground">Session Complete</h2>
@@ -738,6 +733,49 @@ function App() {
                 Done
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Console Overlay Button - Fixed in bottom-right */}
+      {setupStep !== 'launch' && (
+        <button
+          onClick={() => setShowConsole(!showConsole)}
+          className="fixed bottom-4 right-4 z-40 bg-card/80 backdrop-blur-sm border border-border hover:bg-card hover:border-primary/50 text-muted-foreground hover:text-foreground p-2 rounded-lg shadow-lg transition-all group"
+          title="Toggle Console"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          {state.logs.length > 0 && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-medium rounded-full flex items-center justify-center">
+              {state.logs.length > 99 ? '99' : state.logs.length}
+            </span>
+          )}
+        </button>
+      )}
+
+      {/* Console Overlay Panel */}
+      {showConsole && (
+        <div className="fixed bottom-16 right-4 z-40 w-[500px] max-w-[calc(100vw-2rem)] max-h-[400px] bg-card border border-border rounded-xl shadow-xl overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card/50">
+            <span className="text-sm font-medium text-foreground flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Console
+            </span>
+            <button
+              onClick={() => setShowConsole(false)}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div className="max-h-[350px] overflow-y-auto">
+            <ConsoleOutput logs={state.logs} />
           </div>
         </div>
       )}

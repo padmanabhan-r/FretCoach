@@ -15,6 +15,9 @@ const LiveCoachFeedback = ({
   timingStability,
   scaleName,
   sessionId,
+  totalNotesPlayed = 0,
+  correctNotes = 0,
+  wrongNotes = 0,
   onEnabledChange,
   onFeedbackReceived
 }) => {
@@ -27,12 +30,12 @@ const LiveCoachFeedback = ({
   const [showHistory, setShowHistory] = useState(false); // Hidden by default
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const lastFetchRef = useRef(0);
-  const metricsRef = useRef({ pitchAccuracy, scaleConformity, timingStability });
+  const metricsRef = useRef({ pitchAccuracy, scaleConformity, timingStability, totalNotesPlayed, correctNotes, wrongNotes });
 
   // Keep metrics ref updated
   useEffect(() => {
-    metricsRef.current = { pitchAccuracy, scaleConformity, timingStability };
-  }, [pitchAccuracy, scaleConformity, timingStability]);
+    metricsRef.current = { pitchAccuracy, scaleConformity, timingStability, totalNotesPlayed, correctNotes, wrongNotes };
+  }, [pitchAccuracy, scaleConformity, timingStability, totalNotesPlayed, correctNotes, wrongNotes]);
 
   // Fetch coaching feedback
   const fetchFeedback = useCallback(async (elapsed) => {
@@ -44,12 +47,15 @@ const LiveCoachFeedback = ({
     try {
       const metrics = metricsRef.current;
       const result = await api.getLiveCoachFeedback({
-        pitch_accuracy: metrics.pitchAccuracy / 100, // Convert back to 0-1 range
-        scale_conformity: metrics.scaleConformity / 100,
-        timing_stability: metrics.timingStability / 100,
+        pitch_accuracy: metrics.pitchAccuracy,
+        scale_conformity: metrics.scaleConformity,
+        timing_stability: metrics.timingStability,
         scale_name: scaleName || 'Unknown Scale',
         elapsed_seconds: elapsed,
-        session_id: sessionId
+        session_id: sessionId,
+        total_notes_played: metrics.totalNotesPlayed || 0,
+        correct_notes: metrics.correctNotes || 0,
+        wrong_notes: metrics.wrongNotes || 0
       });
 
       if (result.success) {
@@ -127,7 +133,7 @@ const LiveCoachFeedback = ({
   };
 
   return (
-    <div className={`backdrop-blur-sm border rounded-xl p-6 ${enabled && isRunning ? 'bg-accent/10 border-accent/50' : 'bg-card/50 border-border'}`}>
+    <div className={`backdrop-blur-sm border rounded-xl p-6 h-fit ${enabled && isRunning ? 'bg-accent/10 border-accent/50' : 'bg-card/50 border-border'}`}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
           <span className="text-2xl">🎤</span>
@@ -237,11 +243,11 @@ const LiveCoachFeedback = ({
                 Previous ({feedbackHistory.length - 1})
               </button>
               {showHistory && (
-                <div className="mt-2 space-y-1">
+                <div className="mt-2 space-y-2">
                   {feedbackHistory.slice(-3, -1).reverse().map((fb, index) => (
                     <div
                       key={index}
-                      className="bg-card rounded-lg p-2 text-xs text-muted-foreground line-clamp-2"
+                      className="bg-card rounded-lg p-3 text-sm text-muted-foreground"
                     >
                       {fb.feedback}
                     </div>

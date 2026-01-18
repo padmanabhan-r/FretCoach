@@ -13,16 +13,12 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
-# Import Opik for tracking
+# Import Opik for tracking with LangChain integration
 try:
-    from opik import track, opik_context
+    from opik.integrations.langchain import OpikTracer
     OPIK_ENABLED = True
 except ImportError:
-    def track(name=None, **kwargs):
-        def decorator(func):
-            return func
-        return decorator
-    opik_context = None
+    OpikTracer = None
     OPIK_ENABLED = False
 
 # Load environment variables
@@ -35,35 +31,53 @@ live_coach_model = ChatOpenAI(
     max_tokens=150  # Keep responses short
 )
 
+
+def get_opik_config(session_id: str, trace_name: str) -> dict:
+    """Create Opik config for LangChain calls tied to session_id"""
+    if not OPIK_ENABLED or not OpikTracer:
+        return {}
+
+    tracer = OpikTracer(
+        tags=["live-coach", trace_name],
+        metadata={"session_id": session_id}
+    )
+    return {
+        "callbacks": [tracer],
+        "configurable": {"thread_id": f"session-{session_id}"}
+    }
+
 # Coaching prompt template
 COACHING_PROMPT = ChatPromptTemplate.from_messages([
-    ("system", """You are a supportive guitar coach providing real-time feedback during a practice session.
-Your feedback should be:
-- SHORT (1-2 sentences max)
-- MOTIVATIONAL and encouraging
-- SPECIFIC about what to focus on
-- ACTIONABLE with clear guidance
+    ("system", """You are a direct, practical guitar coach analyzing real-time playing data.
 
-You're like a basketball coach on the sideline - brief, direct, and encouraging.
+Your feedback must be:
+- CORRECTIVE: Address the actual problem shown in the metrics
+- SPECIFIC: Reference the exact metric that needs work
+- ACTIONABLE: Give one concrete technique to try RIGHT NOW
+- BRIEF: 1-2 sentences maximum
 
-Focus areas based on metrics:
-- Low pitch accuracy (<50%): Focus on hitting notes cleanly
-- Low scale conformity (<50%): Stay within the scale, explore the fretboard
-- Low timing stability (<50%): Keep steady rhythm, use a metronome mentally
+DO NOT:
+- Use generic motivational phrases like "Great job!" or "Keep it up!"
+- Be vague about what needs improvement
+- Give multiple suggestions at once
 
-Performance levels:
-- Excellent (>70%): Celebrate, push for more challenge
-- Good (50-70%): Encourage, minor adjustments
-- Average (20-50%): Focus on fundamentals
-- Bad (<20%): Simplify, slow down, breathe"""),
-    ("human", """Current session stats after {elapsed_time}:
-- Pitch Accuracy: {pitch_accuracy}%
-- Scale Conformity: {scale_conformity}%
-- Timing Stability: {timing_stability}%
-- Overall Performance: {overall_performance}
-- Current Scale: {scale_name}
+Interpretation guide:
+- Pitch Accuracy: How cleanly notes are being fretted. Low = pressing too hard/soft, poor finger placement
+- Scale Conformity: Whether notes are in the chosen scale. Low = playing wrong notes, not knowing the scale positions
+- Timing Stability: Consistency of note spacing. Low = rushing, dragging, or uneven rhythm
 
-Give brief, motivational coaching feedback for this guitarist:""")
+For the WEAKEST metric, provide a specific corrective instruction."""),
+    ("human", """Session metrics after {elapsed_time} practicing {scale_name}:
+
+Pitch Accuracy: {pitch_accuracy}% ({pitch_assessment})
+Scale Conformity: {scale_conformity}% ({scale_assessment})
+Timing Stability: {timing_stability}% ({timing_assessment})
+
+Weakest area: {weakest_area_name} at {weakest_score}%
+Notes played so far: {notes_played}
+Correct notes: {correct_notes} | Wrong notes: {wrong_notes}
+
+Give ONE specific corrective instruction for the weakest metric:""")
 ])
 
 # Create the chain
@@ -92,17 +106,33 @@ def format_elapsed_time(seconds: int) -> str:
     return f"{minutes}m {remaining_seconds}s"
 
 
-@track(name="generate_live_coaching_feedback")
+def get_metric_assessment(score: float) -> str:
+    """Get a brief assessment label for a metric score."""
+    if score >= 80:
+        return "excellent"
+    elif score >= 60:
+        return "good"
+    elif score >= 40:
+        return "needs work"
+    elif score >= 20:
+        return "struggling"
+    return "very low"
+
+
 async def generate_coaching_feedback(
     pitch_accuracy: float,
     scale_conformity: float,
     timing_stability: float,
     scale_name: str,
     elapsed_seconds: int,
-    session_id: Optional[str] = None
+    session_id: Optional[str] = None,
+    total_notes_played: int = 0,
+    correct_notes: int = 0,
+    wrong_notes: int = 0
 ) -> Dict[str, Any]:
     """
     Generate live coaching feedback based on current session metrics.
+    Traced with OpikTracer tied to session_id.
 
     Args:
         pitch_accuracy: Current pitch accuracy (0-100)
@@ -111,16 +141,13 @@ async def generate_coaching_feedback(
         scale_name: Name of the current scale being practiced
         elapsed_seconds: Time elapsed in the session
         session_id: Optional session ID for tracking
+        total_notes_played: Total number of notes played so far
+        correct_notes: Number of notes in scale
+        wrong_notes: Number of notes outside scale
 
     Returns:
         Dictionary containing feedback and metadata
     """
-    # Generate thread ID for Opik tracking
-    thread_id = f"live-coach-{session_id or 'unknown'}-{datetime.now().strftime('%H%M%S')}"
-
-    if OPIK_ENABLED and opik_context:
-        opik_context.update_current_trace(thread_id=thread_id)
-
     # Calculate overall performance
     overall_score = (pitch_accuracy + scale_conformity + timing_stability) / 3
     overall_performance = get_performance_label(overall_score)
@@ -128,35 +155,60 @@ async def generate_coaching_feedback(
     # Format elapsed time
     elapsed_time = format_elapsed_time(elapsed_seconds)
 
-    # Generate feedback using the chain
-    feedback = await coaching_chain.ainvoke({
-        "pitch_accuracy": round(pitch_accuracy),
-        "scale_conformity": round(scale_conformity),
-        "timing_stability": round(timing_stability),
-        "overall_performance": overall_performance,
-        "scale_name": scale_name,
-        "elapsed_time": elapsed_time
-    })
-
-    # Identify the weakest area for additional context
+    # Identify the weakest area with detailed info
     metrics = {
-        "pitch": pitch_accuracy,
-        "scale": scale_conformity,
-        "timing": timing_stability
+        "Pitch Accuracy": pitch_accuracy,
+        "Scale Conformity": scale_conformity,
+        "Timing Stability": timing_stability
     }
-    weakest_area = min(metrics, key=metrics.get)
+    weakest_area_name = min(metrics, key=metrics.get)
+    weakest_score = metrics[weakest_area_name]
+
+    # Get assessments for each metric
+    pitch_assessment = get_metric_assessment(pitch_accuracy)
+    scale_assessment = get_metric_assessment(scale_conformity)
+    timing_assessment = get_metric_assessment(timing_stability)
+
+    # Get Opik config tied to session_id for tracing
+    opik_config = get_opik_config(session_id or "unknown", "live-feedback")
+
+    # Generate feedback using the chain (traced with OpikTracer)
+    feedback = await coaching_chain.ainvoke(
+        {
+            "pitch_accuracy": round(pitch_accuracy),
+            "scale_conformity": round(scale_conformity),
+            "timing_stability": round(timing_stability),
+            "pitch_assessment": pitch_assessment,
+            "scale_assessment": scale_assessment,
+            "timing_assessment": timing_assessment,
+            "scale_name": scale_name,
+            "elapsed_time": elapsed_time,
+            "weakest_area_name": weakest_area_name,
+            "weakest_score": round(weakest_score),
+            "notes_played": total_notes_played,
+            "correct_notes": correct_notes,
+            "wrong_notes": wrong_notes
+        },
+        config=opik_config
+    )
+
+    # Map to simple key for frontend
+    weakest_key_map = {
+        "Pitch Accuracy": "pitch",
+        "Scale Conformity": "scale",
+        "Timing Stability": "timing"
+    }
 
     return {
         "feedback": feedback.strip(),
         "overall_performance": overall_performance,
         "overall_score": round(overall_score),
-        "weakest_area": weakest_area,
+        "weakest_area": weakest_key_map[weakest_area_name],
         "elapsed_time": elapsed_time,
         "timestamp": datetime.now().isoformat()
     }
 
 
-@track(name="generate_session_summary")
 async def generate_session_summary(
     pitch_accuracy: float,
     scale_conformity: float,
@@ -167,6 +219,7 @@ async def generate_session_summary(
 ) -> Dict[str, Any]:
     """
     Generate a summary at the end of a practice session.
+    Traced with OpikTracer tied to session_id.
 
     Args:
         pitch_accuracy: Final pitch accuracy (0-100)
@@ -179,11 +232,6 @@ async def generate_session_summary(
     Returns:
         Dictionary containing session summary
     """
-    thread_id = f"session-summary-{session_id or 'unknown'}"
-
-    if OPIK_ENABLED and opik_context:
-        opik_context.update_current_trace(thread_id=thread_id)
-
     overall_score = (pitch_accuracy + scale_conformity + timing_stability) / 3
     overall_performance = get_performance_label(overall_score)
     duration = format_elapsed_time(total_duration_seconds)
@@ -205,14 +253,20 @@ Give a brief, encouraging session summary:""")
 
     summary_chain = summary_prompt | live_coach_model | StrOutputParser()
 
-    summary = await summary_chain.ainvoke({
-        "duration": duration,
-        "scale_name": scale_name,
-        "pitch_accuracy": round(pitch_accuracy),
-        "scale_conformity": round(scale_conformity),
-        "timing_stability": round(timing_stability),
-        "overall_performance": overall_performance
-    })
+    # Get Opik config tied to session_id for tracing
+    opik_config = get_opik_config(session_id or "unknown", "session-summary")
+
+    summary = await summary_chain.ainvoke(
+        {
+            "duration": duration,
+            "scale_name": scale_name,
+            "pitch_accuracy": round(pitch_accuracy),
+            "scale_conformity": round(scale_conformity),
+            "timing_stability": round(timing_stability),
+            "overall_performance": overall_performance
+        },
+        config=opik_config
+    )
 
     return {
         "summary": summary.strip(),

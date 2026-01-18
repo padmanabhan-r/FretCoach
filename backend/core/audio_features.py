@@ -5,20 +5,11 @@ Contains AI-powered feature functions for analyzing guitar performance.
 import numpy as np
 import librosa
 
-# Import Opik for tracking (non-blocking)
-try:
-    from opik import track
-    OPIK_ENABLED = True
-except ImportError:
-    # Fallback decorator if opik is not installed
-    def track(name=None, **kwargs):
-        def decorator(func):
-            return func
-        return decorator
-    OPIK_ENABLED = False
+# NOTE: Opik tracking disabled for audio features - called on every frame, eats quota
+# These functions are called hundreds of times per second during live audio processing
 
 
-@track(name="calculate_pitch_correctness")
+
 def pitch_correctness(audio, sample_rate, target_pitch_classes, debug=False):
     """
     Evaluate pitch correctness against target scale.
@@ -95,7 +86,6 @@ def timing_cleanliness(audio, sample_rate, onset_history=None):
     return 0.5
 
 
-@track(name="calculate_timing_stability")
 def calculate_note_timing_stability(onset_times_ms, window_size=8, consistency_threshold=0.15):
     """
     Calculate timing stability based on note onset times.
@@ -164,7 +154,6 @@ def noise_control(audio):
     return np.clip(1 - noise / (total + 1e-9), 0, 1)
 
 
-@track(name="calculate_scale_coverage")
 def calculate_scale_coverage(note_counts, target_pitch_classes):
     """
     Calculate how evenly distributed the played notes are across the scale.

@@ -25,10 +25,11 @@ const AudioSetup = ({ onComplete }) => {
   };
 
   const handleTest = async () => {
-    if (inputDevice === null) return;
+    if (inputDevice === null || testing) return;
 
-    setTesting(true);
+    // Clear previous results and start fresh test
     setTestResult(null);
+    setTesting(true);
 
     try {
       const result = await api.testAudioDevice(inputDevice, guitarChannel);

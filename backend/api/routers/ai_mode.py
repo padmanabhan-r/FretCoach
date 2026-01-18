@@ -1,23 +1,12 @@
 """
 AI Mode endpoints for FretCoach API
 Provides AI-driven practice session recommendations
+LLM calls are traced via OpikTracer in ai_agent_service.py
 """
 
 from fastapi import APIRouter, HTTPException
 from typing import Dict, Any
 from datetime import datetime
-
-# Import Opik for tracking (non-blocking)
-try:
-    from opik import track, opik_context
-    OPIK_ENABLED = True
-except ImportError:
-    def track(name=None, **kwargs):
-        def decorator(func):
-            return func
-        return decorator
-    opik_context = None
-    OPIK_ENABLED = False
 
 from ..services.ai_agent_service import get_ai_practice_session, engine
 from sqlalchemy import text
@@ -26,10 +15,10 @@ router = APIRouter()
 
 
 @router.post("/ai/recommend")
-@track(name="ai_recommend_practice")
 async def get_ai_recommendation(user_id: str = "default_user") -> Dict[str, Any]:
     """
-    Get AI-driven practice recommendation based on historical performance
+    Get AI-driven practice recommendation based on historical performance.
+    LLM call is traced via OpikTracer in ai_agent_service.
 
     Args:
         user_id: The user identifier (default: "default_user")
@@ -37,11 +26,6 @@ async def get_ai_recommendation(user_id: str = "default_user") -> Dict[str, Any]
     Returns:
         Practice recommendation with scale, focus area, and reasoning
     """
-    # Set thread_id for Opik conversation tracking
-    thread_id = f"ai-coach-{user_id}"
-    if OPIK_ENABLED and opik_context:
-        opik_context.update_current_trace(thread_id=thread_id)
-
     try:
         result = await get_ai_practice_session(user_id)
         return {
@@ -53,10 +37,10 @@ async def get_ai_recommendation(user_id: str = "default_user") -> Dict[str, Any]
 
 
 @router.post("/ai/session/start")
-@track(name="ai_start_practice_session")
 async def start_ai_session(user_id: str = "default_user") -> Dict[str, Any]:
     """
-    Start an AI-recommended practice session
+    Start an AI-recommended practice session.
+    LLM call is traced via OpikTracer in ai_agent_service.
 
     This endpoint:
     1. Gets AI recommendation (or returns pending plan if exists)
@@ -68,11 +52,6 @@ async def start_ai_session(user_id: str = "default_user") -> Dict[str, Any]:
     Returns:
         Session configuration and start status
     """
-    # Set thread_id for Opik conversation tracking
-    thread_id = f"ai-coach-{user_id}"
-    if OPIK_ENABLED and opik_context:
-        opik_context.update_current_trace(thread_id=thread_id)
-
     try:
         # Get AI recommendation (checks for pending plan first)
         recommendation_result = await get_ai_practice_session(user_id)
@@ -117,7 +96,7 @@ async def get_ai_status(user_id: str = "default_user") -> Dict[str, Any]:
 
         query = text("""
             SELECT practice_id, practice_plan, generated_at
-            FROM ai_practice_plans
+            FROM fretcoach.ai_practice_plans
             WHERE user_id = :user_id AND executed_session_id IS NULL
             ORDER BY generated_at DESC
             LIMIT 1
@@ -157,7 +136,7 @@ async def mark_plan_executed(practice_id: str, session_id: str) -> Dict[str, Any
     """
     try:
         query = text("""
-            UPDATE ai_practice_plans
+            UPDATE fretcoach.ai_practice_plans
             SET executed_session_id = :session_id
             WHERE practice_id = :practice_id
         """)

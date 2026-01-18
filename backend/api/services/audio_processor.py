@@ -134,6 +134,8 @@ def process_audio(session_state: SessionState, audio_state: AudioState, audio_co
 
         # Update debug info
         num_unique_notes = len([c for c in audio_state.quality.note_counts.values() if c > 0])
+        correct_notes = audio_state.quality.notes_in_scale(target_pitch_classes)
+        wrong_notes = audio_state.quality.notes_out_of_scale(target_pitch_classes)
         session_state.debug_info = DebugInfo(
             detected_hz=result.detected_hz,
             detected_midi=result.detected_midi,
@@ -146,6 +148,8 @@ def process_audio(session_state: SessionState, audio_state: AudioState, audio_co
             unique_notes_used=num_unique_notes,
             scale_total_notes=len(target_pitch_classes),
             notes_for_timing_analysis=result.notes_for_timing,
+            correct_notes=correct_notes,
+            wrong_notes=wrong_notes,
         )
 
         # Log metric to database

@@ -34,7 +34,7 @@ A web-based dashboard for FretCoach that displays real-time practice session met
 
 1. Install dependencies:
    ```bash
-   cd website-interface
+   cd web
    npm install
    ```
 
@@ -82,7 +82,7 @@ npm run build
 This project is designed to be self-contained and deployable to Vercel:
 
 1. Push to GitHub
-2. Import the `website-interface` folder in Vercel
+2. Import the `web` folder in Vercel
 3. Set environment variables in Vercel dashboard:
    - `DATABASE_URL`
    - `OPENAI_API_KEY`
@@ -163,7 +163,7 @@ LLM calls are automatically traced with Opik when configured. Thread IDs are use
 ## Project Structure
 
 ```
-website-interface/
+web/
 ├── api/                    # Vercel serverless functions
 │   ├── sessions.ts         # Sessions API endpoint
 │   └── chat.ts             # AI Coach chat endpoint

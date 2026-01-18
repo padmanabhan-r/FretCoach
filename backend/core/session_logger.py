@@ -11,18 +11,8 @@ from datetime import datetime
 from typing import Optional, Dict, Any
 import json
 
-# Import Opik for tracking (non-blocking)
-try:
-    from opik import track, opik_context
-    OPIK_ENABLED = True
-except ImportError:
-    # Fallback decorator if opik is not installed
-    def track(name=None, **kwargs):
-        def decorator(func):
-            return func
-        return decorator
-    opik_context = None
-    OPIK_ENABLED = False
+# NOTE: Opik tracking removed from session_logger - no LLM calls here
+# Only DB writes which don't need tracing
 
 # Load environment variables from .env file
 try:
@@ -157,7 +147,7 @@ class SessionLogger:
             else:
                 cursor.execute("""
                     SELECT column_name FROM information_schema.columns
-                    WHERE table_name = 'sessions' AND column_name = 'total_inscale_notes';
+                    WHERE table_schema = 'fretcoach' AND table_name = 'sessions' AND column_name = 'total_inscale_notes';
                 """)
             has_new_schema = cursor.fetchone() is not None
 
@@ -174,7 +164,7 @@ class SessionLogger:
             else:
                 cursor.execute("""
                     SELECT column_name FROM information_schema.columns
-                    WHERE table_name = 'sessions' AND column_name = 'scale_type';
+                    WHERE table_schema = 'fretcoach' AND table_name = 'sessions' AND column_name = 'scale_type';
                 """)
             has_scale_type = cursor.fetchone() is not None
 
@@ -185,7 +175,7 @@ class SessionLogger:
                     cursor.execute(add_scale_type_sql)
                 else:
                     cursor.execute("""
-                        ALTER TABLE sessions
+                        ALTER TABLE fretcoach.sessions
                         ADD COLUMN scale_type VARCHAR(20) DEFAULT 'natural';
                     """)
                 self.conn.commit()
@@ -194,9 +184,10 @@ class SessionLogger:
             if self.sql_loader.schema:
                 cursor.execute(self.sql_loader.schema)
             else:
-                # Fallback to inline SQL
+                # Fallback to inline SQL - use fretcoach schema
+                cursor.execute("CREATE SCHEMA IF NOT EXISTS fretcoach;")
                 cursor.execute("""
-                    CREATE TABLE IF NOT EXISTS sessions (
+                    CREATE TABLE IF NOT EXISTS fretcoach.sessions (
                         session_id VARCHAR(255) NOT NULL,
                         user_id VARCHAR(255) NOT NULL,
                         start_timestamp TIMESTAMP NOT NULL,
@@ -220,11 +211,11 @@ class SessionLogger:
                 """)
                 cursor.execute("""
                     CREATE INDEX IF NOT EXISTS idx_sessions_user_id
-                    ON sessions(user_id);
+                    ON fretcoach.sessions(user_id);
                 """)
                 cursor.execute("""
                     CREATE INDEX IF NOT EXISTS idx_sessions_start_timestamp
-                    ON sessions(start_timestamp DESC);
+                    ON fretcoach.sessions(start_timestamp DESC);
                 """)
 
             self.conn.commit()
@@ -328,7 +319,6 @@ class SessionLogger:
             else:
                 session["bad_notes_played"] += 1
 
-    @track(name="end_session_db_write")
     def end_session(
         self,
         session_id: str,
@@ -342,9 +332,6 @@ class SessionLogger:
             session_id: Session UUID
             total_inscale_notes: Total number of notes in the scale (not how many were played, but how many exist in the scale)
         """
-        # Set thread_id for Opik tracking
-        if OPIK_ENABLED and opik_context:
-            opik_context.update_current_trace(thread_id=f"session-{session_id}")
 
         if session_id not in self.session_data:
             print(f"[ERR] Session {session_id} not found in memory")
@@ -402,7 +389,7 @@ class SessionLogger:
                 ))
             else:
                 cursor.execute("""
-                    INSERT INTO sessions
+                    INSERT INTO fretcoach.sessions
                     (session_id, user_id, start_timestamp, end_timestamp,
                      pitch_accuracy, scale_conformity, timing_stability,
                      scale_chosen, scale_type, sensitivity, strictness,
@@ -467,7 +454,7 @@ class SessionLogger:
                         scale_chosen, scale_type, sensitivity, strictness,
                         total_notes_played, correct_notes_played, bad_notes_played,
                         total_inscale_notes, duration_seconds, ambient_light_option
-                    FROM sessions
+                    FROM fretcoach.sessions
                     WHERE session_id = %s
                 """, (session_id,))
 
@@ -519,7 +506,7 @@ class SessionLogger:
                         session_id, start_timestamp, end_timestamp, duration_seconds,
                         scale_chosen, scale_type, pitch_accuracy, scale_conformity, timing_stability,
                         total_notes_played, correct_notes_played, bad_notes_played
-                    FROM sessions
+                    FROM fretcoach.sessions
                     WHERE user_id = %s
                     ORDER BY start_timestamp DESC
                     LIMIT %s

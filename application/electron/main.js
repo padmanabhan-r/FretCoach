@@ -83,6 +83,8 @@ function loadEnvFile() {
 }
 
 function createWindow() {
+  const isDev = !app.isPackaged;
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -93,13 +95,12 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      webSecurity: false,  // Allow requests to localhost backend
+      // Only disable webSecurity in development for localhost requests
+      // In production, the packaged app can communicate with localhost backend safely
+      webSecurity: !isDev,
       preload: path.join(__dirname, 'preload.js'),
     },
   });
-
-  // Always use dev server in development
-  const isDev = !app.isPackaged;
   
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');

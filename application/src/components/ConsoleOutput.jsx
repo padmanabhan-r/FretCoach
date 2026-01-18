@@ -28,14 +28,24 @@ const ConsoleOutput = ({ logs }) => {
         {logs.length === 0 ? (
           <div className="text-muted italic">No output yet...</div>
         ) : (
-          logs.map((log, index) => (
-            <div
-              key={index}
-              className={`${log.startsWith('ERROR') ? 'text-destructive' : 'text-muted-foreground'}`}
-            >
-              {log}
-            </div>
-          ))
+          logs.map((log, index) => {
+            // Detect actual errors (ERROR: prefix or error keywords)
+            const isError = log.includes('ERROR:') || log.includes('Error:') ||
+                           log.includes('Traceback') || log.includes('Exception');
+            const isWarning = log.includes('WARNING:') || log.includes('Warning:');
+            return (
+              <div
+                key={index}
+                className={
+                  isError ? 'text-destructive' :
+                  isWarning ? 'text-yellow-500' :
+                  'text-muted-foreground'
+                }
+              >
+                {log}
+              </div>
+            );
+          })
         )}
       </div>
     </div>

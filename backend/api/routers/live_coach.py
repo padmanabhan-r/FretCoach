@@ -23,6 +23,9 @@ class CoachingRequest(BaseModel):
     scale_name: str = Field(..., description="Name of the current scale")
     elapsed_seconds: int = Field(..., ge=0, description="Seconds elapsed in session")
     session_id: Optional[str] = Field(None, description="Optional session ID")
+    total_notes_played: int = Field(0, ge=0, description="Total notes played so far")
+    correct_notes: int = Field(0, ge=0, description="Number of notes in scale")
+    wrong_notes: int = Field(0, ge=0, description="Number of notes outside scale")
 
 
 class SummaryRequest(BaseModel):
@@ -40,7 +43,7 @@ async def get_coaching_feedback(request: CoachingRequest):
     """
     Get real-time coaching feedback based on current session metrics.
 
-    Returns short, motivational feedback to help the guitarist improve.
+    Returns specific, actionable feedback to help the guitarist improve.
     """
     try:
         result = await generate_coaching_feedback(
@@ -49,7 +52,10 @@ async def get_coaching_feedback(request: CoachingRequest):
             timing_stability=request.timing_stability,
             scale_name=request.scale_name,
             elapsed_seconds=request.elapsed_seconds,
-            session_id=request.session_id
+            session_id=request.session_id,
+            total_notes_played=request.total_notes_played,
+            correct_notes=request.correct_notes,
+            wrong_notes=request.wrong_notes
         )
         return {
             "success": True,

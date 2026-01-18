@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Match website-interface color palette
+        // Match web color palette
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {

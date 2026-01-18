@@ -14,13 +14,15 @@ router = APIRouter()
 
 def get_db_connection():
     """Create database connection using environment variables"""
-    return psycopg2.connect(
+    conn = psycopg2.connect(
         host=os.getenv("DB_HOST", "localhost"),
         port=os.getenv("DB_PORT", "5432"),
         database=os.getenv("DB_NAME", "fretcoach"),
         user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD")
+        password=os.getenv("DB_PASSWORD"),
+        options="-c search_path=fretcoach,public"
     )
+    return conn
 
 
 @router.get("/sessions")
@@ -66,7 +68,7 @@ async def get_sessions(
                 scale_chosen, scale_type, sensitivity, strictness,
                 total_notes_played, correct_notes_played, bad_notes_played,
                 total_inscale_notes, duration_seconds, ambient_light_option
-            FROM sessions
+            FROM fretcoach.sessions
             WHERE user_id = %s{date_filter}
             ORDER BY start_timestamp DESC
             LIMIT %s
@@ -97,7 +99,7 @@ async def get_sessions(
                     COALESCE(AVG(timing_stability), 0) as avg_timing_stability,
                     COALESCE(SUM(total_notes_played), 0) as total_notes,
                     COALESCE(SUM(correct_notes_played), 0) as total_correct
-                FROM sessions
+                FROM fretcoach.sessions
                 WHERE user_id = %s{date_filter}
             """, params)
 
@@ -105,7 +107,7 @@ async def get_sessions(
 
             # Get unique scales practiced (within date range)
             cursor.execute(f"""
-                SELECT DISTINCT scale_chosen FROM sessions WHERE user_id = %s{date_filter}
+                SELECT DISTINCT scale_chosen FROM fretcoach.sessions WHERE user_id = %s{date_filter}
             """, params)
 
             scales = [row['scale_chosen'] for row in cursor.fetchall() if row['scale_chosen']]
@@ -147,7 +149,7 @@ async def get_session(session_id: str) -> Dict[str, Any]:
         cursor = conn.cursor(cursor_factory=RealDictCursor)
 
         cursor.execute("""
-            SELECT * FROM sessions WHERE session_id = %s
+            SELECT * FROM fretcoach.sessions WHERE session_id = %s
         """, (session_id,))
 
         session = cursor.fetchone()

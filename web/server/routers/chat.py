@@ -1,6 +1,6 @@
 """
 AI Practice Coach Chat Router
-Uses OpenAI with function calling and Opik tracing
+Uses Google Gemini with Opik tracing
 """
 
 from fastapi import APIRouter, HTTPException
@@ -9,27 +9,60 @@ from typing import List, Dict, Any, Optional
 import os
 import json
 import uuid
+import re
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 
 # Import Opik for tracking
 try:
-    from opik import track, opik_context
+    from opik import track
+    from opik.integrations.langchain import OpikTracer
     OPIK_ENABLED = True
 except ImportError:
     def track(name=None, **kwargs):
         def decorator(func):
             return func
         return decorator
-    opik_context = None
+    OpikTracer = None
     OPIK_ENABLED = False
 
 router = APIRouter()
 
-# Initialize LLM
-model = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)
+# Initialize LLMs - Primary: Gemini, Fallback: MiniMax via Anthropic wrapper
+gemini_model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.7)
+minimax_model = ChatAnthropic(
+    model="MiniMax-M2.1",
+    temperature=0.7,
+    base_url=os.environ.get("ANTHROPIC_BASE_URL")
+)
+
+
+def invoke_with_fallback(messages, thread_id: str = None):
+    """Try Gemini first, fall back to MiniMax on rate limit errors. Uses OpikTracer for conversation tracking."""
+    # Create OpikTracer with thread_id for conversation grouping
+    callbacks = []
+    if OPIK_ENABLED and OpikTracer:
+        tracer = OpikTracer(
+            tags=["ai-coach", "practice-plan"],
+            metadata={"thread_id": thread_id} if thread_id else {}
+        )
+        callbacks = [tracer]
+
+    config = {"callbacks": callbacks}
+    if thread_id:
+        config["configurable"] = {"thread_id": thread_id}
+
+    try:
+        return gemini_model.invoke(messages, config=config)
+    except Exception as e:
+        error_str = str(e).upper()
+        if "RESOURCE_EXHAUSTED" in error_str or "429" in error_str or "RATE" in error_str:
+            print("[INFO] Gemini rate limited, falling back to MiniMax")
+            return minimax_model.invoke(messages, config=config)
+        raise
 
 # In-memory store for pending practice plans (per thread)
 # In production, you might use Redis or a database table
@@ -61,16 +94,17 @@ class ChartData(BaseModel):
 
 def get_db_connection():
     """Create database connection"""
-    return psycopg2.connect(
+    conn = psycopg2.connect(
         host=os.getenv("DB_HOST", "localhost"),
         port=os.getenv("DB_PORT", "5432"),
         database=os.getenv("DB_NAME", "fretcoach"),
         user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD")
+        password=os.getenv("DB_PASSWORD"),
+        options="-c search_path=fretcoach,public"
     )
+    return conn
 
 
-@track(name="get_user_practice_data")
 def get_user_practice_data(user_id: str) -> Dict[str, Any]:
     """Fetch user's practice data for context"""
     conn = get_db_connection()
@@ -84,7 +118,7 @@ def get_user_practice_data(user_id: str) -> Dict[str, Any]:
             COALESCE(AVG(scale_conformity), 0) as avg_scale_conformity,
             COALESCE(AVG(timing_stability), 0) as avg_timing_stability,
             COALESCE(SUM(duration_seconds), 0) as total_practice_time
-        FROM sessions WHERE user_id = %s
+        FROM fretcoach.sessions WHERE user_id = %s
     """, (user_id,))
     agg = cursor.fetchone()
 
@@ -92,7 +126,7 @@ def get_user_practice_data(user_id: str) -> Dict[str, Any]:
     cursor.execute("""
         SELECT session_id, start_timestamp, pitch_accuracy, scale_conformity,
                timing_stability, scale_chosen, scale_type, duration_seconds
-        FROM sessions WHERE user_id = %s
+        FROM fretcoach.sessions WHERE user_id = %s
         ORDER BY start_timestamp DESC LIMIT 10
     """, (user_id,))
     recent = cursor.fetchall()
@@ -103,7 +137,7 @@ def get_user_practice_data(user_id: str) -> Dict[str, Any]:
                AVG(pitch_accuracy) as avg_pitch,
                AVG(scale_conformity) as avg_scale,
                AVG(timing_stability) as avg_timing
-        FROM sessions WHERE user_id = %s
+        FROM fretcoach.sessions WHERE user_id = %s
         GROUP BY scale_chosen, scale_type
         ORDER BY count DESC
     """, (user_id,))
@@ -132,7 +166,6 @@ def get_user_practice_data(user_id: str) -> Dict[str, Any]:
     }
 
 
-@track(name="get_performance_chart_data")
 def get_performance_chart_data(user_id: str, metric: str = "all") -> Dict[str, Any]:
     """Generate chart data for performance trends"""
     conn = get_db_connection()
@@ -141,7 +174,7 @@ def get_performance_chart_data(user_id: str, metric: str = "all") -> Dict[str, A
     cursor.execute("""
         SELECT start_timestamp, pitch_accuracy, scale_conformity, timing_stability,
                scale_chosen, duration_seconds
-        FROM sessions WHERE user_id = %s
+        FROM fretcoach.sessions WHERE user_id = %s
         ORDER BY start_timestamp DESC LIMIT 20
     """, (user_id,))
 
@@ -170,7 +203,6 @@ def get_performance_chart_data(user_id: str, metric: str = "all") -> Dict[str, A
     }
 
 
-@track(name="get_comparison_chart_data")
 def get_comparison_chart_data(user_id: str, practice_data: Dict) -> Dict[str, Any]:
     """Generate comparison chart data (latest vs average)"""
     conn = get_db_connection()
@@ -178,7 +210,7 @@ def get_comparison_chart_data(user_id: str, practice_data: Dict) -> Dict[str, An
 
     cursor.execute("""
         SELECT pitch_accuracy, scale_conformity, timing_stability
-        FROM sessions WHERE user_id = %s
+        FROM fretcoach.sessions WHERE user_id = %s
         ORDER BY start_timestamp DESC LIMIT 1
     """, (user_id,))
 
@@ -206,9 +238,64 @@ def get_comparison_chart_data(user_id: str, practice_data: Dict) -> Dict[str, An
     }
 
 
-@track(name="generate_practice_recommendation")
-def generate_practice_recommendation(practice_data: Dict, user_id: str, thread_id: str) -> Dict[str, Any]:
-    """Generate a practice recommendation based on user data"""
+def extract_scale_from_message(message: str) -> tuple:
+    """Extract scale name and type from user message"""
+    message_lower = message.lower()
+
+    # Scale types to detect
+    scale_types = {
+        "pentatonic": "pentatonic",
+        "penta": "pentatonic",
+        "blues": "blues",
+        "natural": "natural",
+        "harmonic": "harmonic",
+        "melodic": "melodic",
+        "major": "natural",
+        "minor": "natural",
+    }
+
+    # Root notes
+    roots = ["a", "b", "c", "d", "e", "f", "g"]
+    sharps_flats = ["#", "sharp", "flat", "b"]
+
+    detected_scale = None
+    detected_type = "natural"
+
+    # Check for pentatonic, blues, etc.
+    for type_key, type_val in scale_types.items():
+        if type_key in message_lower:
+            detected_type = type_val
+            break
+
+    # Try to find scale name pattern (e.g., "A minor", "C major", "G# minor")
+    # Match patterns like "A minor", "C# major", "Bb pentatonic"
+    pattern = r'\b([a-g])[\s]*(#|sharp|flat|b)?[\s]*(minor|major|min|maj)?\b'
+    match = re.search(pattern, message_lower)
+
+    if match:
+        root = match.group(1).upper()
+        modifier = match.group(2)
+        quality = match.group(3)
+
+        if modifier in ['#', 'sharp']:
+            root += '#'
+        elif modifier in ['b', 'flat']:
+            root += 'b'
+
+        if quality in ['minor', 'min']:
+            detected_scale = f"{root} Minor"
+        elif quality in ['major', 'maj']:
+            detected_scale = f"{root} Major"
+        else:
+            # Default to minor for pentatonic if not specified
+            if detected_type == "pentatonic":
+                detected_scale = f"{root} Minor"
+
+    return detected_scale, detected_type
+
+
+def generate_practice_recommendation(practice_data: Dict, user_id: str, thread_id: str, user_message: str = "") -> Dict[str, Any]:
+    """Generate a practice recommendation based on user data and request"""
     weakest = practice_data['weakest_area']
     focus_names = {
         "pitch": "Pitch Accuracy",
@@ -234,16 +321,24 @@ def generate_practice_recommendation(practice_data: Dict, user_id: str, thread_i
         ]
     }
 
-    # Suggest a scale that needs work
-    scales = practice_data.get('practiced_scales', [])
-    suggested_scale = "C Major"
-    suggested_scale_type = "diatonic"
-    if scales:
-        for s in scales:
-            if s.get('avg_pitch', 1) < 0.8:
-                suggested_scale = s['scale_chosen']
-                suggested_scale_type = s.get('scale_type', 'diatonic')
-                break
+    # First, try to extract scale from user's message
+    user_scale, user_scale_type = extract_scale_from_message(user_message)
+
+    if user_scale:
+        # User specified a scale - use it
+        suggested_scale = user_scale
+        suggested_scale_type = user_scale_type
+    else:
+        # Fall back to suggesting a scale that needs work
+        scales = practice_data.get('practiced_scales', [])
+        suggested_scale = "C Major"
+        suggested_scale_type = "natural"
+        if scales:
+            for s in scales:
+                if s.get('avg_pitch', 1) < 0.8:
+                    suggested_scale = s['scale_chosen']
+                    suggested_scale_type = s.get('scale_type', 'natural')
+                    break
 
     score_key = f"avg_{weakest}_{'accuracy' if weakest == 'pitch' else 'conformity' if weakest == 'scale' else 'stability'}"
 
@@ -259,12 +354,24 @@ def generate_practice_recommendation(practice_data: Dict, user_id: str, thread_i
         "session_target": "20-30 minutes"
     }
 
-    # Store the pending plan
+    # Store the pending plan (with JSON format for DB, matching ai_agent_service format)
+    from datetime import datetime as dt
+    plan_json = {
+        "scale_name": suggested_scale,
+        "scale_type": suggested_scale_type,
+        "focus_area": weakest,  # Use the key (pitch/scale/timing) not display name
+        "reasoning": f"Based on your practice data, {focus_names.get(weakest, weakest)} needs the most work at {plan_data['current_score']}%.",
+        "strictness": 0.5,  # Default moderate settings
+        "sensitivity": 0.5,
+        "generated_at": dt.now().isoformat(),
+        "exercises": exercises.get(weakest, exercises['pitch'])
+    }
+
     pending_plans[thread_id] = {
         "plan_id": plan_id,
         "user_id": user_id,
-        "plan_data": plan_data,
-        "plan_text": format_plan_text(plan_data)
+        "plan_data": plan_data,  # For frontend display
+        "plan_json": plan_json   # For DB storage (JSON format)
     }
 
     return {
@@ -274,37 +381,31 @@ def generate_practice_recommendation(practice_data: Dict, user_id: str, thread_i
     }
 
 
-def format_plan_text(plan_data: Dict) -> str:
-    """Format the practice plan as text for database storage"""
-    exercises_text = "\n".join([f"- {ex}" for ex in plan_data['exercises']])
-    return f"""Practice Plan
-Focus Area: {plan_data['focus_area']}
-Current Score: {plan_data['current_score']}%
-Suggested Scale: {plan_data['suggested_scale']} ({plan_data.get('suggested_scale_type', 'diatonic')})
-Session Target: {plan_data['session_target']}
-
-Exercises:
-{exercises_text}"""
-
-
-@track(name="save_practice_plan")
-def save_practice_plan_to_db(plan_id: str, user_id: str, plan_text: str) -> bool:
-    """Save a confirmed practice plan to the database"""
+def save_practice_plan_to_db(plan_id: str, user_id: str, plan_json: dict) -> bool:
+    """Save a confirmed practice plan to the database as JSON (matching ai_agent_service format)"""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
 
+        print(f"[INFO] Saving practice plan {plan_id} for user {user_id}")
+
+        # Serialize to JSON string for storage
+        plan_json_str = json.dumps(plan_json)
+
         cursor.execute("""
-            INSERT INTO ai_practice_plans (practice_id, user_id, practice_plan)
+            INSERT INTO fretcoach.ai_practice_plans (practice_id, user_id, practice_plan)
             VALUES (%s, %s, %s)
-        """, (plan_id, user_id, plan_text))
+        """, (plan_id, user_id, plan_json_str))
 
         conn.commit()
+        print(f"[INFO] Practice plan {plan_id} saved successfully")
         cursor.close()
         conn.close()
         return True
     except Exception as e:
         print(f"[ERROR] Failed to save practice plan: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 
@@ -375,11 +476,6 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
     """
     # Set thread_id for Opik conversation tracking
     thread_id = request.thread_id or f"chat-{request.user_id}"
-    if OPIK_ENABLED and opik_context:
-        try:
-            opik_context.update_current_trace(thread_id=thread_id)
-        except:
-            pass
 
     try:
         # Get user's practice data
@@ -393,7 +489,7 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
         plan_saved = False
         if thread_id in pending_plans and check_for_confirmation(last_user_msg):
             pending = pending_plans[thread_id]
-            if save_practice_plan_to_db(pending['plan_id'], pending['user_id'], pending['plan_text']):
+            if save_practice_plan_to_db(pending['plan_id'], pending['user_id'], pending['plan_json']):
                 plan_saved = True
                 del pending_plans[thread_id]  # Clear the pending plan
 
@@ -420,10 +516,10 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
             chart_data = get_comparison_chart_data(request.user_id, practice_data)
 
         elif any(word in last_user_msg_lower for word in ["practice", "recommend", "suggest", "what should", "plan", "advice", "help me"]) and not plan_saved:
-            chart_data = generate_practice_recommendation(practice_data, request.user_id, thread_id)
+            chart_data = generate_practice_recommendation(practice_data, request.user_id, thread_id, last_user_msg)
 
-        # Generate AI response
-        response = model.invoke(messages)
+        # Generate AI response (with automatic fallback and Opik tracing)
+        response = invoke_with_fallback(messages, thread_id=thread_id)
         ai_content = response.content
 
         # Add chart context to response if chart is being shown
@@ -433,7 +529,7 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
             elif chart_data['type'] == 'comparison':
                 ai_content += "\n\n*I've shown a comparison of your latest session vs your average below.*"
             elif chart_data['type'] == 'practice_plan':
-                ai_content += "\n\n*I've created a practice plan for you below. Would you like me to save this plan?*"
+                ai_content += "\n\n*I've created a practice plan for you below. Click 'Save Plan' to save it.*"
 
         # If plan was saved, add confirmation
         if plan_saved:
@@ -459,3 +555,44 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Chat failed: {str(e)}")
+
+
+@router.post("/save-plan")
+async def save_plan(request: SavePlanRequest) -> Dict[str, Any]:
+    """
+    Save a practice plan directly (via button click)
+    """
+    try:
+        # Find the pending plan by plan_id across all threads
+        plan_data = None
+        thread_to_delete = None
+
+        for thread_id, pending in pending_plans.items():
+            if pending.get('plan_id') == request.plan_id:
+                plan_data = pending
+                thread_to_delete = thread_id
+                break
+
+        if not plan_data:
+            raise HTTPException(status_code=404, detail="Practice plan not found or expired")
+
+        # Save to database (as JSON, matching ai_agent_service format)
+        success = save_practice_plan_to_db(
+            plan_data['plan_id'],
+            request.user_id,
+            plan_data['plan_json']
+        )
+
+        if success:
+            # Remove from pending
+            if thread_to_delete:
+                del pending_plans[thread_to_delete]
+            return {"success": True, "message": "Practice plan saved!"}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to save practice plan")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[ERROR] Save plan failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Save failed: {str(e)}")

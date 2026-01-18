@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     scale_conformity FLOAT,
     timing_stability FLOAT,
     scale_chosen VARCHAR(100) NOT NULL,
-    scale_type VARCHAR(20) DEFAULT 'diatonic',
+    scale_type VARCHAR(20) DEFAULT 'natural',
     sensitivity FLOAT NOT NULL,
     strictness FLOAT NOT NULL,
     total_notes_played INT DEFAULT 0,

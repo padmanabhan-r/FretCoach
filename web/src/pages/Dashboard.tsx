@@ -32,7 +32,7 @@ import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { format, subDays } from "date-fns";
 import { useSessions, type DateRangeFilter } from "@/hooks/useSessions";
-import { sendChatMessage, formatDuration, formatDate, type ChatMessage, type ChartData } from "@/lib/api";
+import { sendChatMessage, savePracticePlan, formatDuration, formatDate, type ChatMessage, type ChartData } from "@/lib/api";
 import { PerformanceChart } from "@/components/charts/PerformanceChart";
 import type { DateRange } from "react-day-picker";
 
@@ -124,6 +124,13 @@ const Dashboard = () => {
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsAiTyping(false);
+    }
+  };
+
+  const handleSavePlan = async (planId: string) => {
+    const result = await savePracticePlan(planId, 'default_user');
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to save plan');
     }
   };
 
@@ -574,7 +581,10 @@ const Dashboard = () => {
                         {/* Render chart if present */}
                         {message.chartData && (
                           <div className="ml-11 mr-11">
-                            <PerformanceChart chartData={message.chartData} />
+                            <PerformanceChart
+                              chartData={message.chartData}
+                              onSavePlan={handleSavePlan}
+                            />
                           </div>
                         )}
                       </div>
@@ -680,7 +690,10 @@ const Dashboard = () => {
                               </ReactMarkdown>
                               {message.chartData && (
                                 <div className="mt-4">
-                                  <PerformanceChart data={message.chartData} />
+                                  <PerformanceChart
+                                    chartData={message.chartData}
+                                    onSavePlan={handleSavePlan}
+                                  />
                                 </div>
                               )}
                             </div>

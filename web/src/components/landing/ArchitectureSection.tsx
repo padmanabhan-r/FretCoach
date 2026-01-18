@@ -134,7 +134,7 @@ const ArchitectureSection = () => {
                 <div className="text-sm text-muted-foreground space-y-1">
                   <p>• Historical performance tracking</p>
                   <p>• AI-generated insights</p>
-                  <p>• Cross-device synchronization</p>
+                  <p>• Cross-device synchronization with a central database</p>
                 </div>
               </div>
             </div>

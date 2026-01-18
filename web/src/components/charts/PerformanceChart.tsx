@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   LineChart,
   Line,
@@ -16,10 +17,14 @@ import {
   Radar,
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Check, X } from 'lucide-react';
 import type { ChartData } from '@/lib/api';
 
 interface PerformanceChartProps {
   chartData: ChartData;
+  onSavePlan?: (planId: string) => Promise<void>;
+  onDismissPlan?: () => void;
 }
 
 const COLORS = {
@@ -29,7 +34,7 @@ const COLORS = {
   primary: 'hsl(var(--primary))',
 };
 
-export function PerformanceChart({ chartData }: PerformanceChartProps) {
+export function PerformanceChart({ chartData, onSavePlan, onDismissPlan }: PerformanceChartProps) {
   if (chartData.type === 'performance_trend') {
     return <TrendChart data={chartData.data} metric={chartData.metric} />;
   }
@@ -39,7 +44,14 @@ export function PerformanceChart({ chartData }: PerformanceChartProps) {
   }
 
   if (chartData.type === 'practice_plan') {
-    return <PracticePlanCard data={chartData.data} />;
+    return (
+      <PracticePlanCard
+        data={chartData.data}
+        planId={chartData.plan_id}
+        onSave={onSavePlan}
+        onDismiss={onDismissPlan}
+      />
+    );
   }
 
   return null;
@@ -197,13 +209,43 @@ function ComparisonChart({ data }: { data: { latest: any; average: any } }) {
   );
 }
 
-function PracticePlanCard({ data }: { data: any }) {
+interface PracticePlanCardProps {
+  data: any;
+  planId?: string;
+  onSave?: (planId: string) => Promise<void>;
+  onDismiss?: () => void;
+}
+
+function PracticePlanCard({ data, planId, onSave, onDismiss }: PracticePlanCardProps) {
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'dismissed'>('idle');
+
+  const handleSave = async () => {
+    if (!planId || !onSave) return;
+    setSaveState('saving');
+    try {
+      await onSave(planId);
+      setSaveState('saved');
+    } catch (error) {
+      setSaveState('idle');
+    }
+  };
+
+  const handleDismiss = () => {
+    setSaveState('dismissed');
+    onDismiss?.();
+  };
+
   return (
     <Card className="w-full mt-4 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <span className="text-lg">🎯</span>
           Practice Plan
+          {saveState === 'saved' && (
+            <span className="ml-auto text-xs text-green-600 flex items-center gap-1">
+              <Check className="h-3 w-3" /> Saved
+            </span>
+          )}
         </CardTitle>
         <CardDescription className="text-xs">
           Personalized recommendation based on your data
@@ -220,7 +262,10 @@ function PracticePlanCard({ data }: { data: any }) {
         </div>
         <div className="flex justify-between items-center p-2 rounded bg-background/50">
           <span className="text-xs text-muted-foreground">Suggested Scale</span>
-          <span className="text-sm font-medium">{data.suggested_scale}</span>
+          <span className="text-sm font-medium">
+            {data.suggested_scale}
+            {data.suggested_scale_type && ` (${data.suggested_scale_type})`}
+          </span>
         </div>
         <div className="flex justify-between items-center p-2 rounded bg-background/50">
           <span className="text-xs text-muted-foreground">Session Duration</span>
@@ -237,6 +282,39 @@ function PracticePlanCard({ data }: { data: any }) {
                 </li>
               ))}
             </ul>
+          </div>
+        )}
+
+        {/* Save/Dismiss buttons */}
+        {planId && saveState === 'idle' && (
+          <div className="pt-3 border-t border-border flex gap-2">
+            <Button
+              size="sm"
+              onClick={handleSave}
+              className="flex-1"
+            >
+              <Check className="h-4 w-4 mr-1" />
+              Save Plan
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleDismiss}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+
+        {saveState === 'saving' && (
+          <div className="pt-3 border-t border-border text-center text-xs text-muted-foreground">
+            Saving...
+          </div>
+        )}
+
+        {saveState === 'dismissed' && (
+          <div className="pt-3 border-t border-border text-center text-xs text-muted-foreground">
+            Plan dismissed
           </div>
         )}
       </CardContent>

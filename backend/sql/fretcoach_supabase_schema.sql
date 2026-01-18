@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS fretcoach.sessions
     ambient_light_option BOOLEAN DEFAULT TRUE,
 
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    scale_type VARCHAR(20) DEFAULT 'diatonic',
+    scale_type VARCHAR(20) DEFAULT 'natural',
 
     CONSTRAINT sessions_pkey PRIMARY KEY (session_id, user_id)
 );
@@ -78,7 +78,11 @@ ON fretcoach.ai_practice_plans (executed_session_id);
 CREATE INDEX IF NOT EXISTS idx_practice_plans_user_time
 ON fretcoach.ai_practice_plans (user_id, generated_at DESC);
 
--- Enable RLS (no policies yet)
+-- Enable RLS with permissive policies
 ALTER TABLE fretcoach.ai_practice_plans ENABLE ROW LEVEL SECURITY;
+
+-- Allow all operations for authenticated users (or use service role)
+CREATE POLICY "Allow all for service role" ON fretcoach.ai_practice_plans
+    FOR ALL USING (true) WITH CHECK (true);
 
 COMMIT;

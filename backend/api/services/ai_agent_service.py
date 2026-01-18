@@ -15,16 +15,12 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 from sqlalchemy import create_engine, text
 
-# Import Opik for tracking (optional)
+# Import Opik for tracking with LangChain integration
 try:
-    from opik import track, opik_context
+    from opik.integrations.langchain import OpikTracer
     OPIK_ENABLED = True
 except ImportError:
-    def track(name=None, **kwargs):
-        def decorator(func):
-            return func
-        return decorator
-    opik_context = None
+    OpikTracer = None
     OPIK_ENABLED = False
 
 # Load environment variables
@@ -45,6 +41,25 @@ engine = create_engine(db_uri, pool_pre_ping=True)
 model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
 
+def get_opik_config(user_id: str, trace_name: str, practice_id: str = None) -> dict:
+    """Create Opik config for LangChain calls tied to user session"""
+    if not OPIK_ENABLED or not OpikTracer:
+        return {}
+
+    metadata = {"user_id": user_id}
+    if practice_id:
+        metadata["practice_id"] = practice_id
+
+    tracer = OpikTracer(
+        tags=["ai-mode", trace_name],
+        metadata=metadata
+    )
+    return {
+        "callbacks": [tracer],
+        "configurable": {"thread_id": f"ai-mode-{user_id}"}
+    }
+
+
 class PracticeRecommendation(BaseModel):
     """Structured output for practice recommendations"""
     scale_name: str = Field(description="The recommended scale to practice (e.g., 'C Major', 'D Minor', 'E Major')")
@@ -62,7 +77,7 @@ def get_pending_practice_plan(user_id: str) -> Optional[Dict[str, Any]]:
     """
     query = text("""
         SELECT practice_id, practice_plan, generated_at
-        FROM ai_practice_plans
+        FROM fretcoach.ai_practice_plans
         WHERE user_id = :user_id
           AND executed_session_id IS NULL
           AND generated_at > :cutoff_time
@@ -106,7 +121,7 @@ def get_recent_sessions(user_id: str, limit: int = 5) -> List[Dict[str, Any]]:
             pitch_accuracy, scale_conformity, timing_stability,
             total_notes_played, correct_notes_played, bad_notes_played,
             duration_seconds, strictness, sensitivity
-        FROM sessions
+        FROM fretcoach.sessions
         WHERE user_id = :user_id
         ORDER BY start_timestamp DESC
         LIMIT :limit
@@ -150,7 +165,7 @@ def get_session_aggregates(user_id: str) -> Dict[str, Any]:
             SUM(total_notes_played) as total_notes,
             SUM(correct_notes_played) as total_correct,
             SUM(bad_notes_played) as total_bad
-        FROM sessions
+        FROM fretcoach.sessions
         WHERE user_id = :user_id
     """)
 
@@ -192,7 +207,7 @@ def get_practiced_scales(user_id: str) -> List[Dict[str, Any]]:
             AVG(scale_conformity) as avg_scale,
             AVG(timing_stability) as avg_timing,
             MAX(start_timestamp) as last_practiced
-        FROM sessions
+        FROM fretcoach.sessions
         WHERE user_id = :user_id
         GROUP BY scale_chosen, scale_type
         ORDER BY last_practiced DESC
@@ -216,23 +231,17 @@ def get_practiced_scales(user_id: str) -> List[Dict[str, Any]]:
         return scales
 
 
-@track(name="analyze_practice_history")
-def analyze_practice_history_sync(user_id: str, thread_id: Optional[str] = None) -> Dict[str, Any]:
+def analyze_practice_history_sync(user_id: str) -> Dict[str, Any]:
     """
     Analyze user's practice history using direct SQL queries.
-    No LLM calls - just data gathering.
+    No LLM calls - just data gathering. No tracing needed.
 
     Args:
         user_id: The user's identifier
-        thread_id: Optional thread ID for Opik tracking
 
     Returns:
         Dictionary containing analysis results
     """
-    # Set thread_id for Opik if available
-    if OPIK_ENABLED and opik_context and thread_id:
-        opik_context.update_current_trace(thread_id=thread_id)
-
     # Gather all data with direct SQL queries
     recent_sessions = get_recent_sessions(user_id)
     aggregates = get_session_aggregates(user_id)
@@ -260,33 +269,26 @@ def analyze_practice_history_sync(user_id: str, thread_id: Optional[str] = None)
     return analysis
 
 
-async def analyze_practice_history(user_id: str, thread_id: Optional[str] = None) -> Dict[str, Any]:
+async def analyze_practice_history(user_id: str) -> Dict[str, Any]:
     """Async wrapper for analyze_practice_history_sync"""
-    return analyze_practice_history_sync(user_id, thread_id)
+    return analyze_practice_history_sync(user_id)
 
 
-@track(name="generate_practice_recommendation")
 async def generate_practice_recommendation(
     user_id: str,
-    analysis: Dict[str, Any],
-    thread_id: Optional[str] = None
+    analysis: Dict[str, Any]
 ) -> PracticeRecommendation:
     """
     Generate structured practice recommendation based on analysis.
-    Single LLM call with structured output.
+    Single LLM call with structured output. Traced with OpikTracer.
 
     Args:
         user_id: The user's identifier
         analysis: Dictionary containing practice history analysis
-        thread_id: Optional thread ID for Opik tracking
 
     Returns:
         Structured practice recommendation
     """
-    # Set thread_id for Opik if available
-    if OPIK_ENABLED and opik_context and thread_id:
-        opik_context.update_current_trace(thread_id=thread_id)
-
     # Use structured output to generate recommendation - SINGLE LLM CALL
     structured_llm = model.with_structured_output(PracticeRecommendation)
 
@@ -335,7 +337,13 @@ Generate a practice recommendation that:
 6. For advanced users (high scores), use higher strictness (0.7-0.9)
 """
 
-    recommendation = structured_llm.invoke([{"role": "user", "content": prompt}])
+    # Get Opik config for tracing the LLM call
+    opik_config = get_opik_config(user_id, "practice-recommendation")
+
+    recommendation = structured_llm.invoke(
+        [{"role": "user", "content": prompt}],
+        config=opik_config
+    )
     return recommendation
 
 
@@ -363,7 +371,7 @@ def save_practice_plan_sync(user_id: str, recommendation: PracticeRecommendation
     })
 
     insert_query = text("""
-        INSERT INTO ai_practice_plans (practice_id, user_id, practice_plan)
+        INSERT INTO fretcoach.ai_practice_plans (practice_id, user_id, practice_plan)
         VALUES (:practice_id, :user_id, :practice_plan)
     """)
 
@@ -385,7 +393,6 @@ async def save_practice_plan(user_id: str, recommendation: PracticeRecommendatio
     return save_practice_plan_sync(user_id, recommendation)
 
 
-@track(name="get_ai_practice_session")
 async def get_ai_practice_session(user_id: str) -> Dict[str, Any]:
     """
     Main entry point for AI-driven practice session generation.
@@ -394,33 +401,28 @@ async def get_ai_practice_session(user_id: str) -> Dict[str, Any]:
     2. If pending plan exists and is recent, return it
     3. Otherwise, analyze history and generate new recommendation
 
+    LLM calls are traced via OpikTracer in generate_practice_recommendation().
+
     Args:
         user_id: The user's identifier
 
     Returns:
         Dictionary containing practice recommendation and metadata
     """
-    # Generate a thread_id for this AI session (for Opik tracking)
-    thread_id = f"ai-coach-{user_id}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
-
-    # Set thread_id for Opik if available
-    if OPIK_ENABLED and opik_context:
-        opik_context.update_current_trace(thread_id=thread_id)
-
     # Step 1: Check for existing pending practice plan
     pending_plan = get_pending_practice_plan(user_id)
     if pending_plan:
         print(f"[AI Coach] Found pending plan from {pending_plan['generated_at']}, including in AI analysis")
 
-    # Step 2: Analyze practice history (direct SQL - no LLM)
-    analysis = await analyze_practice_history(user_id, thread_id)
-    
+    # Step 2: Analyze practice history (direct SQL - no LLM, no tracing needed)
+    analysis = await analyze_practice_history(user_id)
+
     # Add pending plan to analysis context if it exists
     if pending_plan:
         analysis['pending_plan'] = pending_plan
 
-    # Step 3: Generate recommendation (single LLM call with structured output)
-    recommendation = await generate_practice_recommendation(user_id, analysis, thread_id)
+    # Step 3: Generate recommendation (single LLM call - traced with OpikTracer)
+    recommendation = await generate_practice_recommendation(user_id, analysis)
 
     # Step 4: Save practice plan
     practice_id = await save_practice_plan(user_id, recommendation)
