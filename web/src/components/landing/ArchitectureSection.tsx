@@ -6,7 +6,7 @@ import webDashboardImage from "@/assets/web-dashboard.jpg";
 
 const ArchitectureSection = () => {
   return (
-    <section className="py-24 bg-background" id="architecture">
+    <section className="py-24 bg-background" id="ecosystem">
       <div className="container px-4 md:px-6">
         {/* Section Header */}
         <div className="text-center space-y-4 mb-16">

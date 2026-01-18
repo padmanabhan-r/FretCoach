@@ -6,11 +6,11 @@ const roadmapItems = [
   {
     phase: "Current",
     title: "FretCoach MVP",
-    subtitle: "Commit To Change - Scales",
-    description: "Master guitar scales with real-time audio analysis and ambient LED feedback. Focus on building muscle memory through deliberate practice.",
+    subtitle: "Scales",
+    description: "Master guitar scales with real-time audio analysis and ambient light feedback. Focus on building muscle memory through deliberate practice.",
     icon: Guitar,
     status: "active",
-    features: ["Scale practice mode", "Real-time pitch detection", "LED ambient feedback", "Performance analytics"],
+    features: ["Desktop and portable", "Adaptive AI coaching", "Real-time analysis", "Ambient light feedback", "Web support and performance analytics"],
     hardware: {
       title: "MVP Hardware",
       icon: Cpu,
@@ -49,7 +49,7 @@ const roadmapItems = [
 const getStatusBadge = (status: string) => {
   switch (status) {
     case "active":
-      return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Current Release (Feb 8th)</Badge>;
+      return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Current Release (Feb 8th) - Commit To Change Hackathon</Badge>;
     case "planned":
       return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Q3 2026</Badge>;
     case "vision":

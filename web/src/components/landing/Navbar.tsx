@@ -14,6 +14,16 @@ const navLinks = [
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const id = href.replace('#', '');
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    setIsOpen(false);
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
       <div className="container px-4 md:px-6">
@@ -32,6 +42,7 @@ const Navbar = () => {
               <a
                 key={link.href}
                 href={link.href}
+                onClick={(e) => handleNavClick(e, link.href)}
                 className="text-muted-foreground hover:text-foreground transition-all duration-200 whitespace-nowrap text-xs lg:text-sm px-2 py-1 hover:scale-110"
               >
                 {link.label}
@@ -82,8 +93,8 @@ const Navbar = () => {
               <a
                 key={link.href}
                 href={link.href}
+                onClick={(e) => handleNavClick(e, link.href)}
                 className="block text-muted-foreground hover:text-foreground transition-colors py-2"
-                onClick={() => setIsOpen(false)}
               >
                 {link.label}
               </a>
