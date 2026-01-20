@@ -10,13 +10,21 @@ import os
 from dotenv import load_dotenv, find_dotenv
 
 from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+
+# Import OpenAI for TTS
+from openai import AsyncOpenAI
+from openai.helpers import LocalAudioPlayer
 
 # Import Opik for tracking with LangChain integration
 try:
     from opik.integrations.langchain import OpikTracer
+    from opik import track
     OPIK_ENABLED = True
 except ImportError:
     OpikTracer = None
+    track = lambda **kwargs: lambda f: f  # No-op decorator if Opik not available
     OPIK_ENABLED = False
 
 # Load environment variables
@@ -28,6 +36,9 @@ live_coach_model = ChatOpenAI(
     temperature=0.7,  # Slightly more creative for motivational feedback
     max_tokens=150  # Keep responses short
 )
+
+# Initialize OpenAI client for TTS
+openai_client = AsyncOpenAI()
 
 
 def get_opik_config(session_id: str, trace_name: str) -> dict:
@@ -51,7 +62,7 @@ Your feedback must be:
 - CORRECTIVE: Address the actual problem shown in the metrics
 - SPECIFIC: Reference the exact metric that needs work
 - ACTIONABLE: Give one concrete technique to try RIGHT NOW
-- BRIEF: 1-2 sentences maximum
+- BRIEF: 1 sentence maximum
 
 DO NOT:
 - Use generic motivational phrases like "Great job!" or "Keep it up!"
@@ -60,7 +71,7 @@ DO NOT:
 
 Interpretation guide:
 - Pitch Accuracy: How cleanly notes are being fretted. Low = pressing too hard/soft, poor finger placement
-- Scale Conformity: Whether notes are in the chosen scale. Low = playing wrong notes, not knowing the scale positions
+- Scale Conformity: Whether notes are in the chosen scale and whether they are covering the full range of the scale. Low = playing wrong notes or playing in just one position, not knowing the scale positions
 - Timing Stability: Consistency of note spacing. Low = rushing, dragging, or uneven rhythm
 
 For the WEAKEST metric, provide a specific corrective instruction."""
@@ -111,6 +122,49 @@ def get_metric_assessment(score: float) -> str:
     elif score >= 20:
         return "struggling"
     return "very low"
+
+
+@track(name="live-coach-tts", tags=["tts", "live-coach"])
+async def generate_and_play_tts(
+    feedback_text: str,
+    session_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Generate and play TTS audio for coaching feedback in real-time.
+    Traced with Opik for monitoring.
+
+    Args:
+        feedback_text: The coaching feedback text to convert to speech
+        session_id: Optional session ID for tracking
+
+    Returns:
+        Dictionary containing TTS metadata and status
+    """
+    try:
+        # Generate and stream TTS audio
+        async with openai_client.audio.speech.with_streaming_response.create(
+            model="gpt-4o-mini-tts",
+            voice="onyx",
+            input=feedback_text,
+            instructions="Speak in a direct, encouraging tone like a guitar coach giving real-time feedback to a student during practice.",
+            response_format="pcm",
+        ) as response:
+            # Play audio in real-time while the player is playing
+            await LocalAudioPlayer().play(response)
+
+        return {
+            "status": "played",
+            "text_length": len(feedback_text),
+            "model": "gpt-4o-mini-tts",
+            "voice": "onyx"
+        }
+
+    except Exception as e:
+        # Log error but don't fail the entire feedback generation
+        return {
+            "status": "failed",
+            "error": str(e)
+        }
 
 
 async def generate_coaching_feedback(
@@ -193,6 +247,9 @@ async def generate_coaching_feedback(
     )
     feedback = response.content
 
+    # Generate and play TTS audio for the feedback (plays while player is playing)
+    tts_result = await generate_and_play_tts(feedback.strip(), session_id)
+
     # Map to simple key for frontend
     weakest_key_map = {
         "Pitch Accuracy": "pitch",
@@ -206,7 +263,8 @@ async def generate_coaching_feedback(
         "overall_score": round(overall_score),
         "weakest_area": weakest_key_map[weakest_area_name],
         "elapsed_time": elapsed_time,
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
+        "tts": tts_result  # Include TTS status and metadata
     }
 
 
