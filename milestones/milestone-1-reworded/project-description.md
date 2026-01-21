@@ -1,18 +1,57 @@
-FretCoach is an AI-powered guitar practice system designed to close the feedback loop during learning.
-When practicing alone, guitar players often don’t realize they are rushing the beat, playing out of tune, or reinforcing bad technique-leading to slow progress and ingrained mistakes. FretCoach solves this by providing instant, in-the-moment feedback while the player is actually practicing.
+## The Feedback Loop Problem
 
-The system listens to the live guitar signal and analyzes performance in real time across four dimensions: pitch accuracy, scale conformity, timing stability, and noise control. Instead of showing delayed reports, FretCoach delivers immediate feedback through on-screen visualizations, spoken AI coaching cues, and ambient smart lighting, allowing players to self-correct instinctively without breaking their practice flow. This shifts learning from delayed correction to immediate prevention.
+When learning any physical skill—playing guitar, practicing a tennis swing, or mastering a dance routine—there's a critical gap between action and awareness. Without a coach watching, practitioners can't see their own mistakes in real time. They rush the beat, hold wrong postures, or reinforce bad technique. These errors compound over sessions, creating ingrained habits that are hard to unlearn.
+
+The core problem isn't motivation or time—it's delayed feedback. Traditional practice follows a cycle of action → wait → correction. By the time feedback arrives, the moment has passed. The brain has already encoded the mistake.
+
+## The Solution: Prevention Through Instant Feedback
+
+FretCoach applies a simple but powerful theory: **prevention instead of correction**.
+
+By closing the feedback loop from seconds or minutes to milliseconds, practitioners can self-correct instinctively—while the movement is still fresh, before the brain commits the error. This transforms practice from reactive correction to proactive prevention.
+
+The system analyzes performance in real time and delivers immediate feedback through multiple channels:
+- **Visual** — On-screen metrics and scoring
+- **Audio** — Spoken AI coaching cues
+- **Ambient** — Smart lighting shifts that signal performance quality subconsciously
+
+This multi-channel approach keeps practitioners in flow, without breaking focus to read a report or watch a replay.
+
+## The Gamification Layer
+
+Routine practice is hard because progress is invisible. Without external reinforcement, motivation fades. FretCoach gamifies the practice experience:
+
+- **Real-time scoring** — Instant performance grades (Excellent, Good, Average, Needs Work)
+- **Session metrics** — Track pitch accuracy, timing, coverage, and consistency
+- **Progress visualization** — See improvement over days, weeks, and months
+- **AI coaching** — Verbal guidance that feels like a coach courtside
+
+The result is practice that feels engaging rather than obligatory—an experience where every session contributes visible progress.
+
+## Platform Architecture
 
 FretCoach is built as a connected learning ecosystem:
 
-A desktop application for focused practice with real-time metrics, live AI coaching, ambient feedback, and automatic session logging
+**Desktop Application**
+Focused practice environment with real-time audio analysis, live AI coaching, ambient lighting feedback, and automatic session logging.
 
-A portable Raspberry Pi–based device, similar to a guitar pedal, that runs the same analysis engine at the edge for practice anywhere
+**Portable Device (Raspberry Pi)**
+A pedal-style edge device running the same analysis engine for practice anywhere—battery-powered, self-contained, always-ready.
 
-A web dashboard that aggregates session data, tracks progress over time, and generates personalized practice recommendations
+**Web Dashboard**
+Cloud-based analytics and planning. Review sessions, track trends, and generate AI-powered practice recommendations.
 
-Think of it as having a professional coach watching every practice session-providing real-time guidance, tracking progress across sessions, and adapting training based on the player’s strengths and weaknesses.
+## Extensible to Any Physical Skill
 
-While FretCoach is designed specifically for guitar players, the underlying approach-closing the feedback loop in milliseconds through real-time AI feedback-can be extended to other instruments, vocal training, and other skill-based activities such as sports and physical training, where immediate feedback helps prevent incorrect practice.
+Guitar is the first application. The underlying architecture—analyze → score → provide instant feedback → track progress—is designed for generalization:
 
-The vision is to make effective practice embodied, measurable, and sustainable-like having a coach with you every time you practice.
+- **Other instruments** — Piano, violin, drums
+- **Vocal training** — Pitch, timing, tone
+- **Sports** — Golf swing, tennis form, weightlifting technique
+- **Physical therapy** — Movement quality, repetition accuracy
+
+The core insight is skill-agnostic: any physical activity that benefits from real-time correction can use this framework.
+
+## The Vision
+
+Make effective practice embodied, measurable, and sustainable—providing the benefits of a personal coach in every session, for any skill, anywhere.

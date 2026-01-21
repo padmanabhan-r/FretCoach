@@ -1,26 +1,29 @@
-# FretCoach - AI-Powered Adaptive Guitar Training
+# FretCoach - AI-Powered Physical Skill Training
 
 ![FretCoach](images/FretCoach.jpeg)
 
-> *"An AI guitar pedal that trains your brain, not your tone."*
+> *"Close the feedback loop. Prevent mistakes before they stick."*
 
-## Overview
+## The Core Theory
 
-FretCoach is an AI-powered guitar practice system designed to close the feedback loop during learning. When practicing alone, guitar players often don't realize they are rushing the beat, playing out of tune, or reinforcing bad technique—leading to slow progress and ingrained mistakes. FretCoach solves this by providing instant, in-the-moment feedback while the player is actually practicing.
+Learning any physical skill—guitar, tennis, golf—suffers from the same problem: **delayed feedback**. Without a coach watching, practitioners can't see their own mistakes in real time. They rush, hold wrong form, or reinforce bad habits. By the time feedback arrives, the moment has passed. The brain has already encoded the error.
 
-The system listens to the live guitar signal and analyzes performance in real time across four dimensions: pitch accuracy, scale conformity, timing stability, and noise control. Instead of showing delayed reports, FretCoach delivers immediate feedback through on-screen visualizations, spoken AI coaching cues, and ambient smart lighting, allowing players to self-correct instinctively without breaking their practice flow. This shifts learning from delayed correction to immediate prevention.
+FretCoach closes this loop from seconds/minutes to **milliseconds**. Instant feedback enables **prevention instead of correction**—self-correction while the movement is fresh, before the brain commits the mistake.
 
-FretCoach is built as a connected learning ecosystem:
+## What FretCoach Provides
 
-- A **desktop application** for focused practice with real-time metrics, live AI coaching, ambient feedback, and automatic session logging
-- A **portable Raspberry Pi–based device**, similar to a guitar pedal, that runs the same analysis engine at the edge for practice anywhere
-- A **web dashboard** that aggregates session data, tracks progress over time, and generates personalized practice recommendations
+- **Instant feedback** — Analysis in real time across performance dimensions
+- **Multi-channel delivery** — Visual, audio (AI coaching), and ambient lighting cues
+- **Gamified practice** — Scoring, metrics, and progress tracking that make routine engaging
+- **Cross-device sync** — Practice anywhere, track everything, see it all in one place
 
-Think of it as having a professional coach watching every practice session—providing real-time guidance, tracking progress across sessions, and adapting training based on the player's strengths and weaknesses.
+FretCoach is the first implementation of this theory for guitar. The architecture is designed for generalization to other instruments, sports, and physical training.
 
-While FretCoach is designed specifically for guitar players, the underlying approach—closing the feedback loop in milliseconds through real-time AI feedback—can be extended to other instruments, vocal training, and other skill-based activities such as sports and physical training, where immediate feedback helps prevent incorrect practice.
+## Platform Ecosystem
 
-**The vision is to make effective practice embodied, measurable, and sustainable—like having a coach with you every time you practice.**
+- **Desktop Application** — Focused practice with real-time analysis, AI coaching, and ambient feedback
+- **Portable Device** — Raspberry Pi pedal for practice anywhere
+- **Web Dashboard** — Analytics, progress tracking, and AI-generated practice recommendations
 
 ## Real-Time Audio Analysis Agent Engine
 
@@ -94,11 +97,11 @@ FretCoach consists of three interconnected components connected to a central dat
 
 ---
 
-## 1. Desktop Application
+## 1. Desktop Application (Current: Guitar)
 
 **Location:** `/application/`
 
-The primary training environment—a standalone desktop application for focused practice sessions.
+The primary training environment—a standalone desktop application for focused practice sessions. Currently implements guitar training; architecture designed for extensibility.
 
 ### Features
 - **Real-time Audio Analysis** — USB audio interface (e.g., Focusrite Scarlett) or built-in microphone
@@ -131,7 +134,7 @@ uvicorn backend.api.server:app --reload --host 127.0.0.1 --port 8000
 
 **Location:** `/portable/`
 
-A standalone physical device designed as an intelligent guitar pedal for practice anywhere.
+A standalone physical device—pedal-style—for practice anywhere. Same analysis engine as desktop, running at the edge.
 
 **Status:** Prototyping phase — demonstrating edge computing capabilities.
 
@@ -152,7 +155,7 @@ Hardware setup complete with Raspberry Pi 5 and integrated audio I/O. Audio anal
 
 **Location:** `/web/`
 
-Cloud-based analytics platform for reviewing progress and planning practice sessions—accessible from any device.
+Cloud-based analytics platform for reviewing progress and planning practice sessions—accessible from any device. Skill-agnostic design for tracking across multiple physical activities.
 
 ### Features
 - **AI Practice Coach** — Chat interface to discuss performance and get recommendations
@@ -183,7 +186,7 @@ npm run dev  # http://localhost:5173
 
 ## 4. Ambient Lighting
 
-Integrated across Desktop and Portable components for subconscious feedback during practice.
+Integrated across Desktop and Portable components for subconscious feedback—visual cues that reinforce performance quality without breaking focus.
 
 ### How It Works
 - **Smart bulb integration** via Tuya API
@@ -296,7 +299,7 @@ FretCoach/
 
 ## Philosophy
 
-FretCoach transforms unstructured practice into a guided learning loop—an intelligent pedal that trains the player, not the sound. The architecture is designed to generalize to other instruments and vocal training that benefit from adaptive, embodied feedback.
+FretCoach applies a simple theory: **prevention instead of correction**. By closing the feedback loop to milliseconds, practitioners self-correct instinctively—before the brain encodes the mistake. The architecture is designed to generalize from guitar to any physical skill that benefits from instant, embodied feedback.
 
 ---
 
