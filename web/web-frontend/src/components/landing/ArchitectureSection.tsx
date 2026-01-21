@@ -22,12 +22,12 @@ const ArchitectureSection = () => {
         <div className="max-w-6xl mx-auto">
           {/* Top: Desktop & Portable with Adaptive Ambient Light */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-            {/* Desktop App */}
+            {/* FretCoach Studio */}
             <div className="rounded-xl border-2 border-border bg-card hover:border-primary/50 transition-all duration-300 flex flex-col">
               <div className="aspect-video overflow-hidden rounded-t-xl flex-shrink-0 max-h-48">
                 <img 
                   src={desktopAppImage} 
-                  alt="FretCoach Desktop App" 
+                  alt="FretCoach Studio" 
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -37,7 +37,7 @@ const ArchitectureSection = () => {
                     <Monitor className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-base sm:text-lg font-bold">Desktop App</h3>
+                    <h3 className="text-base sm:text-lg font-bold">FretCoach Studio</h3>
                     <span className="text-xs px-2 py-1 rounded-full bg-accent text-accent-foreground whitespace-nowrap">Beta</span>
                   </div>
                 </div>
@@ -45,6 +45,7 @@ const ArchitectureSection = () => {
                   Your personal guitar trainer with advanced visualization, AI coaching, and ambient lighting control.
                 </p>
                 <div className="space-y-2 text-xs sm:text-sm text-muted-foreground mb-4 flex-1">
+                  <p>• Desktop application</p>
                   <p>• Real-time analysis & feedback</p>
                   <p>• Professional audio interface</p>
                   <p>• Rich UI for detailed metrics</p>
@@ -76,12 +77,12 @@ const ArchitectureSection = () => {
               </div>
             </div>
 
-            {/* Portable Pedal */}
+            {/* FretCoach Portable */}
             <div className="rounded-xl border-2 border-border bg-card hover:border-primary/50 transition-all duration-300 flex flex-col">
               <div className="aspect-video overflow-hidden rounded-t-xl flex-shrink-0 max-h-48">
                 <img 
                   src={pedalImage} 
-                  alt="FretCoach Portable Pedal" 
+                  alt="FretCoach Portable" 
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -91,7 +92,7 @@ const ArchitectureSection = () => {
                     <Cpu className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-base sm:text-lg font-bold">Portable Pedal</h3>
+                    <h3 className="text-base sm:text-lg font-bold">FretCoach Portable</h3>
                     <span className="text-xs px-2 py-1 rounded-full bg-accent text-accent-foreground whitespace-nowrap">Prototyping</span>
                   </div>
                 </div>
@@ -99,9 +100,10 @@ const ArchitectureSection = () => {
                   Standalone Raspberry Pi pedal with real-time processing and AI-powered feedback.
                 </p>
                 <div className="space-y-2 text-xs sm:text-sm text-muted-foreground mb-4 flex-1">
+                  <p>• Guitar pedal-like</p>
                   <p>• Portable & practice-ready</p>
                   <p>• Integrated ADC for direct input</p>
-                  <p>• On-device AI analysis</p>
+                  <p>• On-device AI practice mode</p>
                   <p>• Cloud connectivity</p>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground pt-3 border-t border-border">
@@ -117,7 +119,7 @@ const ArchitectureSection = () => {
               <div className="aspect-video overflow-hidden">
                 <img 
                   src={webDashboardImage} 
-                  alt="FretCoach Web Dashboard" 
+                  alt="FretCoach Hub" 
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -127,7 +129,7 @@ const ArchitectureSection = () => {
                     <Globe className="h-6 w-6 text-primary" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold">Web Dashboard</h3>
+                    <h3 className="text-xl font-bold">FretCoach Hub</h3>
                     <p className="text-sm text-muted-foreground">Analytics & Progress Tracking</p>
                   </div>
                 </div>

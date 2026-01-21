@@ -52,3 +52,9 @@ supabase/.temp
 *.log
 .cache/
 .vercel
+
+
+dist/
+node_modules/
+.env
+.env.*
