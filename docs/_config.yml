@@ -1,0 +1,5 @@
+# GitHub Pages Configuration
+theme: jekyll-theme-cayman
+title: FretCoach Documentation
+description: AI-Powered Adaptive Guitar Training System
+show_downloads: false
