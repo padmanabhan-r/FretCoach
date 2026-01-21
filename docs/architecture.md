@@ -296,7 +296,7 @@ Edge computing practice device—a guitar pedal-like unit running the same analy
 - Audio I/O testing
 
 **In Progress:**
-- Adapting audio analysis engine for ARM architecture
+- Adapting audio analysis agent engine for ARM architecture
 - Optimizing for real-time performance on RPi
 - Implementing local session caching
 - Sync mechanism with cloud database
@@ -315,7 +315,7 @@ Edge computing practice device—a guitar pedal-like unit running the same analy
 │  ────────────────────────────────────────  │
 │                                            │
 │  Python Backend (FastAPI):                 │
-│  ├─ Audio analysis engine (same as desktop)│
+│  ├─ Audio analysis agent engine (same as desktop)│
 │  ├─ Local session storage (SQLite)         │
 │  ├─ Periodic sync to Supabase              │
 │  └─ Smart bulb control                     │

@@ -12,19 +12,11 @@ This directory contains the complete documentation for FretCoach, published as G
 
 ### System Components
 - **[desktop-app.md](desktop-app.md)** - Desktop application deep dive
-- **[web-dashboard.md](web-dashboard.md)** - Web analytics platform (coming soon)
-- **[portable-device.md](portable-device.md)** - Raspberry Pi edge device (coming soon)
+- **[ai-coaching.md](ai-coaching.md)** - LLM-powered adaptive coaching system
 
 ### Architecture & Technical
 - **[architecture.md](architecture.md)** - Overall system design and component interaction
-- **[ai-coaching.md](ai-coaching.md)** - LLM-powered adaptive coaching system
-- **[audio-engine.md](audio-engine.md)** - Real-time DSP and metric calculation (coming soon)
-- **[database.md](database.md)** - PostgreSQL schema and data flow (coming soon)
-
-### Reference
 - **[appendix-audio-math.md](appendix-audio-math.md)** - Deep dive into DSP formulas and algorithms
-- **[api-reference.md](api-reference.md)** - FastAPI endpoints (coming soon)
-- **[configuration.md](configuration.md)** - Environment setup guide (coming soon)
 
 ## 🚀 Publishing to GitHub Pages
 
@@ -180,22 +172,17 @@ python3 -m http.server 8000
 
 ## 📊 Documentation Status
 
-| Document | Status | Progress |
-|----------|--------|----------|
-| index.md | ✅ Complete | 100% |
-| introduction.md | ✅ Complete | 100% |
-| quickstart.md | ✅ Complete | 100% |
-| judges-start-here.md | ✅ Complete | 100% |
-| desktop-app.md | ✅ Complete | 100% |
-| architecture.md | ✅ Complete | 100% |
-| ai-coaching.md | ✅ Complete | 100% |
-| appendix-audio-math.md | ✅ Complete | 100% |
-| web-dashboard.md | 🚧 In Progress | 60% |
-| portable-device.md | 🚧 In Progress | 40% |
-| audio-engine.md | 🚧 In Progress | 50% |
-| database.md | 📝 Planned | 0% |
-| api-reference.md | 📝 Planned | 0% |
-| configuration.md | 📝 Planned | 0% |
+| Document | Status | Notes |
+|----------|--------|-------|
+| index.md | ✅ Complete | Landing page, navigation, tech stack |
+| introduction.md | ✅ Complete | Overview, problem statement, ecosystem |
+| quickstart.md | ✅ Complete | Setup guide, first session walkthrough |
+| judges-start-here.md | ✅ Complete | Demo guide, Opik integration, evaluation |
+| desktop-app.md | ✅ Complete | Desktop application deep dive |
+| architecture.md | ✅ Complete | System architecture, components, database |
+| ai-coaching.md | ✅ Complete | AI coaching system, LLM integration |
+| appendix-audio-math.md | ✅ Complete | DSP mathematics, formulas, algorithms |
+| README.md | ✅ Complete | Documentation structure and publishing guide |
 
 ## 🎯 For Hackathon Judges
 

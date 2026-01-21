@@ -83,15 +83,16 @@ While FretCoach is designed specifically for guitar players, the underlying appr
 
 | Layer | Technology |
 |-------|------------|
-| Desktop Frontend | Electron + React + Vite |
-| Desktop Backend | Python + FastAPI |
-| Web Frontend | React + TypeScript + Tailwind CSS |
-| Web Backend | Python + FastAPI |
+| Desktop Frontend | Electron, React |
+| Desktop Backend | Python, FastAPI |
+| Web Frontend | React, Vite, Tailwind CSS |
+| Web Backend | Python, FastAPI |
 | Database | PostgreSQL (Supabase) |
-| Audio Processing | NumPy + librosa + sounddevice |
-| AI Orchestration | LangChain + LangGraph |
-| LLM Providers | OpenAI, Google Gemini, Deepseek, Minimax |
+| File Storage | Buckets (Supabase) |
+| Agent Orchestration | Custom orchestration for audio analysis agent engine, LangChain/LangGraph for AI coach |
+| Portable Hardware | Raspberry Pi 5, Scarlett Solo USB Audio Interface |
 | Observability | Comet Opik |
+| Deployment | Vercel (web frontend), Render (web backend) |
 
 ---
 
@@ -103,6 +104,17 @@ Try the web dashboard to:
 - Chat with the AI practice coach
 - View session history and analytics
 - Generate personalized practice plans
+
+---
+
+## Current Progress
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Desktop Application | ~60% | Core functionality complete. Fine-tuning and evaluation with Opik in progress. |
+| Web Dashboard | ~90% | Nearly complete. Deployment pending. |
+| Portable Device | ~30% | Hardware setup complete (RPi 5 + Scarlett Solo). Audio analysis agent engine adaptation in progress. |
+| Database | Complete | Supabase schema fully set up and operational. |
 
 ---
 

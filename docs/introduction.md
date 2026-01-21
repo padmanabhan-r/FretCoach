@@ -1,6 +1,14 @@
 # Introduction to FretCoach
 
-> *"An AI guitar pedal that trains your brain, not your tone."*
+FretCoach is a comprehensive AI practice system that transforms how guitarists learn. It combines real-time audio analysis, live performance metrics, intelligent coaching, and multi-sensory feedback into a unified learning experience. The system listens to every note you play, evaluates your technique across four dimensions (pitch accuracy, scale conformity, timing stability, and noise control), and delivers instant feedback through on-screen visualizations, AI coaching commentary, and ambient lighting cues.
+
+FretCoach acts as an always-available coach that listens to every note, identifies what needs improvement, and provides instant feedback through multiple channels:
+
+- **On-screen visualizations** — Live metrics, performance scoring, and note detection
+- **AI coach commentary** — Real-time verbal guidance during practice sessions
+- **Ambient lighting** — Smart light color feedback for subconscious motor skill training
+
+Think of it as having a professional coach watching your practice—providing real-time guidance, tracking progress across sessions, and adapting your training based on your unique strengths and weaknesses. FretCoach closes the feedback loop that traditional practice leaves open.
 
 ---
 
@@ -92,9 +100,9 @@ Your primary training environment. Plug in your guitar via USB audio interface, 
 **When to use:** Dedicated practice sessions at your desk or in a studio setting.
 
 ### Portable Device (The Pedal)
-A Raspberry Pi 5-powered edge computing device that runs the same analysis engine. Plug it into your amp chain like a guitar pedal. No laptop required—the intelligence runs on the device itself.
+A dedicated, Raspberry Pi-powered pedal-like device for practice on the go. Powered by a Raspberry Pi 5, it runs the same audio analysis agent engine as the desktop application. It supports Manual and AI modes, and syncs practice history automatically.
 
-**When to use:** Practice anywhere—backstage before a gig, at a friend's house, outdoors.
+**When to use:** Practice anywhere—backstage before a gig, at a friend's house, outdoors—without a laptop while retaining the same intelligent feedback and progress tracking.
 
 ### Web Dashboard (The Hub)
 A cloud-based analytics platform accessible from any device. Review past sessions, chat with the AI coach about your progress, generate personalized practice plans, and track improvement over time.
