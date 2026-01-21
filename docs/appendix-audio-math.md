@@ -112,7 +112,7 @@ Where:
 Given target scale $S = \{p_1, p_2, \ldots, p_k\}$ (set of pitch classes):
 
 $$
-\text{in\_scale} = 
+\text{in-scale} = 
 \begin{cases}
 1 & \text{if } p_c \in S \\
 0 & \text{otherwise}
@@ -263,7 +263,7 @@ This combines evenness with the penalty for out-of-scale notes.
 When a new note is detected (pitch class changes and energy exceeds threshold), record:
 
 $$
-t_{\text{onset}} = \text{current\_time\_ms}
+t_{\text{onset}} = \text{current-time-ms}
 $$
 
 Maintain a list of onset times:
@@ -459,7 +459,7 @@ With strictness:
 To prevent over-updating, the EMA only updates if sufficient time has passed:
 
 $$
-\Delta t = t_{\text{current}} - t_{\text{last\_update}}
+\Delta t = t_{\text{current}} - t_{\text{last-update}}
 $$
 
 Update only if:
