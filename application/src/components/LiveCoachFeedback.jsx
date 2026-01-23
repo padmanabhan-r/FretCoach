@@ -19,8 +19,7 @@ const LiveCoachFeedback = ({
   totalNotesPlayed = 0,
   correctNotes = 0,
   wrongNotes = 0,
-  onEnabledChange,
-  onFeedbackReceived
+  onEnabledChange
 }) => {
   const [enabled, setEnabled] = useState(true); // Default ON
   const [feedbackInterval, setFeedbackInterval] = useState(60); // Default 1 minute
@@ -71,7 +70,13 @@ const LiveCoachFeedback = ({
       if (result.success) {
         setFeedback(result);
         lastFetchRef.current = elapsed;
-        // Play audio AFTER text is displayed, but only if not already playing
+
+        // Stop any currently playing audio BEFORE starting new audio
+        // This ensures UI and audio are always in sync
+        // Await the stop to prevent audio overlap
+        await api.stopAudioPlayback().catch(() => {});
+
+        // Play audio AFTER text is displayed and old audio is stopped
         if (!audioPlayingRef.current) {
           audioPlayingRef.current = true;
           api.playFeedbackAudio(result.feedback, sessionId).finally(() => {
@@ -79,10 +84,6 @@ const LiveCoachFeedback = ({
           }).catch(err => {
             console.warn('Audio playback failed:', err);
           });
-        }
-        // Notify parent of new feedback
-        if (onFeedbackReceived) {
-          onFeedbackReceived(result.feedback);
         }
       } else {
         setError('Failed to get feedback');

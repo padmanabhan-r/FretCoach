@@ -45,7 +45,6 @@ function App() {
   const [isPaused, setIsPaused] = useState(false); // Pause state
   const [pausedTime, setPausedTime] = useState(0); // Track total paused time
   const pauseStartRef = useRef(null); // When pause started
-  const [aiFeedbackHistory, setAiFeedbackHistory] = useState([]); // Collect AI feedback during session
 
   // Launch animation effect
   useEffect(() => {
@@ -263,7 +262,6 @@ function App() {
         setState(prev => ({ ...prev, isRunning: true }));
         setSessionId(result.session_id);
         setSessionStartTime(Date.now());
-        setAiFeedbackHistory([]); // Reset feedback history for new session
 
         // If this is an AI mode session, link it to the practice plan
         if (practiceMode === 'ai' && currentPracticeId && result.session_id) {
@@ -344,6 +342,7 @@ function App() {
     const seconds = duration % 60;
 
     // Create session summary before resetting state
+    // Generate fresh feedback from final stats (not accumulated history)
     const summary = {
       duration: `${minutes}m ${seconds}s`,
       durationSeconds: duration,
@@ -355,8 +354,6 @@ function App() {
         timingStability: state.timingStability,
         overall: Math.round((state.pitchAccuracy + state.scaleConformity + state.timingStability) / 3)
       },
-      // Include AI coach feedback for both modes (Live AI Coach is always available)
-      aiFeedback: aiFeedbackHistory,
       aiRecommendation: practiceMode === 'ai' ? aiRecommendation : null
     };
     setSessionSummary(summary);
@@ -727,7 +724,6 @@ function App() {
                       totalNotesPlayed={state.totalNotesPlayed}
                       correctNotes={state.correctNotes}
                       wrongNotes={state.wrongNotes}
-                      onFeedbackReceived={(feedback) => setAiFeedbackHistory(prev => [...prev, feedback])}
                     />
                   </div>
 
@@ -817,20 +813,6 @@ function App() {
                     </h3>
                     <p className="text-sm text-foreground">{sessionSummary.aiRecommendation.focus_area}</p>
                     <p className="text-xs text-muted-foreground mt-1">{sessionSummary.aiRecommendation.reasoning}</p>
-                  </div>
-                )}
-
-                {/* AI Feedback History */}
-                {sessionSummary.aiFeedback && sessionSummary.aiFeedback.length > 0 && (
-                  <div className="bg-background rounded-lg p-4">
-                    <h3 className="text-sm font-semibold text-foreground mb-3">AI Coach Feedback</h3>
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
-                      {sessionSummary.aiFeedback.map((fb, index) => (
-                        <div key={index} className="text-sm text-muted-foreground bg-card rounded p-2">
-                          {fb}
-                        </div>
-                      ))}
-                    </div>
                   </div>
                 )}
 
