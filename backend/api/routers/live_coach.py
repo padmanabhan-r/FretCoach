@@ -9,10 +9,18 @@ from typing import Optional
 
 from ..services.live_coach_service import (
     generate_coaching_feedback,
-    generate_session_summary
+    generate_session_summary,
+    generate_and_play_tts,
+    stop_audio_playback
 )
 
 router = APIRouter(prefix="/live-coach", tags=["live-coach"])
+
+
+class PlayAudioRequest(BaseModel):
+    """Request model for playing TTS audio."""
+    feedback_text: str = Field(..., description="Text to convert to speech")
+    session_id: Optional[str] = Field(None, description="Optional session ID")
 
 
 class CoachingRequest(BaseModel):
@@ -63,6 +71,37 @@ async def get_coaching_feedback(request: CoachingRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate coaching feedback: {str(e)}")
+
+
+@router.post("/play-audio")
+async def play_feedback_audio(request: PlayAudioRequest):
+    """
+    Play TTS audio for feedback text.
+    Call this AFTER receiving feedback to hear it spoken aloud.
+    """
+    try:
+        result = await generate_and_play_tts(request.feedback_text, request.session_id)
+        return {
+            "success": True,
+            **result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to play audio: {str(e)}")
+
+
+@router.post("/stop-audio")
+async def stop_audio():
+    """
+    Stop any currently playing audio.
+    """
+    try:
+        result = await stop_audio_playback()
+        return {
+            "success": True,
+            **result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to stop audio: {str(e)}")
 
 
 @router.post("/summary")

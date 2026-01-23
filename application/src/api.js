@@ -125,6 +125,27 @@ export const api = {
     return response.json();
   },
 
+  async playFeedbackAudio(feedbackText, sessionId = null) {
+    const response = await fetch(`${API_BASE_URL}/live-coach/play-audio`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        feedback_text: feedbackText,
+        session_id: sessionId
+      }),
+    });
+    return response.json();
+  },
+
+  async stopAudioPlayback() {
+    const response = await fetch(`${API_BASE_URL}/live-coach/stop-audio`, {
+      method: 'POST',
+    });
+    return response.json();
+  },
+
   async getSessionSummary(stats) {
     const response = await fetch(`${API_BASE_URL}/live-coach/summary`, {
       method: 'POST',
