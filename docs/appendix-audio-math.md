@@ -12,7 +12,7 @@ FretCoach listens to your guitar through your microphone and calculates four sco
 3. **Timing Stability** - Are you playing notes with consistent timing?
 4. **Noise Control** - How clean is your playing?
 
-We use Python libraries (NumPy, librosa, sounddevice) to process the audio locally on your computer. No AI is involved in the real-time analysis.
+We use Python libraries (NumPy, librosa, sounddevice) to process the audio locally on your computer.
 
 **Audio Settings:**
 - Sample rate: 44,100 Hz (CD quality)
