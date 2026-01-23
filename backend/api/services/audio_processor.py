@@ -108,12 +108,11 @@ def process_audio(session_state: SessionState, audio_state: AudioState, audio_co
     while session_state.is_running:
         time.sleep(0.15)
 
-        # Get audio from buffer and clear it
+        # Get audio from buffer
         with audio_state.buffer_lock:
             if len(audio_state.buffer) < buffer_size:
                 continue
             audio = np.array(audio_state.buffer)
-            audio_state.buffer.clear()  # Clear buffer after reading to prevent overflow
 
         # Process the audio frame
         result = process_audio_frame(

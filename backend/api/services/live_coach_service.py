@@ -16,6 +16,7 @@ from langchain_core.output_parsers import StrOutputParser
 
 # Import OpenAI for TTS
 from openai import AsyncOpenAI
+from openai.helpers import LocalAudioPlayer
 
 # Import Opik for tracking with LangChain integration
 try:
@@ -70,7 +71,7 @@ def get_opik_config(session_id: str, trace_name: str) -> dict:
 COACHING_SYSTEM_PROMPT = """You are a direct, practical guitar coach analyzing real-time playing data.
 
 Your feedback must be:
-- PREVENTIVE: Guide technique adjustments to prevent bad habits from forming
+- CORRECTIVE: Address the actual problem shown in the metrics
 - SPECIFIC: Reference the exact metric that needs work
 - ACTIONABLE: Give one concrete technique to try RIGHT NOW
 - BRIEF: 1 sentence maximum
@@ -85,7 +86,7 @@ Interpretation guide:
 - Scale Conformity: Whether notes are in the chosen scale and whether they are covering the full range of the scale. Low = playing wrong notes or playing in just one position, not knowing the scale positions
 - Timing Stability: Consistency of note spacing. Low = rushing, dragging, or uneven rhythm
 
-For the WEAKEST metric, provide a specific preventive instruction to build correct technique."""
+For the WEAKEST metric, provide a specific corrective instruction."""
 
 COACHING_USER_TEMPLATE = """Session metrics after {elapsed_time} practicing {scale_name}:
 
@@ -97,7 +98,7 @@ Weakest area: {weakest_area_name} at {weakest_score}%
 Notes played so far: {notes_played}
 Correct notes: {correct_notes} | Wrong notes: {wrong_notes}
 
-Give ONE specific preventive instruction for the weakest metric:"""
+Give ONE specific corrective instruction for the weakest metric:"""
 
 
 def get_performance_label(score: float) -> str:
@@ -136,23 +137,20 @@ def get_metric_assessment(score: float) -> str:
 
 
 @track(name="live-coach-tts", tags=["tts", "live-coach"])
-async def generate_tts_audio(
+async def generate_and_play_tts(
     feedback_text: str,
     session_id: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Generate TTS audio for coaching feedback.
+    Generate and play TTS audio for coaching feedback in real-time.
     Traced with Opik for monitoring.
-
-    Returns base64-encoded audio data that the frontend can play.
-    This allows the audio to be played through the client's speakers.
 
     Args:
         feedback_text: The coaching feedback text to convert to speech
         session_id: Optional session ID for tracking
 
     Returns:
-        Dictionary containing TTS metadata and base64-encoded audio data
+        Dictionary containing TTS metadata and status
     """
     try:
         # Get the singleton audio player
@@ -170,16 +168,14 @@ async def generate_tts_audio(
             await player.play(response)
 
         return {
-            "status": "success",
-            "audio_data": audio_base64,
+            "status": "played",
             "text_length": len(feedback_text),
             "model": "gpt-4o-mini-tts",
-            "voice": "onyx",
-            "format": "pcm"
+            "voice": "onyx"
         }
 
     except Exception as e:
-        print(f"[TTS] Generation error: {e}")
+        # Log error but don't fail the entire feedback generation
         return {
             "status": "failed",
             "error": str(e)
