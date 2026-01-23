@@ -31,7 +31,7 @@ FretCoach closes the feedback loop by providing instant, in-the-moment feedback 
 
 ### Option 1: Web Dashboard (No Setup Required)
 
-**Live Demo:** [fretcoach.online](https://fretcoach.online)
+**Website and Dashboard:** [fretcoach.online](https://fretcoach.online)
 
 1. **Visit the dashboard** — No installation required
 2. **Click "AI Coach" tab** — Chat interface for practice planning

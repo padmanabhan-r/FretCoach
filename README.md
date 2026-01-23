@@ -216,7 +216,7 @@ npm install
 npm run dev  # http://localhost:5173
 ```
 
-**Live Demo:** [fretcoach.online](https://fretcoach.online)
+**Website and Dashboard:** [fretcoach.online](https://fretcoach.online)
 
 ---
 
