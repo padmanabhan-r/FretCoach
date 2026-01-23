@@ -29,12 +29,12 @@ const features = [
   },
   {
     icon: Globe,
-    title: "Web Dashboard",
+    title: "FretCoach Hub",
     description: "Review sessions from anywhere, chat with the AI coach about your progress, and generate practice plans that sync across all your devices.",
   },
   {
     icon: Monitor,
-    title: "Desktop Application",
+    title: "FretCoach Studio",
     description: "The primary training environment with on-screen metrics, live AI coaching, and ambient lighting control. Connect via USB audio interface and start practicing.",
   },
   {
