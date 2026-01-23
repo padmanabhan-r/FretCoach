@@ -7,6 +7,8 @@ Uses LangChain for LLM integration and Opik for tracing.
 from typing import Dict, Any, Optional
 from datetime import datetime
 import os
+import asyncio
+import base64
 from dotenv import load_dotenv, find_dotenv
 
 from langchain_openai import ChatOpenAI
@@ -15,7 +17,6 @@ from langchain_core.output_parsers import StrOutputParser
 
 # Import OpenAI for TTS
 from openai import AsyncOpenAI
-from openai.helpers import LocalAudioPlayer
 
 # Import Opik for tracking with LangChain integration
 try:
@@ -39,18 +40,6 @@ live_coach_model = ChatOpenAI(
 
 # Initialize OpenAI client for TTS
 openai_client = AsyncOpenAI()
-
-# Global audio player instance to prevent overlapping audio
-_audio_player = None
-_audio_player_lock = None
-
-
-def get_audio_player():
-    """Get or create a singleton audio player instance."""
-    global _audio_player
-    if _audio_player is None:
-        _audio_player = LocalAudioPlayer()
-    return _audio_player
 
 
 def get_opik_config(session_id: str, trace_name: str) -> dict:
@@ -137,36 +126,26 @@ def get_metric_assessment(score: float) -> str:
 
 
 @track(name="live-coach-tts", tags=["tts", "live-coach"])
-async def generate_and_play_tts(
+async def generate_tts_audio(
     feedback_text: str,
     session_id: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Generate and play TTS audio for coaching feedback in real-time.
+    Generate TTS audio for coaching feedback.
     Traced with Opik for monitoring.
 
-    Uses a singleton audio player to prevent overlapping audio and crackling.
-    Previous audio is stopped before playing new feedback.
+    Returns base64-encoded audio data that the frontend can play.
+    This allows the audio to be played through the client's speakers.
 
     Args:
         feedback_text: The coaching feedback text to convert to speech
         session_id: Optional session ID for tracking
 
     Returns:
-        Dictionary containing TTS metadata and status
+        Dictionary containing TTS metadata and base64-encoded audio data
     """
     try:
-        # Get singleton audio player instance
-        player = get_audio_player()
-
-        # Stop any currently playing audio to prevent overlap and crackling
-        try:
-            player.stop()
-        except:
-            # If stop fails (no audio playing), continue
-            pass
-
-        # Generate and stream TTS audio
+        # Generate TTS audio
         async with openai_client.audio.speech.with_streaming_response.create(
             model="gpt-4o-mini-tts",
             voice="onyx",
@@ -174,18 +153,21 @@ async def generate_and_play_tts(
             instructions="Speak in a direct, encouraging tone like a guitar coach giving real-time feedback to a student during practice.",
             response_format="pcm",
         ) as response:
-            # Play audio using singleton player (prevents multiple streams)
-            await player.play(response)
+            # Read audio data and convert to base64
+            audio_data = await response.read()
+            audio_base64 = base64.b64encode(audio_data).decode('utf-8')
 
         return {
-            "status": "played",
+            "status": "success",
+            "audio_data": audio_base64,
             "text_length": len(feedback_text),
             "model": "gpt-4o-mini-tts",
-            "voice": "onyx"
+            "voice": "onyx",
+            "format": "pcm"
         }
 
     except Exception as e:
-        # Log error but don't fail the entire feedback generation
+        print(f"[TTS] Generation error: {e}")
         return {
             "status": "failed",
             "error": str(e)
@@ -273,7 +255,7 @@ async def generate_coaching_feedback(
     feedback = response.content
 
     # Generate and play TTS audio for the feedback (plays while player is playing)
-    tts_result = await generate_and_play_tts(feedback.strip(), session_id)
+    tts_result = await generate_tts_audio(feedback.strip(), session_id)
 
     # Map to simple key for frontend
     weakest_key_map = {

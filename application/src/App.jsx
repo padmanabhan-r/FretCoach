@@ -471,17 +471,7 @@ function App() {
                 />
 
                 {/* Navigation Buttons */}
-                <div className="mt-6 flex items-center justify-between gap-4">
-                  <button
-                    onClick={() => setSetupStep('audio')}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card hover:bg-card/80 border border-border text-foreground transition-colors text-sm font-medium"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                    Go Back
-                  </button>
-
+                <div className="mt-6 flex items-center justify-end gap-4">
                   <button
                     onClick={() => setShowSettings(!showSettings)}
                     className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
@@ -491,16 +481,6 @@ function App() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                     Audio Settings
-                  </button>
-
-                  <button
-                    onClick={() => setSetupStep('launch')}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card hover:bg-card/80 border border-border text-foreground transition-colors text-sm font-medium"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                    Home
                   </button>
                 </div>
 
@@ -518,12 +498,6 @@ function App() {
                         <span className="text-foreground">{audioConfig.channels}</span>
                       </div>
                     </div>
-                    <button
-                      onClick={() => { setShowSettings(false); setSetupStep('audio'); }}
-                      className="mt-4 w-full bg-card hover:bg-card/80 text-foreground text-sm py-2 px-4 rounded-lg transition-all border border-border"
-                    >
-                      Reconfigure Audio
-                    </button>
                   </div>
                 )}
               </div>
