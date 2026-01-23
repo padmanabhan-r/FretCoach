@@ -7,6 +7,7 @@ Uses LangChain for LLM integration and Opik for tracing.
 from typing import Dict, Any, Optional
 from datetime import datetime
 import os
+import asyncio
 from dotenv import load_dotenv, find_dotenv
 
 from langchain_openai import ChatOpenAI
@@ -39,6 +40,17 @@ live_coach_model = ChatOpenAI(
 
 # Initialize OpenAI client for TTS
 openai_client = AsyncOpenAI()
+
+# Global audio player instance
+_audio_player = None
+
+
+async def get_audio_player():
+    """Get or create a singleton audio player instance."""
+    global _audio_player
+    if _audio_player is None:
+        _audio_player = LocalAudioPlayer()
+    return _audio_player
 
 
 def get_opik_config(session_id: str, trace_name: str) -> dict:
@@ -141,6 +153,9 @@ async def generate_and_play_tts(
         Dictionary containing TTS metadata and status
     """
     try:
+        # Get the singleton audio player
+        player = await get_audio_player()
+
         # Generate and stream TTS audio
         async with openai_client.audio.speech.with_streaming_response.create(
             model="gpt-4o-mini-tts",
@@ -149,8 +164,8 @@ async def generate_and_play_tts(
             instructions="Speak in a direct, encouraging tone like a guitar coach giving real-time feedback to a student during practice.",
             response_format="pcm",
         ) as response:
-            # Play audio in real-time while the player is playing
-            await LocalAudioPlayer().play(response)
+            # Play audio in real-time using the singleton player
+            await player.play(response)
 
         return {
             "status": "played",
@@ -165,6 +180,16 @@ async def generate_and_play_tts(
             "status": "failed",
             "error": str(e)
         }
+
+
+async def stop_audio_playback() -> Dict[str, Any]:
+    """Stop any currently playing audio."""
+    try:
+        player = await get_audio_player()
+        await player.stop()
+        return {"status": "stopped"}
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}
 
 
 async def generate_coaching_feedback(
@@ -247,9 +272,6 @@ async def generate_coaching_feedback(
     )
     feedback = response.content
 
-    # Generate and play TTS audio for the feedback (plays while player is playing)
-    tts_result = await generate_and_play_tts(feedback.strip(), session_id)
-
     # Map to simple key for frontend
     weakest_key_map = {
         "Pitch Accuracy": "pitch",
@@ -263,8 +285,7 @@ async def generate_coaching_feedback(
         "overall_score": round(overall_score),
         "weakest_area": weakest_key_map[weakest_area_name],
         "elapsed_time": elapsed_time,
-        "timestamp": datetime.now().isoformat(),
-        "tts": tts_result  # Include TTS status and metadata
+        "timestamp": datetime.now().isoformat()
     }
 
 
