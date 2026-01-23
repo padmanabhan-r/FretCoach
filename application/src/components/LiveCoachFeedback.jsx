@@ -27,10 +27,9 @@ const LiveCoachFeedback = ({
   const [feedback, setFeedback] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [feedbackHistory, setFeedbackHistory] = useState([]);
-  const [showHistory, setShowHistory] = useState(false); // Hidden by default
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const lastFetchRef = useRef(0);
+  const audioPlayingRef = useRef(false);
   const metricsRef = useRef({ pitchAccuracy, scaleConformity, timingStability, totalNotesPlayed, correctNotes, wrongNotes });
   const audioContextRef = useRef(null);
 
@@ -39,6 +38,14 @@ const LiveCoachFeedback = ({
     metricsRef.current = { pitchAccuracy, scaleConformity, timingStability, totalNotesPlayed, correctNotes, wrongNotes };
   }, [pitchAccuracy, scaleConformity, timingStability, totalNotesPlayed, correctNotes, wrongNotes]);
 
+  // Stop audio when paused or stopped
+  useEffect(() => {
+    if (!isRunning || isPaused) {
+      audioPlayingRef.current = false;
+      api.stopAudioPlayback().catch(() => {});
+    }
+  }, [isRunning, isPaused]);
+
   // Fetch coaching feedback
   const fetchFeedback = useCallback(async (elapsed) => {
     if (!isRunning || !enabled) {
@@ -46,7 +53,8 @@ const LiveCoachFeedback = ({
       return;
     }
 
-    console.log('[LiveCoach] Fetching feedback at', elapsed, 'seconds');
+    // Clear previous feedback before loading new one for seamless transition
+    setFeedback(null);
     setLoading(true);
     setError(null);
     // Clear current feedback immediately to prevent flicker
@@ -71,8 +79,16 @@ const LiveCoachFeedback = ({
       if (result.success) {
         // Set feedback and history atomically to prevent flicker
         setFeedback(result);
-        setFeedbackHistory(prev => [...prev, result].slice(-5)); // Keep last 5
         lastFetchRef.current = elapsed;
+        // Play audio AFTER text is displayed, but only if not already playing
+        if (!audioPlayingRef.current) {
+          audioPlayingRef.current = true;
+          api.playFeedbackAudio(result.feedback, sessionId).finally(() => {
+            audioPlayingRef.current = false;
+          }).catch(err => {
+            console.warn('Audio playback failed:', err);
+          });
+        }
         // Notify parent of new feedback
         if (onFeedbackReceived) {
           onFeedbackReceived(result.feedback);
@@ -181,7 +197,7 @@ const LiveCoachFeedback = ({
       console.log('[LiveCoach] Session stopped, resetting');
       setElapsedSeconds(0);
       lastFetchRef.current = 0;
-      setFeedbackHistory([]);
+      audioPlayingRef.current = false;
       setFeedback(null);
     }
 
@@ -200,7 +216,6 @@ const LiveCoachFeedback = ({
     }
     if (!newEnabled) {
       setFeedback(null);
-      setFeedbackHistory([]);
     }
   };
 
@@ -304,35 +319,6 @@ const LiveCoachFeedback = ({
               </p>
             )}
           </div>
-
-          {/* Feedback History - Popover */}
-          {feedbackHistory.length > 1 && (
-            <div className="relative">
-              <button
-                onClick={() => setShowHistory(!showHistory)}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-              >
-                <svg className={`w-3 h-3 transition-transform ${showHistory ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                </svg>
-                Previous ({feedbackHistory.length - 1})
-              </button>
-              {showHistory && (
-                <div className="absolute bottom-full left-0 right-0 mb-2 bg-card border border-border rounded-lg shadow-xl z-10 max-h-40 overflow-y-auto">
-                  <div className="p-2 space-y-2">
-                    {feedbackHistory.slice(-3, -1).reverse().map((fb, index) => (
-                      <div
-                        key={index}
-                        className="bg-background rounded-lg p-2 text-xs text-muted-foreground"
-                      >
-                        {fb.feedback}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       )}
 
