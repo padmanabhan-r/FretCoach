@@ -1,5 +1,7 @@
 # FretCoach - AI-Powered Guitar Training
 
+> **This year 2026 turn your guitar resolutions into a reality.**
+
 ![FretCoach](images/FretCoach.jpeg)
 
 > *Real-time AI coaching for guitar practice*
