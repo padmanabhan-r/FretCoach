@@ -80,7 +80,7 @@ FretCoach combines two complementary systems to deliver both speed and intellige
 ![FretCoach Brain Architecture](../images/FretCoach%20Brain.png)
 
 **Audio Analysis Agent (Fast Loop - Deterministic)**
-- Real-time processing with <150ms latency
+- Real-time processing with <300ms latency
 - Continuous monitoring of pitch, scale, timing, and noise
 - Immediate visual feedback and ambient lighting
 - Runs entirely locally (no cloud required)
@@ -99,7 +99,7 @@ This separation ensures **instant feedback for motor learning** while leveraging
 Address errors on the first occurrence, not after hundreds of repetitions.
 
 **Immediate reinforcement**
-FretCoach delivers feedback within 150ms—fast enough to influence motor learning in real-time.
+FretCoach delivers feedback within 300ms—fast enough to influence motor learning in real-time.
 
 **Multi-sensory engagement**
 Visual, auditory, and peripheral feedback channels work together.

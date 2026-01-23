@@ -29,7 +29,7 @@ FretCoach combines two complementary processing systems to deliver both real-tim
 ![FretCoach Brain Architecture](../images/FretCoach%20Brain.png)
 
 ### Fast Loop: Audio Analysis Agent (Deterministic)
-**Purpose:** Real-time performance monitoring with <150ms latency
+**Purpose:** Real-time performance monitoring with <300ms latency
 
 **What it does:**
 - Continuous audio analysis (pitch, scale, timing, noise detection)
@@ -191,7 +191,7 @@ Primary training environment for focused practice with real-time audio analysis 
    - Initializes WebSocket connection
 3. **Real-time audio loop:**
    - Audio callback fills buffer (continuous)
-   - Processing thread analyzes frames every 150ms
+   - Processing thread analyzes frames every 300ms
    - Metrics calculated and sent via WebSocket
    - Frontend updates UI in real-time
 4. **Live AI coaching** (optional):
@@ -216,7 +216,7 @@ Primary training environment for focused practice with real-time audio analysis 
 
 **WebSocket:**
 - Endpoint: `ws://127.0.0.1:8000/ws/metrics`
-- Frequency: ~6.67 Hz (every 150ms)
+- Frequency: ~6.67 Hz (every 300ms)
 - Payload: JSON with current metrics and state
 
 **IPC (Electron):**

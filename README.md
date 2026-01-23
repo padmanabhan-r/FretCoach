@@ -34,7 +34,7 @@ FretCoach uses a **dual-brain architecture** combining fast deterministic audio 
 ### The Two Systems
 
 **Audio Analysis Agent (Fast Loop)**
-- Deterministic real-time processing (<150ms latency)
+- Deterministic real-time processing (<300ms latency)
 - Continuous evaluation of pitch, scale, timing, and noise
 - Immediate visual feedback and ambient lighting control
 - Runs locally without cloud dependencies
