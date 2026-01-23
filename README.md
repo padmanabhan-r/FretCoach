@@ -183,6 +183,8 @@ Hardware setup complete. Software adaptation in progress.
 
 ## 3. FretCoach Hub (Web Platform)
 
+**Access Here:** [fretcoach.online](https://fretcoach.online)
+
 **Location:** `/web/`
 
 ![Screenshot Placeholder: FretCoach Hub Dashboard]
