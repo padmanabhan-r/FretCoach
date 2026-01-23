@@ -68,7 +68,7 @@ See [Quickstart Guide](quickstart.md) for detailed setup instructions.
 ### Hybrid Design: Deterministic + AI
 
 **Local Deterministic Processing:**
-- Real-time audio analysis runs locally with <150ms latency
+- Real-time audio analysis runs locally with <300ms latency
 - Four performance metrics calculated using DSP (no LLM)
 - Works offline for desktop and portable devices
 
@@ -220,7 +220,7 @@ Every AI interaction is logged with full context:
 Use this to quickly assess FretCoach:
 
 ### Core Functionality
-- [ ] Real-time audio processing (<150ms latency)
+- [ ] Real-time audio processing (<300ms latency)
 - [ ] Four-metric analysis system working correctly
 - [ ] AI practice recommendations functional
 - [ ] Live coaching during sessions operational
