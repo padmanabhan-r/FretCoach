@@ -44,11 +44,14 @@ You get feedback through three channels:
 
 Powered by LLMs (Gemini 2.5 Flash, OpenAI GPT 4o Mini, Minimax 2.1, Deepseek Chat 3.1):
 - **AI Practice Mode** — Get personalized practice plans based on your history
-- **Live Feedback** — Real-time coaching during practice sessions
+- **Live Vocal Feedback** — Real-time spoken coaching using GPT-4o-mini-TTS during sessions
 - **Progress Tracking** — Performance trends and pattern recognition
 - **Adaptive Plans** — Practice recommendations that evolve with you
 
 Audio analysis runs **locally**. AI features use cloud APIs for coaching and sync.
+
+### Vocal Coach (TTS)
+The live AI coach uses OpenAI's `gpt-4o-mini-tts` model to convert coaching text to speech with a natural, encouraging tone. Audio playback is synchronized to prevent overlapping feedback and crackling.
 
 ---
 
@@ -165,11 +168,14 @@ Hardware setup complete. Software adaptation in progress.
 Web platform for analytics and practice planning.
 
 ### Features
-- **AI Practice Coach** — Chat interface for recommendations
+- **AI Practice Coach** — Natural language chat interface powered by text-to-SQL agent
+- **Ask Questions** — "What should I practice next?", "Show my progress trends", "Compare my latest session"
 - **Performance Analytics** — Trend charts and session comparisons
 - **Practice Plan Generation** — AI-generated plans synced to devices
 - **Session History** — Browse past sessions
 - **Statistics** — Total practice time, notes played, scores
+
+The chat agent uses intent detection to trigger database queries and Gemini 2.5 Flash to provide conversational responses with visualizations.
 
 ### Getting Started
 

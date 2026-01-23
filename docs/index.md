@@ -67,8 +67,9 @@ FretCoach is an AI-powered guitar training system. The architecture could potent
 - USB audio interface or built-in microphone support
 
 ### AI Coaching
-- **Live session feedback** — Real-time verbal guidance during practice
+- **Live vocal feedback** — Real-time spoken coaching using GPT-4o-mini-TTS during practice
 - **Practice planning** — Personalized recommendations based on performance history
+- **Natural language queries** — Text-to-SQL agent in web dashboard for asking questions about your data
 - **Multiple LLM support** — Gemini 2.5 Flash, GPT-4o Mini, Minimax 2.1, Deepseek Chat 3.1
 - **Observable** — Full trace logging via Comet Opik
 

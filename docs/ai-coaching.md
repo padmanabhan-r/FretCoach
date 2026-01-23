@@ -302,15 +302,53 @@ response = model.invoke(
 )
 ```
 
-5. **Return feedback:**
+5. **Text-to-Speech (TTS) conversion:**
+```python
+# Generate and play TTS audio using OpenAI's gpt-4o-mini-tts
+async def generate_and_play_tts(feedback_text: str, session_id: str):
+    openai_client = AsyncOpenAI()
+    player = LocalAudioPlayer()
+
+    # Stop any previous audio to prevent overlap/crackling
+    player.stop()
+
+    # Stream TTS audio with coaching-specific instructions
+    async with openai_client.audio.speech.with_streaming_response.create(
+        model="gpt-4o-mini-tts",
+        voice="onyx",
+        input=feedback_text,
+        instructions="Speak in a direct, encouraging tone like a guitar coach giving real-time feedback to a student during practice.",
+        response_format="pcm",
+    ) as response:
+        await player.play(response)
+```
+
+6. **Return feedback:**
 ```python
 {
     "feedback": response.content,
     "weakest_metric": weakest_name,
     "overall_performance": "Good",  # Based on average
-    "timestamp": datetime.now().isoformat()
+    "timestamp": datetime.now().isoformat(),
+    "tts": {
+        "status": "played",
+        "model": "gpt-4o-mini-tts",
+        "voice": "onyx"
+    }
 }
 ```
+
+### Vocal Feedback (TTS)
+
+The live coach doesn't just display text—it **speaks** the feedback using OpenAI's `gpt-4o-mini-tts` model.
+
+**Key features:**
+- **Natural voice:** Uses the "onyx" voice with coaching-specific instructions
+- **Prevents overlap:** Singleton audio player stops previous feedback before playing new audio
+- **Low latency:** Streaming response format minimizes delay
+- **Traced in Opik:** TTS generation is tracked with the `tts` tag for monitoring
+
+This creates a more immersive coaching experience, allowing guitarists to keep their eyes on their hands instead of reading text on screen.
 
 ### Example Feedback
 
@@ -326,83 +364,227 @@ Time: 2m 30s
 
 ---
 
-## Feature 3: Conversational Chat (Web Dashboard)
+## Feature 3: Conversational Chat (Web Dashboard) - Text-to-SQL Agent
 
 ### Purpose
 
-Allow users to ask open-ended questions about their practice and receive intelligent, data-driven answers.
+Allow users to ask open-ended questions about their practice data using natural language. The AI agent interprets questions, queries the database, and returns conversational answers with visualizations.
 
 ### User Flow
 
 1. **User visits web dashboard → AI Coach tab**
-2. **Types question:**
+2. **Types natural language question:**
    - "What should I practice next?"
-   - "Why is my timing score so low?"
-   - "Show me my progress over the last month"
+   - "Show me my progress trends"
+   - "Compare my latest session to my average"
+   - "Which scales have I practiced?"
 3. **Backend:**
-   - LangGraph agent processes question
-   - Agent uses tools to fetch relevant data
-   - LLM reasons about data and generates response
-4. **Frontend displays conversational response**
+   - AI agent detects intent from natural language
+   - Calls appropriate database query tools
+   - LLM formats results conversationally
+   - Returns response with optional charts
+4. **Frontend displays conversational response + visualizations**
 
 ### Technical Implementation
 
-**File:** `web/server/routers/chat.py`
+**File:** `web/web-backend/routers/chat.py`
 
-**Agent Architecture (LangGraph):**
+This is a **hybrid text-to-SQL agent**: The LLM doesn't generate raw SQL (which can be error-prone), but instead uses **predefined database query functions** triggered by intent detection. This combines the robustness of hardcoded queries with the flexibility of natural language interaction.
 
+**Architecture Steps:**
+
+1. **Intent Detection** — Keyword matching on user message:
 ```python
-from langgraph.prebuilt import create_react_agent
+last_user_msg_lower = request.messages[-1].content.lower()
 
-# Define tools
-tools = [
-    get_recent_sessions_tool,
-    analyze_performance_tool,
-    generate_practice_plan_tool
-]
+# Detect "show progress" intent
+if any(word in last_user_msg_lower for word in
+       ["progress", "trend", "chart", "graph", "show me"]):
+    chart_data = get_performance_chart_data(user_id)
 
-# Create agent
-agent = create_react_agent(
-    model=ChatOpenAI(model="gpt-4o-mini"),
-    tools=tools
-)
+# Detect "compare sessions" intent
+elif any(word in last_user_msg_lower for word in
+         ["compare", "versus", "vs", "latest", "average"]):
+    chart_data = get_comparison_chart_data(user_id, practice_data)
 
-# Process user message
-response = agent.invoke(
-    {"messages": [HumanMessage(content=user_message)]},
-    config=opik_config
-)
+# Detect "practice recommendation" intent
+elif any(word in last_user_msg_lower for word in
+         ["practice", "recommend", "suggest", "what should"]):
+    chart_data = generate_practice_recommendation(practice_data, user_id)
 ```
 
-**Tool Example: get_recent_sessions**
+2. **Database Query Functions** — Predefined SQL tools:
 
 ```python
-@tool
-def get_recent_sessions(user_id: str, limit: int = 5) -> List[Dict]:
-    """Fetch recent practice sessions for analysis."""
+def get_user_practice_data(user_id: str) -> Dict[str, Any]:
+    """Fetch aggregated practice statistics"""
     query = """
-        SELECT session_id, scale_chosen, pitch_accuracy,
-               scale_conformity, timing_stability, duration_seconds
+        SELECT COUNT(*) as total_sessions,
+               AVG(pitch_accuracy) as avg_pitch_accuracy,
+               AVG(scale_conformity) as avg_scale_conformity,
+               AVG(timing_stability) as avg_timing_stability,
+               SUM(duration_seconds) as total_practice_time
         FROM fretcoach.sessions
-        WHERE user_id = :user_id
-        ORDER BY start_timestamp DESC
-        LIMIT :limit
+        WHERE user_id = %s
     """
-    # Execute and return results
+    # Returns structured data for LLM context
+
+def get_performance_chart_data(user_id: str, metric: str = "all"):
+    """Generate chart data for performance trends"""
+    query = """
+        SELECT start_timestamp, pitch_accuracy,
+               scale_conformity, timing_stability, scale_chosen
+        FROM fretcoach.sessions
+        WHERE user_id = %s
+        ORDER BY start_timestamp DESC LIMIT 20
+    """
+    # Returns chart-ready data
 ```
 
-**Example Conversation:**
+3. **LLM Context Building** — System prompt includes user's data:
+
+```python
+def build_system_prompt(practice_data: Dict) -> str:
+    return f"""You are an AI guitar practice coach for FretCoach.
+
+## User's Practice Data
+- Total sessions: {practice_data['total_sessions']}
+- Average pitch accuracy: {practice_data['avg_pitch_accuracy']}%
+- Average scale conformity: {practice_data['avg_scale_conformity']}%
+- Average timing stability: {practice_data['avg_timing_stability']}%
+- Weakest area: {practice_data['weakest_area']}
+
+Recent Sessions:
+{format_recent_sessions(practice_data)}
+
+Provide personalized coaching advice based on this data."""
+```
+
+4. **LLM Response Generation** — Gemini 2.5 Flash with fallback:
+
+```python
+def invoke_with_fallback(messages, thread_id: str):
+    """Try Gemini, fall back to MiniMax on rate limits"""
+
+    # Create Opik tracer for conversation tracking
+    tracer = OpikTracer(
+        tags=["ai-coach", "web-chat"],
+        metadata={"thread_id": thread_id}
+    )
+    config = {"callbacks": [tracer]}
+
+    try:
+        return gemini_model.invoke(messages, config=config)
+    except Exception as e:
+        if "RESOURCE_EXHAUSTED" in str(e):
+            return minimax_model.invoke(messages, config=config)
+        raise
+```
+
+5. **Response Enhancement** — Add chart data to response:
+
+```python
+response = invoke_with_fallback(messages, thread_id)
+ai_content = response.content
+
+if chart_data:
+    if chart_data['type'] == 'performance_trend':
+        ai_content += "\n\n*I've displayed your performance trend chart below.*"
+    elif chart_data['type'] == 'practice_plan':
+        ai_content += "\n\n*I've created a practice plan for you below. Click 'Save Plan' to save it.*"
+
+return {
+    "message": {"role": "assistant", "content": ai_content},
+    "chartData": chart_data
+}
+```
+
+### Why This Hybrid Approach?
+
+**Advantages over pure text-to-SQL:**
+- **Robust:** No risk of malformed SQL queries
+- **Secure:** No SQL injection vulnerabilities
+- **Fast:** Optimized queries, not LLM-generated
+- **Predictable:** Known query patterns and performance
+- **Natural:** LLM still provides conversational interface
+
+**Key features:**
+- Intent-based tool selection (not LLM tool calling)
+- Predefined SQL queries (not generated)
+- Conversational LLM responses (natural language output)
+- Chart visualization support
+- Opik tracing for all interactions
+
+### Example Conversation:
 
 **User:** "What should I practice next?"
 
-**Agent reasoning (traced in Opik):**
-1. Call `get_recent_sessions(user_id="paddy", limit=5)`
-2. Analyze returned data: timing is weakest at 42% avg
-3. Call `generate_practice_plan(focus="timing")`
-4. Synthesize response
+**Backend processing (traced in Opik):**
+
+1. **Intent detection:** Keyword "practice" matches → trigger practice recommendation
+2. **Fetch user data:**
+   ```sql
+   SELECT AVG(pitch_accuracy), AVG(scale_conformity), AVG(timing_stability)
+   FROM fretcoach.sessions WHERE user_id = 'user123'
+   ```
+   Results: Pitch 78%, Scale 82%, Timing 42% (weakest)
+3. **Generate recommendation:** Call `generate_practice_recommendation()`
+4. **Build system prompt with context:**
+   ```
+   Total sessions: 15
+   Weakest area: timing
+   Recent practice: C Major, A Minor
+   ```
+5. **LLM generates response** (Gemini 2.5 Flash)
+6. **Return with practice plan card**
 
 **Agent response:**
-> "Based on your last 5 sessions, your timing stability is your weakest area (averaging 42%). I recommend practicing **C Major Pentatonic** with a metronome at a slow tempo (60 BPM). Focus on maintaining perfectly even note spacing. Try this for 10-15 minutes daily. Would you like me to generate a detailed practice plan?"
+> "Based on your practice history, timing stability is your weakest area at 42%. I recommend practicing **C Major Pentatonic** with these exercises:
+> - Practice slow scales focusing on hitting each note cleanly
+> - Use a metronome starting at a slow tempo
+> - Focus on consistent note duration before speed
+>
+> I've created a practice plan below. Click 'Save Plan' to save it."
+
+**Chart data returned:**
+```json
+{
+  "type": "practice_plan",
+  "data": {
+    "focus_area": "Timing Stability",
+    "current_score": 42,
+    "suggested_scale": "C Major",
+    "suggested_scale_type": "pentatonic",
+    "exercises": ["Practice with metronome...", "Focus on consistent note duration..."]
+  },
+  "plan_id": "uuid-123"
+}
+```
+
+**Frontend displays:** Conversational response + practice plan card with "Save Plan" button
+
+---
+
+**User:** "Show me my progress trends"
+
+**Backend processing:**
+
+1. **Intent detection:** Keywords "show", "progress", "trends" → trigger chart generation
+2. **Fetch session history:**
+   ```sql
+   SELECT start_timestamp, pitch_accuracy, scale_conformity, timing_stability
+   FROM fretcoach.sessions WHERE user_id = 'user123'
+   ORDER BY start_timestamp DESC LIMIT 20
+   ```
+3. **Format as chart data** (reversed for chronological order)
+4. **LLM response** with chart context
+
+**Agent response:**
+> "Here's your performance trend over the last 20 sessions. Your pitch accuracy has been consistently improving (78% → 85%), but timing stability remains an area for focus."
+>
+> *I've displayed your performance trend chart below.*
+
+**Chart data:** Line chart showing all three metrics over time
 
 ---
 
