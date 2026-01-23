@@ -65,12 +65,22 @@ PHRASE_WINDOW = 0.8
 
 # Global state for graceful shutdown
 running = True
+# Reference to the current audio processor for signal handler cleanup
+_audio_processor_ref = None
 
 
 def signal_handler(_sig, _frame):
-    """Handle Ctrl+C gracefully."""
+    """Handle Ctrl+C gracefully - stop audio and cleanup."""
     global running
     running = False
+
+    # Immediately stop the audio processor if one exists
+    global _audio_processor_ref
+    if _audio_processor_ref is not None:
+        try:
+            _audio_processor_ref.stop()
+        except Exception:
+            pass
 
 
 signal.signal(signal.SIGINT, signal_handler)
@@ -282,11 +292,21 @@ class AudioProcessor:
                 pass
 
     def stop(self):
-        """Stop the audio stream."""
+        """Stop the audio stream and release the device properly."""
         if self.stream:
-            self.stream.stop()
-            self.stream.close()
-            self.stream = None
+            try:
+                # Check if stream is still active before stopping
+                if hasattr(self.stream, 'active') and self.stream.active:
+                    self.stream.stop()
+                self.stream.close()
+            except Exception as e:
+                console.print(f"[dim]Stream close warning: {e}[/]")
+            finally:
+                self.stream = None
+
+        # RPi-specific: SoundDevice uses PortAudio which handles device cleanup.
+        # The stream.stop() and stream.close() calls above properly release the device.
+        # A full PortAudio terminate would require the underlying library access.
 
         # Turn off bulb
         if self.ambient_lighting and SMART_BULB_ENABLED:
@@ -753,6 +773,7 @@ def run_practice_session(
         console.print(f"[yellow]Session logging unavailable: {e}[/]")
 
     # Create audio processor
+    global _audio_processor_ref
     processor = AudioProcessor(
         input_device=audio_config['input_device'],
         output_device=audio_config['output_device'],
@@ -763,6 +784,7 @@ def run_practice_session(
         sensitivity=sensitivity,
         ambient_lighting=ambient_lighting,
     )
+    _audio_processor_ref = processor
 
     session_start = datetime.now()
 
@@ -818,6 +840,7 @@ def run_practice_session(
     finally:
         # Stop audio
         processor.stop()
+        _audio_processor_ref = None
 
         # End session and save to database
         if session_logger and session_id:
