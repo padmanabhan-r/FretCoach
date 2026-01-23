@@ -31,6 +31,7 @@ const LiveCoachFeedback = ({
   const lastFetchRef = useRef(0);
   const audioPlayingRef = useRef(false);
   const metricsRef = useRef({ pitchAccuracy, scaleConformity, timingStability, totalNotesPlayed, correctNotes, wrongNotes });
+  const audioContextRef = useRef(null);
 
   // Keep metrics ref updated
   useEffect(() => {
@@ -47,15 +48,21 @@ const LiveCoachFeedback = ({
 
   // Fetch coaching feedback
   const fetchFeedback = useCallback(async (elapsed) => {
-    if (!isRunning || !enabled) return;
+    if (!isRunning || !enabled) {
+      console.log('[LiveCoach] Skipping fetch - not running or not enabled');
+      return;
+    }
 
     // Clear previous feedback before loading new one for seamless transition
     setFeedback(null);
     setLoading(true);
     setError(null);
+    // Clear current feedback immediately to prevent flicker
+    setFeedback(null);
 
     try {
       const metrics = metricsRef.current;
+      console.log('[LiveCoach] Sending metrics:', metrics);
       const result = await api.getLiveCoachFeedback({
         pitch_accuracy: metrics.pitchAccuracy,
         scale_conformity: metrics.scaleConformity,
@@ -68,7 +75,9 @@ const LiveCoachFeedback = ({
         wrong_notes: metrics.wrongNotes || 0
       });
 
+      console.log('[LiveCoach] Got response:', result);
       if (result.success) {
+        // Set feedback and history atomically to prevent flicker
         setFeedback(result);
         lastFetchRef.current = elapsed;
         // Play audio AFTER text is displayed, but only if not already playing
@@ -84,19 +93,73 @@ const LiveCoachFeedback = ({
         if (onFeedbackReceived) {
           onFeedbackReceived(result.feedback);
         }
+        console.log('[LiveCoach] Feedback set successfully');
       } else {
+        console.error('[LiveCoach] Request failed:', result);
         setError('Failed to get feedback');
       }
     } catch (err) {
-      console.error('Live coach error:', err);
+      console.error('[LiveCoach] Error:', err);
       setError('Coach unavailable');
     } finally {
       setLoading(false);
     }
-  }, [isRunning, enabled, scaleName, sessionId]);
+  }, [isRunning, enabled, scaleName, sessionId, onFeedbackReceived]);
+
+  // Play TTS audio from base64 data
+  const playTTSAudio = useCallback((audioData, text) => {
+    if (!audioData) {
+      console.log('[LiveCoach] No audio data to play');
+      return;
+    }
+
+    try {
+      // Initialize audio context on user interaction if needed
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      const audioContext = audioContextRef.current;
+
+      // Decode base64 audio data (PCM format from OpenAI)
+      const binaryString = atob(audioData);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      // Convert PCM16 to float32 for Web Audio API
+      const pcmData = new Int16Array(bytes.buffer);
+      const float32Data = new Float32Array(pcmData.length);
+      for (let i = 0; i < pcmData.length; i++) {
+        float32Data[i] = pcmData[i] / 32768.0;
+      }
+
+      // Create buffer and source
+      const audioBuffer = audioContext.createBuffer(1, float32Data.length, 24000);
+      audioBuffer.getChannelData(0).set(float32Data);
+
+      const source = audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioContext.destination);
+      source.start(0);
+
+      console.log('[LiveCoach] Playing TTS audio');
+    } catch (err) {
+      console.error('[LiveCoach] Error playing audio:', err);
+    }
+  }, []);
+
+  // Play audio when feedback is received
+  useEffect(() => {
+    if (feedback && feedback.tts && feedback.tts.audio_data) {
+      playTTSAudio(feedback.tts.audio_data, feedback.feedback);
+    }
+  }, [feedback, playTTSAudio]);
 
   // Timer for elapsed time and feedback intervals
   useEffect(() => {
+    console.log('[LiveCoach] Timer effect running. isRunning:', isRunning, 'enabled:', enabled, 'isPaused:', isPaused);
     let timer = null;
 
     if (isRunning && enabled && !isPaused) {
@@ -114,18 +177,24 @@ const LiveCoachFeedback = ({
       }, 1000);
 
       // Fetch initial feedback after 15 seconds (give time to play some notes)
+      console.log('[LiveCoach] Setting up initial timer for 15s');
       const initialTimer = setTimeout(() => {
+        console.log('[LiveCoach] Initial timer fired! lastFetch:', lastFetchRef.current);
         if (lastFetchRef.current === 0) {
           fetchFeedback(15);
+        } else {
+          console.log('[LiveCoach] Skipping initial fetch - already fetched at', lastFetchRef.current);
         }
       }, 15000);
 
       return () => {
+        console.log('[LiveCoach] Cleanup: clearing timers');
         if (timer) clearInterval(timer);
         clearTimeout(initialTimer);
       };
     } else if (!isRunning) {
       // Reset when stopped
+      console.log('[LiveCoach] Session stopped, resetting');
       setElapsedSeconds(0);
       lastFetchRef.current = 0;
       audioPlayingRef.current = false;
@@ -133,6 +202,7 @@ const LiveCoachFeedback = ({
     }
 
     return () => {
+      console.log('[LiveCoach] Cleanup (else): clearing interval timer');
       if (timer) clearInterval(timer);
     };
   }, [isRunning, isPaused, enabled, feedbackInterval, fetchFeedback]);
@@ -216,34 +286,31 @@ const LiveCoachFeedback = ({
         <div className="space-y-4 flex-1 flex flex-col">
           {/* Current Feedback - Grows to fill available space */}
           <div className="bg-gradient-to-r from-accent/20 to-secondary/20 rounded-lg p-4 border border-accent/30 min-h-[80px] flex-1 overflow-y-auto">
-            {loading && !feedback && (
+            {loading && (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <div className="animate-spin w-4 h-4 border-2 border-accent border-t-transparent rounded-full" />
                 <span>Coach is analyzing...</span>
               </div>
             )}
 
-            {error && (
+            {!loading && error && (
               <div className="text-destructive text-sm">{error}</div>
             )}
 
-            {feedback && (
-              <div>
+            {!loading && !error && feedback && (
+              <div key={feedback.timestamp}>
                 <div className="flex items-start gap-3">
                   <span className="text-2xl flex-shrink-0">💬</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-foreground font-medium leading-relaxed text-sm">
                       {feedback.feedback}
                     </p>
-                    {loading && (
-                      <div className="mt-2 text-xs text-muted-foreground animate-pulse">Updating...</div>
-                    )}
                   </div>
                 </div>
               </div>
             )}
 
-            {!feedback && !loading && !error && (
+            {!loading && !feedback && !error && (
               <p className="text-muted-foreground text-sm">
                 {elapsedSeconds < 15
                   ? `Warming up... feedback in ${15 - elapsedSeconds}s`

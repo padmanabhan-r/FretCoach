@@ -61,7 +61,7 @@ The backend continuously processes audio in overlapping windows (0.8 seconds by 
 - **Timing Stability** — Measures consistency of note spacing
 - **Noise Control** — Assesses signal clarity
 
-Metrics stream to the frontend via WebSocket at ~150ms intervals for live display.
+Metrics stream to the frontend via WebSocket at ~300ms intervals for live display.
 
 **Technical details:**
 - Audio sampling: 44100 Hz (CD quality)

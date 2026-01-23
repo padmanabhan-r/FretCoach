@@ -428,7 +428,7 @@ function App() {
               </h1>
             </div>
             <p className="mt-4 text-muted-foreground text-lg animate-fade-in-delayed">
-              Your AI-powered guitar practice companion
+              FretCoach Studio — Your AI-powered guitar practice companion
             </p>
             <div className="mt-8 flex justify-center">
               <div className="w-12 h-1 bg-gradient-to-r from-primary to-accent rounded-full animate-loading-bar" />
@@ -470,8 +470,8 @@ function App() {
                   disabled={state.isRunning}
                 />
 
-                {/* Settings Button */}
-                <div className="mt-6 flex justify-center">
+                {/* Navigation Buttons */}
+                <div className="mt-6 flex items-center justify-end gap-4">
                   <button
                     onClick={() => setShowSettings(!showSettings)}
                     className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
@@ -498,12 +498,6 @@ function App() {
                         <span className="text-foreground">{audioConfig.channels}</span>
                       </div>
                     </div>
-                    <button
-                      onClick={() => { setShowSettings(false); setSetupStep('audio'); }}
-                      className="mt-4 w-full bg-card hover:bg-card/80 text-foreground text-sm py-2 px-4 rounded-lg transition-all border border-border"
-                    >
-                      Reconfigure Audio
-                    </button>
                   </div>
                 )}
               </div>

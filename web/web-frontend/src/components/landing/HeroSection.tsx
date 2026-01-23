@@ -35,8 +35,8 @@ const HeroSection = () => {
 
           {/* Description */}
           <p className="text-lg text-foreground/80 max-w-xl">
-            FretCoach listens to every note, flags mistakes instantly, and delivers feedback through
-            screen, voice, and ambient lighting. Stop reinforcing bad habits. Make every minute of practice count.
+            FretCoach prevents mistakes before they become habits, delivering real-time guidance through
+            screen, voice, and ambient lighting. Build correct technique from the start. Make every minute of practice count.
           </p>
 
           {/* CTA Buttons */}

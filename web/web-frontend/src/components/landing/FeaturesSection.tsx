@@ -10,7 +10,7 @@ const features = [
   {
     icon: MessageSquare,
     title: "Live AI Coach",
-    description: "Get verbal feedback during practice like \"Your timing is drifting—lock in with the beat\" or \"Pitch is solid, watch the string noise.\" Mistakes don't go unnoticed.",
+    description: "Receive preventive guidance during practice like \"Your timing is drifting—lock in with the beat\" or \"Pitch is solid, watch the string noise.\" Correct technique as you play.",
   },
   {
     icon: Lightbulb,
@@ -25,7 +25,7 @@ const features = [
   {
     icon: Brain,
     title: "AI Practice Planning",
-    description: "The AI analyzes your history and recommends what to practice next. No more wondering what to work on—get personalized practice plans that adapt to your weak spots.",
+    description: "The AI analyzes your history and recommends preventive practice routines. No more wondering what to work on—get personalized plans that prevent technique gaps from forming.",
   },
   {
     icon: Globe,
@@ -39,7 +39,7 @@ const features = [
   },
   {
     icon: Zap,
-    title: "Portable Device",
+    title: "FretCoach Portable",
     description: "A Raspberry Pi-powered device running the same analysis engine. Practice anywhere without a laptop—your progress syncs automatically when online.",
   },
 ];
@@ -54,8 +54,8 @@ const FeaturesSection = () => {
             Key <span className="text-primary">Features</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            FretCoach closes the feedback loop. Every session is analyzed, every metric is tracked,
-            and the AI adapts to guide you toward measurable improvement.
+            FretCoach does not correct—it prevents. Instant feedback during practice prevents bad habits
+            from forming, guiding you toward correct technique from day one.
           </p>
         </div>
 

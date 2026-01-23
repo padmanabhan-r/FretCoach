@@ -37,7 +37,7 @@ const HowItWorksSection = () => {
             How It <span className="text-primary">Works</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            A continuous learning loop that transforms unstructured practice into guided improvement.
+            A preventive feedback system that builds correct motor patterns in real-time, not days later.
           </p>
         </div>
 
