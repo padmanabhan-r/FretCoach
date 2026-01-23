@@ -1,14 +1,16 @@
 # Introduction to FretCoach
 
-FretCoach is a comprehensive AI practice system that transforms how guitarists learn. It combines real-time audio analysis, live performance metrics, intelligent coaching, and multi-sensory feedback into a unified learning experience. The system listens to every note you play, evaluates your technique across four dimensions (pitch accuracy, scale conformity, timing stability, and noise control), and delivers instant feedback through on-screen visualizations, AI coaching commentary, and ambient lighting cues.
+## FretCoach Does Not Correct — It Prevents
 
-FretCoach acts as an always-available coach that listens to every note, identifies what needs improvement, and provides instant feedback through multiple channels:
+FretCoach is a **preventive neurofeedback system** for guitar that reshapes motor learning before conscious correction is required. It combines real-time audio analysis, live performance metrics, intelligent coaching, and multi-sensory feedback to prevent bad habits from forming in the first place.
+
+The system listens to every note you play, evaluates your technique across four dimensions (pitch accuracy, scale conformity, timing stability, and noise control), and delivers instant preventive guidance through:
 
 - **On-screen visualizations** — Live metrics, performance scoring, and note detection
-- **AI coach commentary** — Real-time verbal guidance during practice sessions
+- **AI coach commentary** — Real-time preventive guidance during practice sessions
 - **Ambient lighting** — Smart light color feedback for subconscious motor skill training
 
-Think of it as having a professional coach watching your practice—providing real-time guidance, tracking progress across sessions, and adapting your training based on your unique strengths and weaknesses. FretCoach closes the feedback loop that traditional practice leaves open.
+Think of it as having a professional coach guiding your technique in real-time—preventing mistakes before they become habits, tracking progress across sessions, and adapting your training based on your unique strengths and weaknesses. FretCoach closes the feedback loop from **days/weeks to milliseconds**.
 
 ---
 
@@ -23,13 +25,15 @@ When practicing guitar alone, you're flying blind. You can't tell if you're:
 
 **Traditional practice reinforces whatever you play—good habits and bad habits equally.** Without immediate feedback, you spend thousands of hours unknowingly cementing mistakes into muscle memory.
 
-Professional musicians solve this with coaches who provide real-time corrections. But access to expert coaching is expensive, time-limited, and not available during most practice sessions.
+**It is 10–20× harder to unlearn a motor habit than to prevent it.** Early-stage neuroplasticity is fast and fragile—correct technique builds quickly when guided, but incorrect technique becomes deeply encoded just as fast.
+
+Professional musicians solve this with coaches who provide real-time preventive guidance. But access to expert coaching is expensive, time-limited, and not available during most practice sessions.
 
 ---
 
 ## The FretCoach Solution
 
-FretCoach closes the feedback loop by acting as an always-available coach that **listens to every note you play** and provides **instant, multi-sensory feedback** through three channels:
+FretCoach closes the feedback loop by acting as an always-available coach that **listens to every note you play** and provides **instant, preventive guidance** through three channels:
 
 ### 1. Visual Feedback (Your Screen)
 Real-time metrics displayed as you play:
@@ -41,12 +45,12 @@ Real-time metrics displayed as you play:
 Color-coded performance indicators show your quality level at a glance.
 
 ### 2. Verbal Feedback (AI Coach)
-An AI coach provides real-time commentary during practice:
+An AI coach provides real-time preventive commentary during practice:
 - *"Your timing is drifting—lock in with the beat."*
 - *"Pitch accuracy is solid—focus on reducing string noise."*
 - *"You're rushing the transition from the G to B string. Slow down 5 BPM."*
 
-This verbal feedback is **corrective, specific, and actionable**—addressing actual problems shown in your metrics with concrete techniques to try immediately.
+This verbal feedback is **preventive, specific, and actionable**—addressing technique issues as they emerge with concrete adjustments to try immediately.
 
 ### 3. Ambient Feedback (Smart Lighting)
 Connected smart bulbs reflect your performance quality through color:
@@ -74,16 +78,19 @@ This delay means you've already reinforced mistakes hundreds of times before get
 Play note → Instant analysis → Immediate feedback → Correct in real-time → Next note
 ```
 
-### Why This Works
+### Why This Works: Preventive Neurofeedback
+
+**Prevention, Not Correction**
+Traditional practice lets you reinforce mistakes 100 times before correction. FretCoach catches errors on the *first* occurrence, preventing bad habits from forming in the first place. This is preventive neurofeedback—AI systems that intervene **during skill execution**, not after.
 
 **Immediate Reinforcement**
-Learning happens most effectively when feedback occurs within 200ms of an action. FretCoach delivers metric updates at 150ms intervals, well within the critical window for motor skill formation.
+Learning happens most effectively when feedback occurs within 200ms of an action. FretCoach delivers metric updates at 150ms intervals, well within the critical window for motor skill formation. This closes the feedback loop from **days/weeks to milliseconds**.
 
 **Multi-Sensory Engagement**
 By engaging visual (screen), auditory (AI coach), and peripheral (lighting) channels simultaneously, FretCoach activates more neural pathways than any single feedback method.
 
-**Mistake Prevention vs. Correction**
-Traditional practice lets you reinforce mistakes 100 times before correction. FretCoach catches errors on the *first* occurrence, preventing bad habits from forming in the first place.
+**Habit Formation vs. Habit Repair**
+It is **10–20× harder to unlearn a motor habit than to prevent it**. Early-stage neuroplasticity is fast and fragile. Preventive guidance during the motor learning window builds correct technique from the start—avoiding the expensive, slow process of habit repair.
 
 **Objective Progress Tracking**
 "Am I improving?" becomes an answerable question with data. You can see exactly which metrics have improved and by how much.
@@ -92,22 +99,28 @@ Traditional practice lets you reinforce mistakes 100 times before correction. Fr
 
 ## The Three-Component Ecosystem
 
-FretCoach isn't just an app—it's a complete learning ecosystem:
+FretCoach isn't just an app—it's a complete preventive neurofeedback ecosystem:
 
-### Desktop Application (The Studio)
-Your primary training environment. Plug in your guitar via USB audio interface, and the system analyzes every note in real-time, displays metrics on screen, and provides live verbal feedback from an AI coach.
+### FretCoach Studio (Desktop Application)
+Your primary training environment. Plug in your guitar via USB audio interface, and the system analyzes every note in real-time, displays metrics on screen, and provides live preventive feedback from an AI coach.
 
 **When to use:** Dedicated practice sessions at your desk or in a studio setting.
 
-### Portable Device (The Pedal)
-A dedicated, Raspberry Pi-powered pedal-like device for practice on the go. Powered by a Raspberry Pi 5, it runs the same audio analysis agent engine as the desktop application. It supports Manual and AI modes, and syncs practice history automatically.
+![Screenshot placeholder: FretCoach Studio main interface]
+
+### FretCoach Portable (Raspberry Pi Device)
+A dedicated, Raspberry Pi-powered device for practice on the go. Powered by a Raspberry Pi 5, it runs the same audio analysis engine as FretCoach Studio. It supports Manual and AI modes, and syncs practice history automatically.
 
 **When to use:** Practice anywhere—backstage before a gig, at a friend's house, outdoors—without a laptop while retaining the same intelligent feedback and progress tracking.
 
-### Web Dashboard (The Hub)
-A cloud-based analytics platform accessible from any device. Review past sessions, chat with the AI coach about your progress, generate personalized practice plans, and track improvement over time.
+![Screenshot placeholder: FretCoach Portable device]
+
+### FretCoach Hub (Web Platform)
+A cloud-based analytics platform accessible from any device. Review past sessions, chat with the AI coach about your progress, generate preventive practice plans, and track improvement over time.
 
 **When to use:** Planning practice sessions, reviewing trends, understanding long-term progress.
+
+![Screenshot placeholder: FretCoach Hub dashboard]
 
 All three components share the same central database, creating a seamless experience across contexts.
 

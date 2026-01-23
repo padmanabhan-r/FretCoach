@@ -44,6 +44,8 @@ const LiveCoachFeedback = ({
 
     setLoading(true);
     setError(null);
+    // Clear current feedback immediately to prevent flicker
+    setFeedback(null);
 
     try {
       const metrics = metricsRef.current;
@@ -60,6 +62,7 @@ const LiveCoachFeedback = ({
       });
 
       if (result.success) {
+        // Set feedback and history atomically to prevent flicker
         setFeedback(result);
         setFeedbackHistory(prev => [...prev, result].slice(-5)); // Keep last 5
         lastFetchRef.current = elapsed;
@@ -76,7 +79,7 @@ const LiveCoachFeedback = ({
     } finally {
       setLoading(false);
     }
-  }, [isRunning, enabled, scaleName, sessionId]);
+  }, [isRunning, enabled, scaleName, sessionId, onFeedbackReceived]);
 
   // Timer for elapsed time and feedback intervals
   useEffect(() => {
@@ -200,34 +203,31 @@ const LiveCoachFeedback = ({
         <div className="space-y-4 flex-1 flex flex-col">
           {/* Current Feedback - Grows to fill available space */}
           <div className="bg-gradient-to-r from-accent/20 to-secondary/20 rounded-lg p-4 border border-accent/30 min-h-[80px] flex-1 overflow-y-auto">
-            {loading && !feedback && (
+            {loading && (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <div className="animate-spin w-4 h-4 border-2 border-accent border-t-transparent rounded-full" />
                 <span>Coach is analyzing...</span>
               </div>
             )}
 
-            {error && (
+            {!loading && error && (
               <div className="text-destructive text-sm">{error}</div>
             )}
 
-            {feedback && (
-              <div>
+            {!loading && !error && feedback && (
+              <div key={feedback.timestamp}>
                 <div className="flex items-start gap-3">
                   <span className="text-2xl flex-shrink-0">💬</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-foreground font-medium leading-relaxed text-sm">
                       {feedback.feedback}
                     </p>
-                    {loading && (
-                      <div className="mt-2 text-xs text-muted-foreground animate-pulse">Updating...</div>
-                    )}
                   </div>
                 </div>
               </div>
             )}
 
-            {!feedback && !loading && !error && (
+            {!loading && !feedback && !error && (
               <p className="text-muted-foreground text-sm">
                 {elapsedSeconds < 15
                   ? `Warming up... feedback in ${15 - elapsedSeconds}s`

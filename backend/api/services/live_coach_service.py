@@ -40,6 +40,18 @@ live_coach_model = ChatOpenAI(
 # Initialize OpenAI client for TTS
 openai_client = AsyncOpenAI()
 
+# Global audio player instance to prevent overlapping audio
+_audio_player = None
+_audio_player_lock = None
+
+
+def get_audio_player():
+    """Get or create a singleton audio player instance."""
+    global _audio_player
+    if _audio_player is None:
+        _audio_player = LocalAudioPlayer()
+    return _audio_player
+
 
 def get_opik_config(session_id: str, trace_name: str) -> dict:
     """Create Opik config for LangChain calls tied to session_id"""
@@ -59,7 +71,7 @@ def get_opik_config(session_id: str, trace_name: str) -> dict:
 COACHING_SYSTEM_PROMPT = """You are a direct, practical guitar coach analyzing real-time playing data.
 
 Your feedback must be:
-- CORRECTIVE: Address the actual problem shown in the metrics
+- PREVENTIVE: Guide technique adjustments to prevent bad habits from forming
 - SPECIFIC: Reference the exact metric that needs work
 - ACTIONABLE: Give one concrete technique to try RIGHT NOW
 - BRIEF: 1 sentence maximum
@@ -74,7 +86,7 @@ Interpretation guide:
 - Scale Conformity: Whether notes are in the chosen scale and whether they are covering the full range of the scale. Low = playing wrong notes or playing in just one position, not knowing the scale positions
 - Timing Stability: Consistency of note spacing. Low = rushing, dragging, or uneven rhythm
 
-For the WEAKEST metric, provide a specific corrective instruction."""
+For the WEAKEST metric, provide a specific preventive instruction to build correct technique."""
 
 COACHING_USER_TEMPLATE = """Session metrics after {elapsed_time} practicing {scale_name}:
 
@@ -86,7 +98,7 @@ Weakest area: {weakest_area_name} at {weakest_score}%
 Notes played so far: {notes_played}
 Correct notes: {correct_notes} | Wrong notes: {wrong_notes}
 
-Give ONE specific corrective instruction for the weakest metric:"""
+Give ONE specific preventive instruction for the weakest metric:"""
 
 
 def get_performance_label(score: float) -> str:
@@ -133,6 +145,9 @@ async def generate_and_play_tts(
     Generate and play TTS audio for coaching feedback in real-time.
     Traced with Opik for monitoring.
 
+    Uses a singleton audio player to prevent overlapping audio and crackling.
+    Previous audio is stopped before playing new feedback.
+
     Args:
         feedback_text: The coaching feedback text to convert to speech
         session_id: Optional session ID for tracking
@@ -141,6 +156,16 @@ async def generate_and_play_tts(
         Dictionary containing TTS metadata and status
     """
     try:
+        # Get singleton audio player instance
+        player = get_audio_player()
+
+        # Stop any currently playing audio to prevent overlap and crackling
+        try:
+            player.stop()
+        except:
+            # If stop fails (no audio playing), continue
+            pass
+
         # Generate and stream TTS audio
         async with openai_client.audio.speech.with_streaming_response.create(
             model="gpt-4o-mini-tts",
@@ -149,8 +174,8 @@ async def generate_and_play_tts(
             instructions="Speak in a direct, encouraging tone like a guitar coach giving real-time feedback to a student during practice.",
             response_format="pcm",
         ) as response:
-            # Play audio in real-time while the player is playing
-            await LocalAudioPlayer().play(response)
+            # Play audio using singleton player (prevents multiple streams)
+            await player.play(response)
 
         return {
             "status": "played",

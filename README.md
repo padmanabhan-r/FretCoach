@@ -21,9 +21,9 @@ FretCoach is the first implementation of this theory for guitar. The architectur
 
 ## Platform Ecosystem
 
-- **Desktop Application** — Focused practice with real-time analysis, AI coaching, and ambient feedback
-- **Portable Device** — Raspberry Pi pedal for practice anywhere
-- **Web Dashboard** — Analytics, progress tracking, and AI-generated practice recommendations
+- **FretCoach Studio** — Desktop application for focused practice with real-time analysis, AI coaching, and ambient feedback
+- **FretCoach Portable** — Raspberry Pi device for practice anywhere
+- **FretCoach Hub** — Web platform for analytics, progress tracking, and AI-generated practice recommendations
 
 ## Real-Time Audio Analysis Agent Engine
 
@@ -67,7 +67,7 @@ FretCoach consists of three interconnected components connected to a central dat
                  │                      │                      │
                  ▼                      ▼                      ▼
 ┌────────────────────────┐  ┌─────────────────────┐  ┌────────────────────────┐
-│     Desktop App        │  │    Web Dashboard    │  │   Portable Device      │
+│   FretCoach Studio     │  │   FretCoach Hub     │  │  FretCoach Portable    │
 │  ────────────────────  │  │  ─────────────────  │  │  ────────────────────  │
 │  Electron + React      │  │  React + FastAPI    │  │  Raspberry Pi 5        │
 │  Python FastAPI        │  │                     │  │  Python FastAPI        │
@@ -97,7 +97,7 @@ FretCoach consists of three interconnected components connected to a central dat
 
 ---
 
-## 1. Desktop Application (Current: Guitar)
+## 1. FretCoach Studio (Desktop Application)
 
 **Location:** `/application/`
 
@@ -130,11 +130,11 @@ uvicorn backend.api.server:app --reload --host 127.0.0.1 --port 8000
 
 ---
 
-## 2. Portable Device (Raspberry Pi)
+## 2. FretCoach Portable (Raspberry Pi Device)
 
 **Location:** `/portable/`
 
-A standalone physical device—pedal-style—for practice anywhere. Same analysis engine as desktop, running at the edge.
+A standalone physical device—pedal-style—for practice anywhere. Same analysis engine as FretCoach Studio, running at the edge.
 
 **Status:** Prototyping phase — demonstrating edge computing capabilities.
 
@@ -151,7 +151,7 @@ Hardware setup complete with Raspberry Pi 5 and integrated audio I/O. Audio anal
 
 ---
 
-## 3. Web Dashboard
+## 3. FretCoach Hub (Web Platform)
 
 **Location:** `/web/`
 
@@ -186,7 +186,7 @@ npm run dev  # http://localhost:5173
 
 ## 4. Ambient Lighting
 
-Integrated across Desktop and Portable components for subconscious feedback—visual cues that reinforce performance quality without breaking focus.
+Integrated across FretCoach Studio and FretCoach Portable for subconscious feedback—visual cues that reinforce performance quality without breaking focus.
 
 ### How It Works
 - **Smart bulb integration** via Tuya API
@@ -250,7 +250,7 @@ OPIK_API_KEY=your_opik_key
 
 ```
 FretCoach/
-├── application/          # Desktop App (Electron + React)
+├── application/          # FretCoach Studio (Electron + React)
 │   ├── electron/         # Electron main process
 │   ├── src/              # React components & UI
 │   └── build/            # App icons
@@ -258,11 +258,11 @@ FretCoach/
 │   ├── api/              # FastAPI routes & services
 │   ├── core/             # audio analysis agent engine
 │   └── sql/              # Database schemas
-├── web/                  # Web Dashboard
+├── web/                  # FretCoach Hub (Web Platform)
 │   ├── src/              # React frontend
 │   ├── server/           # FastAPI backend
 │   └── public/           # Static assets
-├── portable/             # Raspberry Pi Pedal (in development)
+├── portable/             # FretCoach Portable (Raspberry Pi Device)
 └── images/               # Project assets
 ```
 
@@ -270,8 +270,8 @@ FretCoach/
 
 ## Feature Matrix
 
-| Feature | Desktop | Web | Portable |
-|---------|:-------:|:---:|:--------:|
+| Feature | Studio | Hub | Portable |
+|---------|:------:|:---:|:--------:|
 | Real-time Audio Analysis | ✓ | — | ✓ |
 | AI Practice Coach | ✓ | ✓ | ✓ |
 | Live AI Feedback | ✓ | — | ✓ |
