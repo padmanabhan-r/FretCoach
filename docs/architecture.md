@@ -4,6 +4,64 @@ Complete technical overview of FretCoach's multi-component architecture.
 
 ---
 
+## Overview: The FretCoach Trifecta
+
+FretCoach is built as a three-component ecosystem with a central database enabling seamless cross-device practice tracking.
+
+![FretCoach Trifecta](../images/FretCoach%20Trifecta.jpeg)
+
+**The three components:**
+- **FretCoach Studio** — Desktop training app for focused practice
+- **FretCoach Hub** — Web dashboard for analytics and AI coaching
+- **FretCoach Portable** — Raspberry Pi device for portable practice
+
+**Central Database:**
+- PostgreSQL via Supabase
+- Stores all practice sessions, metrics, and AI-generated plans
+- Enables cross-device sync and AI coach with full history access
+
+---
+
+## Dual-Brain Architecture
+
+FretCoach combines two complementary processing systems to deliver both real-time performance and intelligent coaching.
+
+![FretCoach Brain Architecture](../images/FretCoach%20Brain.png)
+
+### Fast Loop: Audio Analysis Agent (Deterministic)
+**Purpose:** Real-time performance monitoring with <150ms latency
+
+**What it does:**
+- Continuous audio analysis (pitch, scale, timing, noise detection)
+- Immediate visual feedback on screen
+- Ambient lighting control (smart bulb color changes)
+- Sliding window scoring for performance assessment
+
+**Why deterministic?**
+- Predictable latency requirements (no LLM calls)
+- Works offline (no cloud dependencies)
+- Consistent, measurable metrics
+
+### Slow Loop: AI Coach (LLM-Powered)
+**Purpose:** Intelligent guidance and pattern recognition
+
+**What it does:**
+- Analyzes session metrics and generates verbal coaching
+- Creates personalized practice plans based on history
+- Provides conversational support via web chat
+- Text-to-speech for spoken feedback (GPT-4o-mini-TTS)
+
+**Why LLM-powered?**
+- Pattern recognition across sessions
+- Natural language interaction
+- Adaptive recommendations based on user progress
+- Flexible reasoning about practice strategies
+
+**Learning Feedback Channel (Non-Real-Time):**
+The AI coach doesn't need instant response times—coaching can arrive 1-2 seconds after an event. This separation allows us to use cloud LLMs without compromising the real-time experience.
+
+---
+
 ## High-Level Architecture
 
 FretCoach consists of three main components sharing a central PostgreSQL database:

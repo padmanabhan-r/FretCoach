@@ -73,6 +73,26 @@ FretCoach:
 Play note → Instant analysis → Immediate feedback → Adjust → Next note
 ```
 
+### The Dual-Brain Architecture
+
+FretCoach combines two complementary systems to deliver both speed and intelligence.
+
+![FretCoach Brain Architecture](../images/FretCoach%20Brain.png)
+
+**Audio Analysis Agent (Fast Loop - Deterministic)**
+- Real-time processing with <150ms latency
+- Continuous monitoring of pitch, scale, timing, and noise
+- Immediate visual feedback and ambient lighting
+- Runs entirely locally (no cloud required)
+
+**AI Coach (Slow Loop - LLM-Powered)**
+- Intelligent pattern recognition and guidance
+- Verbal coaching with personalized recommendations
+- Practice plan generation based on history
+- Uses cloud LLMs when needed (Gemini, GPT-4o-mini)
+
+This separation ensures **instant feedback for motor learning** while leveraging **AI intelligence for strategic guidance**.
+
 ### Why Instant Feedback Works
 
 **Catch mistakes early**
@@ -91,33 +111,29 @@ Data shows exactly which metrics improve and by how much.
 
 ## The Ecosystem
 
-FretCoach consists of three connected components:
+FretCoach consists of three connected components that work together seamlessly through a central database.
+
+![FretCoach Trifecta](../images/FretCoach%20Trifecta.jpeg)
 
 ### FretCoach Studio (Desktop Application)
 Desktop app for focused practice. Connects via USB audio interface, analyzes in real-time, displays metrics, and provides AI coaching.
 
 **When to use:** Dedicated practice sessions
 
-![Screenshot Placeholder: FretCoach Studio Interface]
-*[TODO: Add screenshot of Studio main interface]*
-
 ### FretCoach Portable (Raspberry Pi Device)
 Raspberry Pi 5 device with the same analysis engine. Supports Manual and AI modes, syncs automatically.
 
 **When to use:** Practice anywhere without a laptop
-
-![Photo Placeholder: FretCoach Portable Device]
-*[TODO: Add photo of Portable device]*
 
 ### FretCoach Hub (Web Platform)
 Web analytics platform. Review sessions, chat with AI coach, generate practice plans, track progress.
 
 **When to use:** Planning and reviewing
 
-![Screenshot Placeholder: FretCoach Hub Dashboard]
-*[TODO: Add screenshot of Hub dashboard]*
-
-All components share a central database for seamless sync.
+All three components share a **central database** (PostgreSQL via Supabase), enabling:
+- Seamless practice tracking across devices
+- AI coach access to your complete practice history
+- Cross-device practice plan sync
 
 ---
 

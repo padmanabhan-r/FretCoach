@@ -25,13 +25,15 @@ This helps you correct mistakes immediately, not after they've been practiced hu
 
 ## The Ecosystem
 
-FretCoach consists of three connected components:
+FretCoach consists of three connected components sharing a central database for seamless cross-device practice tracking.
+
+![FretCoach Trifecta](../images/FretCoach%20Trifecta.jpeg)
 
 - **FretCoach Studio** — Desktop app for focused practice with real-time analysis and AI coaching
 - **FretCoach Portable** — Raspberry Pi device for practice anywhere
 - **FretCoach Hub** — Web platform for analytics, session history, and practice planning
 
-Like having a coach watching every session—providing guidance, tracking progress, adapting to your needs.
+All three components sync through PostgreSQL (Supabase), enabling the AI coach to access your complete practice history regardless of which device you use.
 
 ---
 

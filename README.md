@@ -17,14 +17,37 @@ FretCoach analyzes your guitar playing in real-time and provides instant feedbac
 
 ## Platform Ecosystem
 
+FretCoach consists of three interconnected components, all sharing a central database for seamless cross-device practice tracking.
+
+![FretCoach Trifecta](images/FretCoach%20Trifecta.jpeg)
+
 - **FretCoach Studio** — Desktop application for focused practice with real-time analysis, AI coaching, and ambient feedback
 - **FretCoach Portable** — Raspberry Pi device for practice anywhere
 - **FretCoach Hub** — Web platform for analytics, progress tracking, and AI-generated practice recommendations
 
 ## How It Works
 
-![Screenshot Placeholder: Real-time analysis in action]
-*[TODO: Add screenshot showing live metrics and note detection]*
+FretCoach uses a **dual-brain architecture** combining fast deterministic audio processing with intelligent AI coaching.
+
+![FretCoach Brain Architecture](images/FretCoach%20Brain.png)
+
+### The Two Systems
+
+**Audio Analysis Agent (Fast Loop)**
+- Deterministic real-time processing (<150ms latency)
+- Continuous evaluation of pitch, scale, timing, and noise
+- Immediate visual feedback and ambient lighting control
+- Runs locally without cloud dependencies
+
+**AI Coach (Slow Loop)**
+- LLM-powered intelligent guidance
+- Analyzes performance patterns and provides verbal coaching
+- Generates personalized practice plans
+- Operates on-demand (not real-time critical)
+
+This hybrid approach delivers the speed of local processing with the intelligence of AI coaching.
+
+### Performance Metrics
 
 FretCoach's audio analysis engine evaluates your playing across four metrics:
 
