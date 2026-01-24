@@ -355,7 +355,8 @@ def invoke_workflow(
                 return {
                     "response": response_content,
                     "tool_calls": tool_results,
-                    "success": True
+                    "success": True,
+                    "model_used": "MiniMax-M2.1" if use_fallback else "Gemini 2.5 Flash"
                 }
 
         return {
