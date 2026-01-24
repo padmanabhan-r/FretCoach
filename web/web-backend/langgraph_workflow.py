@@ -7,6 +7,7 @@ from typing import TypedDict, Annotated, Sequence, Dict, Any, Optional
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage, ToolMessage
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
+from langgraph.checkpoint.memory import MemorySaver
 from operator import add
 
 # Try to import Opik for tracing
@@ -23,6 +24,9 @@ from langchain_anthropic import ChatAnthropic
 
 # Import tools
 from tools.database_tools import execute_sql_query, save_practice_plan, get_database_schema
+
+# Initialize shared memory checkpointer for conversation persistence
+checkpointer = MemorySaver()
 
 
 # Define the state for the conversation
@@ -100,6 +104,7 @@ CRITICAL Guidelines:
 6. Provide actionable, encouraging feedback based on actual data
 7. If you need to understand the schema, use get_database_schema tool first
 8. Return actual numbers and insights from the queried data
+9. IMPORTANT: Remember information users share during the conversation (their name, preferences, goals, etc.) and reference it naturally in subsequent responses
 
 Example queries (replace USER_ID with the actual user_id from context):
 - "Show my progress" or "Visualize my progress" →
@@ -209,8 +214,8 @@ def create_workflow():
     # Add edge from tools back to agent
     workflow.add_edge("tools", "agent")
 
-    # Compile the graph
-    return workflow.compile()
+    # Compile the graph with memory checkpointer for conversation persistence
+    return workflow.compile(checkpointer=checkpointer)
 
 
 def create_workflow_with_fallback():
@@ -249,8 +254,8 @@ def create_workflow_with_fallback():
     # Add edge from tools back to agent
     workflow.add_edge("tools", "agent")
 
-    # Compile the graph
-    return workflow.compile()
+    # Compile the graph with memory checkpointer for conversation persistence
+    return workflow.compile(checkpointer=checkpointer)
 
 
 # Create compiled workflows
@@ -285,6 +290,22 @@ def invoke_workflow(
             lc_messages.append(AIMessage(content=msg["content"]))
         elif msg.get("role") == "system":
             lc_messages.append(SystemMessage(content=msg["content"]))
+
+    # With checkpointer enabled, only send new messages to avoid duplicates.
+    # For continuing conversations (with thread_id), send only the last message (new user input).
+    # For new conversations (first message), send all messages.
+    if thread_id and len(lc_messages) > 1:
+        # Get the workflow to check existing state
+        workflow = fallback_workflow if use_fallback else primary_workflow
+        try:
+            # Check if this thread has existing state
+            state = workflow.get_state(config={"configurable": {"thread_id": thread_id}})
+            if state.values.get("messages"):
+                # Thread exists, only send the last message (new user message)
+                lc_messages = [lc_messages[-1]]
+        except Exception:
+            # Thread doesn't exist yet, send all messages
+            pass
 
     # Prepare initial state
     initial_state = {
