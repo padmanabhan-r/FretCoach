@@ -1,6 +1,37 @@
-# FretCoach Portable
+# FretCoach Portable - Raspberry Pi Practice Device
 
-Terminal-based guitar practice tool designed for Raspberry Pi 5.
+Portable guitar practice device running FretCoach's real-time analysis engine on Raspberry Pi 5.
+
+![FretCoach Trifecta](/images/FretCoach%20Trifecta.jpeg)
+
+## Overview
+
+FretCoach Portable is an edge computing practice device — a guitar pedal-like unit running the same audio analysis engine as FretCoach Studio. Practice anywhere with real-time feedback, ambient lighting, and automatic sync to the central database.
+
+**Status:** Prototyping phase (~30% complete)
+- **Hardware:** Complete (RPi 5 + Scarlett Solo)
+- **Software:** Adaptation in progress
+
+## Current Capabilities
+
+| Feature | Status |
+|---------|--------|
+| Audio Analysis | ✓ Same engine as Studio |
+| Manual Mode | ✓ 24 scales supported |
+| AI Mode | ✓ AI-recommended plans |
+| Ambient Lighting | ✓ Smart bulb integration |
+| Session Logging | ✓ Syncs to Supabase |
+| Terminal Display | ✓ Real-time metrics |
+| Live AI Voice Feedback | ✗ Desktop only |
+| Web UI | ✗ Desktop only |
+
+## Hardware Requirements
+
+- Raspberry Pi 5 (8GB RAM recommended)
+- USB Audio Interface (e.g., Focusrite Scarlett Solo)
+- MicroSD card (32GB+)
+- Smart bulb (optional, Tuya-compatible)
+- Guitar with 1/4" cable
 
 ## What to Copy to Pi5
 
@@ -100,19 +131,13 @@ source venv/bin/activate
 python main.py
 ```
 
-## Features
+## Use Cases
 
-| Feature | Portable | Desktop |
-|---------|----------|---------|
-| Audio Analysis | Yes | Yes |
-| Audio Config | Yes | Yes |
-| Test Audio | Yes | Yes |
-| Manual Mode | Yes | Yes |
-| AI Mode | Yes | Yes |
-| Ambient Light | Yes | Yes |
-| Session Logging | Yes | Yes |
-| Live AI Coach Feedback | No | Yes |
-| Web UI | No | Yes |
+- **Portable practice** — Practice anywhere without a laptop
+- **Backstage warmup** — Pre-performance preparation
+- **Travel sessions** — Fits in guitar case
+- **Offline practice** — Works without internet (syncs later)
+- **Minimal setup** — Pedal-like form factor
 
 ## Terminal Display
 
@@ -175,3 +200,21 @@ sudo usermod -a -G audio $USER
 - Verify Tuya credentials in `.env`
 - Check the bulb is on the same network
 - Ambient lighting is optional - practice works without it
+
+## Future Roadmap
+
+**Planned enhancements:**
+- Physical enclosure design (3D printed pedal case)
+- Battery power management for true portability
+- LED status indicators
+- Physical button controls for start/stop
+- Local LCD display (optional)
+
+**Current focus:** Software optimization for real-time performance on ARM architecture
+
+## Documentation
+
+For detailed architecture and usage:
+- [System Architecture](../docs/architecture.md#component-3-portable-device-raspberry-pi)
+- [Environment Setup](../docs/environment-setup.md)
+- [Quickstart Guide](../docs/quickstart.md)

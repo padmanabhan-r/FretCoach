@@ -45,32 +45,18 @@ pip install -r requirements.txt
 
 ### 3. Configure Environment Variables
 
-Create `backend/.env`:
+Create `backend/.env` with database, AI keys, and optional services.
 
+> **Complete setup guide:** [environment-setup.md](environment-setup.md)
+
+**Quick template:**
 ```bash
-# Database (Supabase)
 DB_HOST=your_supabase_host.supabase.co
-DB_PORT=5432
-DB_NAME=postgres
 DB_USER=postgres
 DB_PASSWORD=your_password
-
-# AI Services (at least one required)
 OPENAI_API_KEY=sk-...
-GOOGLE_API_KEY=...  # Optional
-
-# User ID (for tracking)
-FRETCOACH_USER_ID=your_unique_user_id
-
-# Smart Bulb (Optional)
-TUYA_CLIENT_ID=...
-TUYA_CLIENT_SECRET=...
-TUYA_DEVICE_ID=...
-TUYA_REGION=us  # or eu, cn, in
-
-# Observability (Optional)
-OPIK_API_KEY=...
-OPIK_WORKSPACE=default
+GOOGLE_API_KEY=...
+TUYA_CLIENT_ID=...  # Optional
 ```
 
 ### 4. Set Up Database
@@ -241,12 +227,12 @@ Visit http://localhost:5173 in your browser.
 
 ## Quick Tips
 
-### Getting the Best Audio Quality
+### Audio Quality
 
-1. **Use a USB audio interface** (Focusrite Scarlett, PreSonus, etc.)
-2. **Plug guitar directly into the interface** (not through an amp)
-3. **Adjust input gain** so you're hitting around -12dB peak level
-4. **Minimize background noise** for better note detection
+- USB audio interface (Focusrite Scarlett, PreSonus)
+- Direct guitar connection (not through amp)
+- Input gain at -12dB peak
+- Minimize background noise
 
 ### Understanding Metrics
 
@@ -266,14 +252,14 @@ Visit http://localhost:5173 in your browser.
 - Clarity of playing
 - Low score = string buzz, fret noise, unwanted harmonics
 
-### Interpreting AI Feedback
+### AI Feedback
 
-The AI coach provides:
-- **Real-time feedback:** During the session, analyzing your metrics as you play
-- **Corrective instructions:** Specific techniques to try immediately
-- **Post-session analysis:** Summary of what went well and what needs work
+Three modes:
+- **Real-time:** Analyzes metrics during execution
+- **Corrective:** Specific techniques to apply immediately
+- **Post-session:** Performance summary
 
-Focus on **one metric at a time**. If timing is your weakness, prioritize timing exercises before worrying about other metrics.
+Focus one metric at a time. Timing weakness? Prioritize timing before other metrics.
 
 ### Adjusting Difficulty
 
@@ -339,7 +325,7 @@ Now that you have FretCoach running:
 
 → **[Desktop Application Guide](desktop-app.md)** — Deep dive into all features  
 → **[AI Coaching System](ai-coaching.md)** — Learn how AI recommendations work  
-→ **[Configuration Guide](configuration.md)** — Customize sensitivity, strictness, and more
+→ **[Environment Setup](environment-setup.md)** — Complete configuration guide
 
 ---
 

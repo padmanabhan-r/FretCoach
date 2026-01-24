@@ -28,42 +28,40 @@ The system tracks your progress and guides improvement across four key metrics: 
 
 ## Platform Ecosystem
 
-FretCoach consists of three interconnected components, all sharing a central database for seamless cross-device practice tracking.
+FretCoach operates across three interconnected components sharing a central database.
 
 ![FretCoach Trifecta](images/FretCoach%20Trifecta.jpeg)
 
-- **FretCoach Studio** — Desktop application for focused practice with real-time analysis, AI coaching, and ambient feedback
-- **FretCoach Portable** — Raspberry Pi device for practice anywhere
-- **FretCoach Hub** — Web platform for analytics, progress tracking, and AI-generated practice recommendations
+- **FretCoach Studio** — Desktop app for real-time practice with AI coaching and ambient feedback
+- **FretCoach Portable** — Raspberry Pi device for portable practice
+- **FretCoach Hub** — Web analytics, progress tracking, and AI practice planning
 
 ## How It Works
 
 ### Preventive Neurofeedback Systems
 
-FretCoach belongs to a new category we call **Preventive Neurofeedback Systems** — AI systems that shape neural and motor behavior in real time before maladaptive patterns form. Unlike traditional corrective AI that analyzes performance after the fact, FretCoach intervenes **during skill execution** to guide motor learning inside the brain's plasticity window.
+FretCoach is a **Preventive Neurofeedback System** — it shapes motor behavior in real time before maladaptive patterns form. Instead of corrective feedback after mistakes solidify, FretCoach intervenes **during skill execution** inside the brain's plasticity window.
 
-> **Habit Formation vs Habit Repair:** Prevention is neuroadaptive. Correction is retrofitting.
+> **Prevention is neuroadaptive. Correction is retrofitting.**
 
-FretCoach uses a **dual-brain architecture** combining fast deterministic audio processing with intelligent AI coaching.
+Architecture: **dual-brain system** combining fast deterministic processing with intelligent AI coaching.
 
 ![FretCoach Brain Architecture](images/FretCoach%20Brain.png)
 
 ### The Two Systems
 
 **Audio Analysis Agent (Fast Loop)**
-- Deterministic real-time processing (<300ms latency)
-- **Preventive intervention** during skill execution
-- Continuous evaluation of pitch, scale, timing, and noise
-- Immediate visual feedback and ambient lighting control
-- Runs locally without cloud dependencies
+- Real-time processing (<300ms latency)
+- Preventive intervention during execution
+- Continuous pitch, scale, timing, noise evaluation
+- Local processing, no cloud dependency
 
 **AI Coach (Slow Loop)**
-- LLM-powered intelligent guidance
-- Analyzes performance patterns and provides **preventive** verbal coaching
-- Generates personalized practice plans
-- Operates on-demand (not real-time critical)
+- LLM-powered preventive coaching
+- Pattern analysis and personalized practice plans
+- On-demand (not real-time critical)
 
-This hybrid approach delivers the speed of local processing with the intelligence of AI coaching — intervening in the motor learning window before bad habits solidify.
+Hybrid architecture: local speed + AI intelligence = intervention before habits solidify.
 
 ### Performance Metrics
 
@@ -76,23 +74,20 @@ FretCoach's audio analysis engine evaluates your playing across four metrics:
 | **Timing Stability** | Rhythmic consistency |
 | **Noise Control** | String noise and unwanted artifacts |
 
-You get feedback through three channels:
-- **On-screen metrics** — Live performance scores and note detection
-- **AI coach** — Real-time verbal guidance during practice
-- **Environmental feedback** — Sensory reinforcement through smart lighting that controls your practice environment (green = good, red = needs work)
+Three feedback channels:
+- **On-screen metrics** — Live scores and note detection
+- **AI coach** — Real-time verbal guidance
+- **Ambient lighting** — Smart bulb feedback (green = good, red = needs work)
 
 ## AI Coaching
 
-Powered by LLMs (Gemini 2.5 Flash, OpenAI GPT 4o Mini, GPT-4o-mini-TTS):
-- **AI Practice Mode** — Get personalized practice plans based on your history
-- **Live Vocal Feedback** — Real-time spoken coaching using GPT-4o-mini-TTS during sessions
+Powered by LLMs (Gemini 2.5 Flash, OpenAI GPT-4o, GPT-4o-mini-TTS):
+- **AI Practice Mode** — Personalized plans from practice history
+- **Live Vocal Feedback** — Real-time spoken coaching (GPT-4o-mini-TTS)
 - **Progress Tracking** — Performance trends and pattern recognition
-- **Adaptive Plans** — Practice recommendations that evolve with you
+- **Adaptive Plans** — Evolving recommendations
 
-Audio analysis runs **locally**. AI features use cloud APIs for coaching and sync.
-
-### Vocal Coach (TTS)
-The live AI coach uses OpenAI's `gpt-4o-mini-tts` model to convert coaching text to speech with a natural, encouraging tone. Audio playback is synchronized to prevent overlapping feedback and crackling.
+Audio analysis runs **locally**. AI features use cloud APIs.
 
 ---
 
@@ -144,35 +139,24 @@ FretCoach consists of three interconnected components connected to a central dat
 
 **Location:** `/application/`
 
-![Screenshot Placeholder: FretCoach Studio Interface]
-*[TODO: Add screenshot of desktop app showing live session]*
-
 Desktop application for focused practice sessions.
 
 ### Features
-- **Real-time Audio Analysis** — Works with USB audio interface or built-in mic
-- **Live Visual Feedback** — On-screen metrics with performance scoring
-- **Dual Practice Modes:**
-  - *Manual Mode* — Choose scale, sensitivity, and strictness
-  - *AI Mode* — Get AI-recommended practice plans
-- **Live AI Coaching** — Real-time verbal guidance during sessions
-- **Ambient Lighting** — Smart bulb integration for visual feedback
-- **Session Logging** — Automatic save to database
-- **Session Summary** — Detailed breakdown after each session
+- Real-time audio analysis (USB interface or built-in mic)
+- Live visual metrics and performance scoring
+- Manual Mode (choose scale/settings) or AI Mode (recommended plans)
+- Live vocal AI coaching during sessions
+- Ambient lighting integration
+- Automatic session logging and summaries
 
 ### Getting Started
 ```bash
 cd application
 npm install
-npm run dev  # Starts both frontend and backend
+npm run dev  # Starts frontend + backend
 ```
 
-### Backend Only
-```bash
-cd backend
-source .venv/bin/activate
-uvicorn backend.api.server:app --reload --host 127.0.0.1 --port 8000
-```
+> **Environment setup:** See [docs/environment-setup.md](docs/environment-setup.md)
 
 ---
 
@@ -180,45 +164,32 @@ uvicorn backend.api.server:app --reload --host 127.0.0.1 --port 8000
 
 **Location:** `/portable/`
 
-![Photo Placeholder: FretCoach Portable Device]
-*[TODO: Add photo of Raspberry Pi setup]*
+Raspberry Pi 5-based portable practice device. Same analysis engine as Studio.
 
-Raspberry Pi 5-based practice device for portability. Same analysis engine as Studio.
-
-**Status:** Prototyping phase
+**Status:** Prototyping phase — hardware complete, software in progress
 
 ### Features
-- Real-time audio processing at the edge
+- Real-time edge processing
 - Ambient lighting feedback
 - Manual and AI practice modes
-- Syncs with central database
-- Battery-powered (planned)
+- Database sync
 
 ### Current Progress
-Hardware setup complete. Software adaptation in progress.
+Hardware operational. Software integration ongoing.
 
 ---
 
 ## 3. FretCoach Hub (Web Platform)
 
-**Access Here:** [fretcoach.online](https://fretcoach.online)
-
-**Location:** `/web/`
-
-![Screenshot Placeholder: FretCoach Hub Dashboard]
-*[TODO: Add screenshot of web dashboard]*
+**Access:** [fretcoach.online](https://fretcoach.online) | **Location:** `/web/`
 
 Web platform for analytics and practice planning.
 
 ### Features
-- **AI Practice Coach** — Natural language chat interface powered by text-to-SQL agent
-- **Ask Questions** — "What should I practice next?", "Show my progress trends", "Compare my latest session"
-- **Performance Analytics** — Trend charts and session comparisons
-- **Practice Plan Generation** — AI-generated plans synced to devices
-- **Session History** — Browse past sessions
-- **Statistics** — Total practice time, notes played, scores
-
-The chat agent uses intent detection to trigger database queries and Gemini 2.5 Flash to provide conversational responses with visualizations.
+- AI chat coach (text-to-SQL agent + Gemini 2.5 Flash)
+- Performance analytics and trend charts
+- AI-generated practice plans
+- Session history and statistics
 
 ### Getting Started
 
@@ -236,31 +207,21 @@ npm install
 npm run dev  # http://localhost:5173
 ```
 
-**Website and Dashboard:** [fretcoach.online](https://fretcoach.online)
+> **Environment setup:** See [docs/environment-setup.md](docs/environment-setup.md)
 
 ---
 
 ## 4. Ambient Lighting
 
-Smart bulb integration for visual feedback during practice.
+Smart bulb integration for visual performance feedback.
 
-### How It Works
-- Tuya API integration
-- Color-coded performance feedback:
-  - 🟢 Green — Excellent (70%+)
-  - 🟡 Yellow-Green — Good (50-70%)
-  - 🟠 Yellow — Average (30-50%)
-  - 🔴 Red — Needs Work (<30%)
-- Toggle on/off per session
+### Color Coding
+- 🟢 Green — Excellent (70%+)
+- 🟡 Yellow-Green — Good (50-70%)
+- 🟠 Yellow — Average (30-50%)
+- 🔴 Red — Needs Work (<30%)
 
-### Configuration
-Add Tuya smart bulb credentials to `backend/.env`:
-```env
-TUYA_CLIENT_ID=your_client_id
-TUYA_CLIENT_SECRET=your_secret
-TUYA_DEVICE_ID=your_bulb_device_id
-TUYA_REGION=us  # or eu, cn, in
-```
+> **Configuration:** See [docs/environment-setup.md](docs/environment-setup.md#smart-bulb-setup-tuya)
 
 ---
 
@@ -277,28 +238,9 @@ FretCoach uses PostgreSQL hosted on Supabase with two core tables:
 
 ## Environment Setup
 
-Create `backend/.env`:
-```env
-# Database (Supabase)
-DB_HOST=your_supabase_host
-DB_PORT=5432
-DB_NAME=postgres
-DB_USER=postgres
-DB_PASSWORD=your_password
+See complete setup guide: [docs/environment-setup.md](docs/environment-setup.md)
 
-# AI Services
-OPENAI_API_KEY=your_openai_key
-GOOGLE_API_KEY=your_gemini_key
-
-# Smart Bulb (Optional)
-TUYA_CLIENT_ID=...
-TUYA_CLIENT_SECRET=...
-TUYA_DEVICE_ID=...
-TUYA_REGION=us
-
-# Observability (Optional)
-OPIK_API_KEY=your_opik_key
-```
+**Quick reference:** Configure database (Supabase), AI keys (OpenAI, Gemini), smart bulb (Tuya), and observability (Opik).
 
 ---
 
@@ -357,18 +299,17 @@ FretCoach/
 
 **Prevention, Not Correction**
 
-FretCoach is a **Preventive Neurofeedback System** — it doesn't wait for mistakes to happen and then fix them. Instead, it operates inside the motor learning window, providing instant guidance during skill execution to shape correct technique from the start.
+FretCoach operates inside the motor learning window — providing instant guidance during skill execution before mistakes encode.
 
-**Why this matters:**
-- Traditional practice relies on delayed feedback (days/weeks between lessons)
-- By the time mistakes are identified, motor patterns are already encoded
-- Neural research shows it's 10–20× harder to unlearn a habit than to prevent it
-- FretCoach closes the feedback loop from days to **milliseconds**
+**Why:**
+- Traditional feedback arrives days/weeks late (lessons, recordings)
+- Motor patterns solidify before mistakes are identified
+- 10–20× harder to unlearn than prevent (neural research)
+- FretCoach closes the loop from days to **milliseconds**
 
-**Gamification meets neuroscience:**  
-Real-time scores, color-coded ambient lighting, and AI coaching transform practice into an engaging, neuroadaptive experience. Every note you play is an opportunity to reinforce correct motor patterns before incorrect ones take root.
+Real-time scores, ambient lighting, and AI coaching create an engaging neuroadaptive experience. Every note reinforces correct patterns before incorrect ones form.
 
-The system is designed for guitar but built with an architecture that could extend to other instruments (KeysCoach, VocalCoach, DrumCoach) and motor skills in the future.
+Built for guitar. Designed to extend to other instruments and motor skills.
 
 ---
 
