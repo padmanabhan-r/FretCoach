@@ -57,20 +57,41 @@ export function PerformanceChart({ chartData, onSavePlan, onDismissPlan }: Perfo
   return null;
 }
 
-function TrendChart({ data, metric }: { data: any[]; metric?: string }) {
+function TrendChart({ data, metric }: { data: any; metric?: string }) {
+  // Backend sends {labels: [...], datasets: [...]} format
+  // Transform to recharts array format
+  let chartData: any[] = [];
+  if (data.labels && data.datasets) {
+    chartData = data.labels.map((label: string, index: number) => {
+      const item: any = { date: label };
+      data.datasets.forEach((dataset: any) => {
+        item[dataset.label.toLowerCase().replace(' ', '_')] = dataset.data[index];
+      });
+      return item;
+    });
+  } else {
+    // Fallback: data might already be in array format
+    chartData = data;
+  }
+
   const showAll = metric === 'all' || !metric;
+
+  // Determine which metrics to show based on datasets present
+  const hasPitch = data.datasets?.some((d: any) => d.label?.toLowerCase().includes('pitch'));
+  const hasScale = data.datasets?.some((d: any) => d.label?.toLowerCase().includes('scale'));
+  const hasTiming = data.datasets?.some((d: any) => d.label?.toLowerCase().includes('timing'));
 
   return (
     <Card className="w-full mt-4 bg-card/50 border-primary/20">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium">Performance Trend</CardTitle>
         <CardDescription className="text-xs">
-          Your metrics over the last {data.length} sessions
+          Your metrics over the last {chartData.length} sessions
         </CardDescription>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+          <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
             <XAxis
               dataKey="date"
@@ -90,7 +111,7 @@ function TrendChart({ data, metric }: { data: any[]; metric?: string }) {
               }}
             />
             <Legend wrapperStyle={{ fontSize: '10px' }} />
-            {(showAll || metric === 'pitch_accuracy') && (
+            {(showAll || metric === 'pitch_accuracy') && hasPitch && (
               <Line
                 type="monotone"
                 dataKey="pitch_accuracy"
@@ -100,7 +121,7 @@ function TrendChart({ data, metric }: { data: any[]; metric?: string }) {
                 name="Pitch"
               />
             )}
-            {(showAll || metric === 'scale_conformity') && (
+            {(showAll || metric === 'scale_conformity') && hasScale && (
               <Line
                 type="monotone"
                 dataKey="scale_conformity"
@@ -110,7 +131,7 @@ function TrendChart({ data, metric }: { data: any[]; metric?: string }) {
                 name="Scale"
               />
             )}
-            {(showAll || metric === 'timing_stability') && (
+            {(showAll || metric === 'timing_stability') && hasTiming && (
               <Line
                 type="monotone"
                 dataKey="timing_stability"
@@ -127,30 +148,54 @@ function TrendChart({ data, metric }: { data: any[]; metric?: string }) {
   );
 }
 
-function ComparisonChart({ data }: { data: { latest: any; average: any } }) {
-  const chartData = [
-    {
-      metric: 'Pitch',
-      Latest: data.latest.pitch,
-      Average: data.average.pitch,
-    },
-    {
-      metric: 'Scale',
-      Latest: data.latest.scale,
-      Average: data.average.scale,
-    },
-    {
-      metric: 'Timing',
-      Latest: data.latest.timing,
-      Average: data.average.timing,
-    },
-  ];
+function ComparisonChart({ data }: { data: any }) {
+  // Backend sends {labels: [...], datasets: [...]} format
+  // Transform to recharts array format
+  let chartData: any[] = [];
+  let radarData: any[] = [];
 
-  const radarData = [
-    { subject: 'Pitch', Latest: data.latest.pitch, Average: data.average.pitch },
-    { subject: 'Scale', Latest: data.latest.scale, Average: data.average.scale },
-    { subject: 'Timing', Latest: data.latest.timing, Average: data.average.timing },
-  ];
+  if (data.labels && data.datasets) {
+    // Backend format: {labels: [...], datasets: [...]]
+    const latestDataset = data.datasets.find((d: any) => d.label?.toLowerCase().includes('latest'));
+    const averageDataset = data.datasets.find((d: any) => d.label?.toLowerCase().includes('average'));
+
+    chartData = data.labels.map((label: string, index: number) => ({
+      metric: label.replace(' Accuracy', '').replace(' Conformity', '').replace(' Stability', ''),
+      Latest: latestDataset?.data[index] || 0,
+      Average: averageDataset?.data[index] || 0,
+    }));
+
+    radarData = chartData.map((item: any) => ({
+      subject: item.metric,
+      Latest: item.Latest,
+      Average: item.Average,
+    }));
+  } else {
+    // Original frontend format: {latest: {...}, average: {...}}
+    chartData = [
+      {
+        metric: 'Pitch',
+        Latest: data.latest?.pitch || 0,
+        Average: data.average?.pitch || 0,
+      },
+      {
+        metric: 'Scale',
+        Latest: data.latest?.scale || 0,
+        Average: data.average?.scale || 0,
+      },
+      {
+        metric: 'Timing',
+        Latest: data.latest?.timing || 0,
+        Average: data.average?.timing || 0,
+      },
+    ];
+
+    radarData = [
+      { subject: 'Pitch', Latest: data.latest?.pitch || 0, Average: data.average?.pitch || 0 },
+      { subject: 'Scale', Latest: data.latest?.scale || 0, Average: data.average?.scale || 0 },
+      { subject: 'Timing', Latest: data.latest?.timing || 0, Average: data.average?.timing || 0 },
+    ];
+  }
 
   return (
     <Card className="w-full mt-4 bg-card/50 border-primary/20">
