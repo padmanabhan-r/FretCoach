@@ -61,11 +61,12 @@ const Dashboard = () => {
     };
   }, [dateRange]);
 
-  const { data, isLoading, error, refetch } = useSessions('default_user', 6, dateRangeFilter);
+  const { data, isLoading, error, refetch, isFetching } = useSessions('default_user', 6, dateRangeFilter);
   const [selectedSessionIndex, setSelectedSessionIndex] = useState(0);
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [inputMessage, setInputMessage] = useState("");
   const [isAiTyping, setIsAiTyping] = useState(false);
+  const [currentModel, setCurrentModel] = useState<string>("");
   const [isAiCoachExpanded, setIsAiCoachExpanded] = useState(false);
   const [threadId] = useState(() => `thread-${Date.now()}`);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -107,6 +108,11 @@ const Dashboard = () => {
       }));
 
       const response = await sendChatMessage(messageHistory, 'default_user', threadId);
+
+      // Track which model was used
+      if (response.modelUsed) {
+        setCurrentModel(response.modelUsed);
+      }
 
       const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -189,7 +195,7 @@ const Dashboard = () => {
             </div>
             <div className="flex items-center gap-4">
               <Button variant="outline" onClick={() => refetch()}>
-                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
               <div className="flex items-center gap-3 pl-4 border-l border-border">
@@ -431,7 +437,7 @@ const Dashboard = () => {
                         >
                           <div className="flex items-center justify-between gap-2">
                             <span className="font-medium text-xs">{formatDate(session.start_timestamp)}</span>
-                            <span className="text-[10px] text-muted-foreground">{session.scale_chosen}</span>
+                            <span className="text-[10px] text-muted-foreground">{session.scale_chosen} {session.scale_type}</span>
                             <span className="text-[10px] text-muted-foreground">{formatDuration(session.duration_seconds)}</span>
                             <span className="text-xs text-primary font-medium whitespace-nowrap">
                               {Math.round((((session.pitch_accuracy || 0) + (session.scale_conformity || 0) + (session.timing_stability || 0)) / 3) * 100)}%
@@ -449,9 +455,9 @@ const Dashboard = () => {
             <Card className="bg-card border-border/50">
               <CardHeader className="pb-2 py-3">
                 <CardTitle className="text-sm">Session Details</CardTitle>
-                <CardDescription className="text-xs">
+                  <CardDescription className="text-xs">
                   {selectedSession ? (
-                    <>{formatDate(selectedSession.start_timestamp)} • {selectedSession.scale_chosen}</>
+                    <>{formatDate(selectedSession.start_timestamp)} • {selectedSession.scale_chosen} {selectedSession.scale_type}</>
                   ) : "Select a session"}
                 </CardDescription>
               </CardHeader>
@@ -597,10 +603,15 @@ const Dashboard = () => {
                           </AvatarFallback>
                         </Avatar>
                         <div className="rounded-lg px-4 py-2 bg-muted">
-                          <div className="flex gap-1">
-                            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></div>
-                            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
-                            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
+                          <div className="flex items-center gap-2">
+                            <div className="flex gap-1">
+                              <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></div>
+                              <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></div>
+                              <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {currentModel ? `Using ${currentModel}` : 'Thinking...'}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -715,10 +726,15 @@ const Dashboard = () => {
                             </AvatarFallback>
                           </Avatar>
                           <div className="bg-muted rounded-lg px-4 py-2">
-                            <div className="flex gap-1">
-                              <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
-                              <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
-                              <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
+                            <div className="flex items-center gap-2">
+                              <div className="flex gap-1">
+                                <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+                                <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></div>
+                                <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                {currentModel ? `Using ${currentModel}` : 'Thinking...'}
+                              </span>
                             </div>
                           </div>
                         </div>
