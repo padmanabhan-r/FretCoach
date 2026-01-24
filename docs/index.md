@@ -8,18 +8,18 @@
 
 ## The Problem
 
-When practicing alone, guitar players often don't realize they are rushing the beat, playing out of tune, or reinforcing bad technique—leading to slow progress and ingrained mistakes. Without immediate feedback, you spend thousands of hours unknowingly cementing errors into muscle memory.
+Solo practice without feedback reinforces both good and bad habits equally. By the time mistakes are identified, motor patterns are already encoded. Unlearning is 10–20× harder than prevention.
 
 ## The Solution
 
-FretCoach provides instant feedback during practice. The system analyzes your live guitar signal in real-time across four metrics: **pitch accuracy**, **scale conformity**, **timing stability**, and **noise control**.
+FretCoach provides millisecond-level feedback during skill execution. Real-time analysis across four metrics: **pitch accuracy**, **scale conformity**, **timing stability**, and **noise control**.
 
-You get immediate feedback through:
-- **On-screen visualizations** — Real-time metrics with color-coded performance
+Three feedback channels:
+- **On-screen metrics** — Real-time scoring and note detection
 - **AI coaching** — Verbal guidance during practice
-- **Smart lighting** — Ambient visual feedback
+- **Ambient lighting** — Smart bulb visual feedback
 
-This helps you correct mistakes immediately, not after they've been practiced hundreds of times.
+Preventive intervention inside the motor learning window.
 
 ---
 
@@ -27,7 +27,7 @@ This helps you correct mistakes immediately, not after they've been practiced hu
 
 FretCoach consists of three connected components sharing a central database for seamless cross-device practice tracking.
 
-![FretCoach Trifecta](../images/FretCoach%20Trifecta.jpeg)
+![FretCoach Trifecta](/images/FretCoach%20Trifecta.jpeg)
 
 - **FretCoach Studio** — Desktop app for focused practice with real-time analysis and AI coaching
 - **FretCoach Portable** — Raspberry Pi device for practice anywhere
@@ -39,9 +39,9 @@ All three components sync through PostgreSQL (Supabase), enabling the AI coach t
 
 ## The Vision
 
-FretCoach is an AI-powered guitar training system. The architecture could potentially extend to other instruments in the future.
+AI-powered preventive neurofeedback for guitar. Built to extend to other instruments and motor skills.
 
-**Current goal:** Make guitar practice more effective through instant, AI-powered feedback—like having a coach with you every practice session.
+**Goal:** Reshape motor learning before correction is required.
 
 ---
 

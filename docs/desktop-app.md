@@ -6,13 +6,13 @@ The desktop application is your primary training environment—a standalone Elec
 
 ## Overview
 
-The desktop app combines:
-- **Electron + React** frontend for the user interface
-- **Python + FastAPI** backend for audio processing and AI
-- **WebSocket** streaming for real-time metric updates
-- **USB audio interface** support for professional-grade input
+Architecture:
+- **Electron + React** — User interface
+- **Python + FastAPI** — Audio processing and AI
+- **WebSocket** — Real-time metric streaming
+- **USB audio interface** — Professional-grade input
 
-Think of it as your personal practice studio with an AI coach watching every note.
+Personal practice studio with AI coach analyzing every note.
 
 ---
 
@@ -186,7 +186,7 @@ Optional integration with Tuya smart bulbs for subconscious feedback:
 - Toggle on/off per session in UI
 - Automatically turns on at session start, off at session end
 
-**See:** [Configuration Guide](configuration.md) for Tuya setup.
+**See:** [Environment Setup](environment-setup.md#smart-bulb-setup-tuya) for Tuya configuration.
 
 ### 6. Session Logging and Summary
 
@@ -411,7 +411,7 @@ Toggle smart bulb control on/off for each session.
 - Tuya developer account and API credentials
 - Device ID and region code
 
-**See:** [Configuration Guide](configuration.md) for setup instructions.
+**See:** [Environment Setup](environment-setup.md) for complete setup instructions.
 
 ---
 
@@ -433,7 +433,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-# Create .env (see Configuration Guide)
+# Create .env (see environment-setup.md)
 cp .env.example .env
 
 # Start backend

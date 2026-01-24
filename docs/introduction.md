@@ -1,32 +1,32 @@
 # Introduction to FretCoach
 
-## Real-Time AI Coaching for Guitar
+## Preventive Neurofeedback for Guitar
 
-FretCoach is an AI-powered guitar training system that provides instant feedback during practice. It analyzes your playing in real-time, tracks performance across four key metrics (pitch accuracy, scale conformity, timing stability, noise control), and delivers feedback through multiple channels:
+FretCoach is a real-time preventive AI system that reshapes motor learning before correction is required. Analyzes playing during execution, tracks four metrics (pitch accuracy, scale conformity, timing stability, noise control), delivers feedback through three channels:
 
-- **On-screen visualizations** — Live metrics and performance scoring
-- **AI coach commentary** — Real-time verbal guidance
-- **Ambient lighting** — Color-coded visual feedback
+- **On-screen metrics** — Live scoring and note detection
+- **AI coaching** — Real-time verbal guidance
+- **Ambient lighting** — Color-coded performance feedback
 
 ![Screenshot Placeholder: Live Practice Session]
 *[TODO: Add screenshot showing all feedback channels in action]*
 
-Think of it as having a professional coach watching every practice session—providing instant feedback, tracking progress, and adapting guidance to your strengths and weaknesses.
+Professional-grade coaching for every practice session — instant feedback, pattern tracking, adaptive guidance.
 
 ---
 
-## The Problem with Solo Practice
+## The Solo Practice Problem
 
-When practicing alone, you can't tell if you're:
-- Playing notes out of tune
-- Rushing or dragging the beat
-- Hitting wrong notes
-- Creating unwanted string noise
-- Actually improving
+Solo practice without feedback:
+- Can't detect out-of-tune notes
+- Can't measure timing drift
+- Can't identify wrong notes in real-time
+- Can't assess string noise
+- Can't track actual improvement
 
-Without immediate feedback, you reinforce both good and bad habits equally. By the time you get feedback (from a teacher, recording, or performance), you've already practiced the mistake hundreds of times.
+Delayed feedback arrives after motor patterns encode. Lessons, recordings, performances — all post-execution. By then, mistakes are practiced hundreds of times.
 
-Professional musicians have coaches who provide real-time guidance. FretCoach makes that available for every practice session.
+FretCoach delivers instant feedback during execution, not after.
 
 ---
 
@@ -77,7 +77,7 @@ Play note → Instant analysis → Immediate feedback → Adjust → Next note
 
 FretCoach combines two complementary systems to deliver both speed and intelligence.
 
-![FretCoach Brain Architecture](../images/FretCoach%20Brain.png)
+![FretCoach Brain Architecture](/images/FretCoach%20Brain.png)
 
 **Audio Analysis Agent (Fast Loop - Deterministic)**
 - Real-time processing with <300ms latency
@@ -95,17 +95,17 @@ This separation ensures **instant feedback for motor learning** while leveraging
 
 ### Why Instant Feedback Works
 
-**Catch mistakes early**
-Address errors on the first occurrence, not after hundreds of repetitions.
+**Early intervention**
+Address errors on first occurrence, not after hundreds of reps.
 
-**Immediate reinforcement**
-FretCoach delivers feedback within 300ms—fast enough to influence motor learning in real-time.
+**Motor learning window**
+300ms feedback latency — fast enough for real-time motor shaping.
 
-**Multi-sensory engagement**
-Visual, auditory, and peripheral feedback channels work together.
+**Multi-sensory channels**
+Visual, auditory, peripheral feedback working in parallel.
 
-**Objective tracking**
-Data shows exactly which metrics improve and by how much.
+**Objective measurement**
+Quantified improvement across all metrics.
 
 ---
 
@@ -113,7 +113,7 @@ Data shows exactly which metrics improve and by how much.
 
 FretCoach consists of three connected components that work together seamlessly through a central database.
 
-![FretCoach Trifecta](../images/FretCoach%20Trifecta.jpeg)
+![FretCoach Trifecta](/images/FretCoach%20Trifecta.jpeg)
 
 ### FretCoach Studio (Desktop Application)
 Desktop app for focused practice. Connects via USB audio interface, analyzes in real-time, displays metrics, and provides AI coaching.
@@ -139,13 +139,13 @@ All three components share a **central database** (PostgreSQL via Supabase), ena
 
 ## What Makes FretCoach Different
 
-**Not a learning app** — Doesn't teach you *what* to play, but helps you play it *correctly*.
+**Not a learning app** — Doesn't teach *what* to play. Ensures you play it correctly.
 
-**Not a recording tool** — Doesn't just capture performance, it analyzes and coaches.
+**Not a recording tool** — Doesn't capture performance. Shapes it in real-time.
 
-**Not a tuner** — Evaluates full technique (pitch, timing, scale, noise), not just string tuning.
+**Not a tuner** — Evaluates full technique (pitch, timing, scale, noise).
 
-**It's a practice coach** — Analyzes playing, identifies weaknesses, guides improvement in real-time.
+**It's preventive neurofeedback** — Intervenes during execution before patterns solidify.
 
 ---
 
@@ -164,9 +164,9 @@ FretCoach ensures you're playing the right notes, in time, with clean technique�
 
 ## Future Vision
 
-FretCoach is built for guitar. The architecture could potentially extend to other instruments (vocals, bass, drums) or motor skills where real-time feedback improves learning—but that's a future vision.
+Built for guitar. Designed to extend to vocals, bass, drums, and other motor skills where real-time feedback accelerates learning.
 
-Current focus: making guitar practice more effective through instant, AI-powered feedback.
+Current focus: preventive neurofeedback for guitar practice.
 
 ---
 

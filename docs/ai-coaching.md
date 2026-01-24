@@ -6,13 +6,13 @@ Deep dive into FretCoach's intelligent coaching capabilities powered by LLMs and
 
 ## Overview
 
-FretCoach uses Large Language Models (LLMs) to provide three types of AI-powered coaching:
+Three LLM-powered coaching modes:
 
-1. **Practice Recommendations** — Analyzing history to suggest what to practice next
-2. **Live Session Coaching** — Real-time feedback during active practice
-3. **Conversational Chat** — Discussion-based guidance via web dashboard
+1. **Practice Recommendations** — History analysis for next session
+2. **Live Session Coaching** — Real-time feedback during practice
+3. **Conversational Chat** — Natural language guidance via web
 
-All AI interactions are traced through **Comet Opik** for observability, debugging, and improvement.
+All AI interactions traced through **Comet Opik** for observability.
 
 ---
 
@@ -52,7 +52,7 @@ All AI interactions are traced through **Comet Opik** for observability, debuggi
 
 ### Purpose
 
-Analyze user's practice history and recommend the optimal scale, difficulty, and focus area for the next session.
+Analyze practice history. Recommend optimal scale, difficulty, focus area for next session.
 
 ### User Flow
 
