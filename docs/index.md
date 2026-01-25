@@ -98,7 +98,7 @@ AI-powered preventive neurofeedback for guitar. Built to extend to other instrum
 | Agent Orchestration | Custom orchestration for audio analysis agent engine, LangChain/LangGraph for AI coach |
 | Portable Hardware | Raspberry Pi 5, Scarlett Solo USB Audio Interface |
 | Observability | Comet Opik |
-| Deployment | Vercel (web frontend), Render (web backend) |
+| Deployment | Vercel (web frontend), Railway (web backend) |
 
 ---
 

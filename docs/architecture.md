@@ -241,7 +241,7 @@ Cloud-based analytics platform for session review, trend analysis, and AI chat c
 | Backend | Python 3.10+, FastAPI |
 | Database Client | Supabase Python SDK |
 | AI Orchestration | LangChain, LangGraph |
-| Deployment | Vercel (frontend), Render (backend) |
+| Deployment | Vercel (frontend), Railway (backend) |
 
 ### Architecture Diagram
 
@@ -317,10 +317,10 @@ Cloud-based analytics platform for session review, trend analysis, and AI chat c
 - Environment variables configured in Vercel dashboard
 - URL: [fretcoach.online](https://fretcoach.online)
 
-**Backend (Render):**
+**Backend (Railway):**
 - Docker container or native Python runtime
 - Auto-deploy from Git
-- Environment variables in Render settings
+- Environment variables in Railway settings
 - CORS configured for fretcoach.online
 
 ---
@@ -712,20 +712,19 @@ app.add_middleware(
 }
 ```
 
-**Backend (Render):**
+**Backend (Railway):**
 ```yaml
-# render.yaml
-services:
-  - type: web
-    name: fretcoach-api
-    env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
-    envVars:
-      - key: DATABASE_URL
-        sync: false
-      - key: OPENAI_API_KEY
-        sync: false
+# railway.json
+{
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "uvicorn main:app --host 0.0.0.0 --port $PORT",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
 ```
 
 ---

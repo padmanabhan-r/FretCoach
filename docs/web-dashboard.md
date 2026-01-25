@@ -523,7 +523,7 @@ areas needing improvement."""
 - `opik` — LLM tracing and monitoring
 - `pydantic` — Data validation and structured outputs
 
-**Deployment:** Render / Railway
+**Deployment:** Railway
 - Automatic deployments
 - PostgreSQL connection pooling
 - Environment variable management
@@ -919,11 +919,11 @@ USER_ID=paddy  # Default user ID for testing
 - Pull requests → Preview deployments
 - Domain: [fretcoach.online](https://www.fretcoach.online)
 
-### Backend (Render / Railway)
+### Backend (Railway)
 
 **Repository:** Connected to GitHub repo
 **Start command:** `cd web/web-backend && uvicorn main:app --host 0.0.0.0 --port $PORT`
-**Environment variables:** Set in Render/Railway dashboard
+**Environment variables:** Set in Railway dashboard
 
 **Automatic deployments:**
 - Push to `main` → Production deployment

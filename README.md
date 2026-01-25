@@ -347,7 +347,7 @@ Smart bulb integration for visual performance feedback.
 | UI Components | shadcn/ui, Radix UI, Recharts |
 | State Management | TanStack React Query, React Router v6 |
 | Backend | Python FastAPI, LangChain, LangGraph |
-| Deployment | Vercel (frontend), Render/Railway (backend) |
+| Deployment | Vercel (frontend), Railway (backend) |
 
 ### Shared Infrastructure
 | Component | Technology |

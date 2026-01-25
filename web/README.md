@@ -70,7 +70,7 @@ VITE_API_BASE_URL=http://localhost:8000
 ## Deployment
 
 **Frontend:** Deployed on Vercel
-**Backend:** Deployed on Render
+**Backend:** Deployed on Railway
 **Website:** [fretcoach.online](https://fretcoach.online)
 
 ## Documentation
