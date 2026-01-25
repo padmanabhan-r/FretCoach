@@ -40,7 +40,9 @@ def audio_callback(indata, outdata, frames, time_info, status, config, audio_sta
     Real-time audio callback - just fills the buffer.
     Keep this minimal for real-time safety.
     """
-    if status:
+    # Input overflow is normal when buffer fills faster than processing
+    # Only log actual errors (status is a CallbackFlags object from sounddevice)
+    if status and not status.input_overflow:
         print(f"Audio status: {status}")
 
     if not config:
@@ -126,16 +128,23 @@ def process_audio(session_state: SessionState, audio_state: AudioState, audio_co
             session_state.current_note = "-"
             continue
 
-        # Update session state with results
-        session_state.current_note = "In Scale" if result.in_scale else "Wrong Note"
-        session_state.pitch_accuracy = audio_state.quality.ema_pitch
-        session_state.scale_conformity = result.scale_coverage
-        session_state.timing_stability = audio_state.quality.ema_timing
-
-        # Update debug info
+        # Update debug info first to calculate cumulative accuracy
         num_unique_notes = len([c for c in audio_state.quality.note_counts.values() if c > 0])
         correct_notes = audio_state.quality.notes_in_scale(target_pitch_classes)
         wrong_notes = audio_state.quality.notes_out_of_scale(target_pitch_classes)
+
+        # Calculate cumulative pitch accuracy (percentage of correct notes)
+        total_notes = correct_notes + wrong_notes
+        if total_notes > 0:
+            pitch_accuracy_pct = correct_notes / total_notes
+        else:
+            pitch_accuracy_pct = 0.0
+
+        # Update session state with results
+        session_state.current_note = "In Scale" if result.in_scale else "Wrong Note"
+        session_state.pitch_accuracy = pitch_accuracy_pct  # Cumulative: correct / total
+        session_state.scale_conformity = result.scale_coverage  # Cumulative: coverage distribution
+        session_state.timing_stability = audio_state.quality.ema_timing  # Cumulative: EMA of timing
         session_state.debug_info = DebugInfo(
             detected_hz=result.detected_hz,
             detected_midi=result.detected_midi,

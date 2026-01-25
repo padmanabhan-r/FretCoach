@@ -42,7 +42,7 @@ const VisualFeedback = ({ pitchAccuracy, scaleConformity, timingStability, isRun
   if (!isRunning) {
     return (
       <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-6 h-full">
-        <h2 className="text-xl font-semibold mb-4 text-foreground">Live Feedback</h2>
+        <h2 className="text-xl font-semibold mb-4 text-foreground">Overall Session Performance</h2>
 
         <div className="flex items-center justify-center">
           <div className="relative">
@@ -87,7 +87,7 @@ const VisualFeedback = ({ pitchAccuracy, scaleConformity, timingStability, isRun
     return (
       <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-6 h-full">
         <h2 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
-          Live Feedback
+          Overall Session Performance
           <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
         </h2>
 
@@ -131,7 +131,7 @@ const VisualFeedback = ({ pitchAccuracy, scaleConformity, timingStability, isRun
     return (
       <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-6 h-full">
         <h2 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
-          Live Feedback
+          Overall Session Performance
           <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
         </h2>
 
@@ -172,7 +172,7 @@ const VisualFeedback = ({ pitchAccuracy, scaleConformity, timingStability, isRun
   return (
     <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-6 h-full">
       <h2 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
-        Live Feedback
+        Overall Session Performance
         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
       </h2>
 
@@ -201,7 +201,7 @@ const VisualFeedback = ({ pitchAccuracy, scaleConformity, timingStability, isRun
       </div>
 
       <div className="mt-6 text-center text-muted-foreground text-sm">
-        Real-time audio analysis
+        Average of all metrics
       </div>
     </div>
   );

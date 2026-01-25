@@ -48,6 +48,10 @@ const LiveCoachFeedback = ({
   const fetchFeedback = useCallback(async (elapsed) => {
     if (!isRunning || !enabled) return;
 
+    // CRITICAL: Update lastFetchRef IMMEDIATELY to prevent race conditions
+    // This must happen BEFORE the async API call to block duplicate requests
+    lastFetchRef.current = elapsed;
+
     // Clear previous feedback before loading new one for seamless transition
     setFeedback(null);
     setLoading(true);
@@ -69,7 +73,6 @@ const LiveCoachFeedback = ({
 
       if (result.success) {
         setFeedback(result);
-        lastFetchRef.current = elapsed;
 
         // Stop any currently playing audio BEFORE starting new audio
         // This ensures UI and audio are always in sync
@@ -96,6 +99,12 @@ const LiveCoachFeedback = ({
     }
   }, [isRunning, enabled, scaleName, sessionId]);
 
+  // Store fetchFeedback in a ref to avoid re-creating the timer effect
+  const fetchFeedbackRef = useRef(fetchFeedback);
+  useEffect(() => {
+    fetchFeedbackRef.current = fetchFeedback;
+  }, [fetchFeedback]);
+
   // Timer for elapsed time and feedback intervals
   useEffect(() => {
     let timer = null;
@@ -107,7 +116,7 @@ const LiveCoachFeedback = ({
 
           // Check if it's time to fetch feedback (wait at least 10 seconds before first fetch)
           if (newElapsed >= 10 && newElapsed - lastFetchRef.current >= feedbackInterval) {
-            fetchFeedback(newElapsed);
+            fetchFeedbackRef.current(newElapsed);
           }
 
           return newElapsed;
@@ -117,7 +126,7 @@ const LiveCoachFeedback = ({
       // Fetch initial feedback after 15 seconds (give time to play some notes)
       const initialTimer = setTimeout(() => {
         if (lastFetchRef.current === 0) {
-          fetchFeedback(15);
+          fetchFeedbackRef.current(15);
         }
       }, 15000);
 
@@ -136,7 +145,7 @@ const LiveCoachFeedback = ({
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [isRunning, isPaused, enabled, feedbackInterval, fetchFeedback]);
+  }, [isRunning, isPaused, enabled, feedbackInterval]);
 
   // Handle enable toggle
   const handleToggle = () => {

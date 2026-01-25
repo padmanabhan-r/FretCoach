@@ -3,9 +3,9 @@
   "output_device": 2,
   "guitar_channel": 1,
   "channels": 2,
-  "scale_name": "A Minor",
-  "scale_type": "pentatonic",
-  "ambient_lighting": true,
-  "strictness": 1.0,
-  "sensitivity": 1.0
+  "scale_name": "G# Major",
+  "scale_type": "natural",
+  "ambient_lighting": false,
+  "strictness": 0.5,
+  "sensitivity": 0.5
 }

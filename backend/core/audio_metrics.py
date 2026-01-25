@@ -13,7 +13,8 @@ from audio_features import (
     pitch_stability,
     calculate_note_timing_stability,
     noise_control,
-    calculate_scale_coverage
+    calculate_scale_coverage,
+    detect_note_onset
 )
 
 
@@ -35,6 +36,7 @@ class QualityState:
     last_phrase_time: float = field(default_factory=time.time)
     note_counts: Dict[int, int] = field(default_factory=dict)
     note_onset_times_ms: list = field(default_factory=list)
+    last_pitch_class: Optional[int] = None
 
     def reset(self):
         """Reset state for a new session."""
@@ -44,6 +46,7 @@ class QualityState:
         self.last_phrase_time = time.time()
         self.note_counts.clear()
         self.note_onset_times_ms.clear()
+        self.last_pitch_class = None
 
     @property
     def total_notes(self) -> int:
@@ -128,15 +131,44 @@ def process_audio_frame(
     in_scale = debug_info.get("in_scale", False)
     pitch_class = debug_info.get("pitch_class")
 
+    # Track note onsets for timing analysis
+    # ONLY track when pitch class CHANGES (different note played)
+    # Also track silence to handle same-note-after-pause (C → silence → C)
+    current_time_ms = time.time() * 1000.0
+
+    last_pitch = state.last_pitch_class
+
     if note_detected and pitch_class is not None:
         state.note_counts[pitch_class] = state.note_counts.get(pitch_class, 0) + 1
-        state.note_onset_times_ms.append(time.time() * 1000.0)
+
+        # Track as onset if:
+        # 1. Different pitch than last time (C → D)
+        # 2. First note after silence (silence → C)
+        is_new_note = (pitch_class != last_pitch)
+
+        if is_new_note:
+            time_since_last = 0
+            if len(state.note_onset_times_ms) > 0:
+                time_since_last = current_time_ms - state.note_onset_times_ms[-1]
+
+            state.note_onset_times_ms.append(current_time_ms)
+            state.last_pitch_class = pitch_class
+
+            # Debug: Log onset detection
+            import random
+            if random.random() < 0.15:  # 15% of the time
+                print(f"[ONSET DEBUG] Onset #{len(state.note_onset_times_ms)}: {last_pitch}→{pitch_class}, gap={time_since_last:.0f}ms")
+    else:
+        # No note detected = silence
+        # Reset last_pitch so next note (even if same pitch class) triggers onset
+        if state.last_pitch_class is not None:
+            state.last_pitch_class = None  # Mark silence
 
     # Calculate other metrics
     s = pitch_stability(audio, config.sample_rate)
     timing_score, notes_for_timing = calculate_note_timing_stability(
         state.note_onset_times_ms,
-        window_size=8,
+        window_size=15,  # Analyze last 15 notes for better timing consistency assessment
         consistency_threshold=0.15
     )
     n = noise_control(audio)
@@ -177,7 +209,8 @@ def process_audio_frame(
             state.last_phrase_time = now
 
     # Update EMA for individual metrics
-    metric_alpha = 0.15
+    # Higher alpha = faster response to changes
+    metric_alpha = 0.25  # Increased from 0.15 for faster response
     state.ema_pitch = metric_alpha * p + (1 - metric_alpha) * state.ema_pitch
     state.ema_timing = metric_alpha * timing_score + (1 - metric_alpha) * state.ema_timing
 
