@@ -1,30 +1,53 @@
 # FretCoach - AI-Powered Guitar Training
 
-> **This year 2026 turn your guitar resolutions into a reality.**
+> **Turn your 2026 guitar resolutions into reality.**
 
 ![FretCoach](images/FretCoach.jpeg)
 
-> *Real-time AI coaching for guitar practice*
+**Real-time AI coaching for guitar practice**
 
-## What It Does
+---
+
+## Overview
+
+FretCoach is a real-time AI guitar practice system that reshapes motor learning before conscious correction is required. It listens to every note you play and provides **instant feedback** — closing the loop from days to milliseconds — helping you build correct technique before bad habits form.
+
+> 🧠 **Neuroscience insight:** It's 10–20× harder to unlearn a motor habit than to prevent it. Early-stage neuroplasticity is fast and fragile — FretCoach operates inside this critical window. 
 
 **FretCoach doesn't correct — it prevents.**
 
-FretCoach is a real-time preventive AI guitar practice system that reshapes motor learning before conscious correction is required. It listens to every note you play and provides **instant feedback** — closing the loop from days to milliseconds — helping you build correct technique before bad habits form.
+## Philosophy: Prevention Over Correction
 
-> 🧠 **Neuroscience insight:** It's 10–20× harder to unlearn a motor habit than to prevent it. Early-stage neuroplasticity is fast and fragile — FretCoach operates inside this critical window.
+### Why Prevention Matters
 
-The system tracks your progress and guides improvement across four key metrics: **pitch accuracy**, **scale conformity**, **timing stability**, and **noise control**.
+Traditional guitar feedback arrives **days or weeks late**:
+- Weekly lessons with an instructor
+- Reviewing your own recordings after practice
+- Posting videos online for feedback
+
+
+### The FretCoach Approach
+
+**Close the feedback loop from days to milliseconds:**
+
+1. **Fast Loop (<300ms):** Real-time audio analysis provides instant metrics
+2. **Slow Loop (1-2s):** AI coach offers strategic guidance
+3. **Multi-channel feedback:** Visual + ambient + vocal reinforcement
+4. **Gamification:** Scores, color feedback, and progress tracking
+
+Every note you play receives immediate evaluation. Correct patterns are reinforced. Incorrect patterns are flagged **before they become habits**.
+
+**Result:** Neuroadaptive learning that shapes motor behavior in real-time, not retroactively.
 
 ### Key Features
 
-- **Real-time audio analysis** — Continuous evaluation during skill execution, not after
-- **Multi-channel feedback** — Visual metrics, AI coaching, and ambient lighting for gamified practice
+- **Real-time audio analysis** — Continuous evaluation during playing
+- **Multi-channel feedback** — Visual metrics, AI vocal feedback, and environmental feedback through ambient lighting
 - **Intelligent practice** — AI-generated practice plans based on your history
-- **Instant feedback loop** — Millisecond-level guidance that prevents mistakes before they become habits
+- **Instant feedback loop** — Millisecond-level feedback that prevents mistakes before they become habits
 - **Cross-device sync** — Practice anywhere, track everything in one place
 
-> 🎮 **Gamification:** Turn practice into an engaging experience with real-time scores, color-coded lighting, and AI-powered progress tracking
+---
 
 ## Platform Ecosystem
 
@@ -33,9 +56,10 @@ FretCoach operates across three interconnected components sharing a central data
 ![FretCoach Trifecta](images/FretCoach%20Trifecta.jpeg)
 
 - **FretCoach Studio** — Desktop app for real-time practice with AI coaching and ambient feedback
-- **FretCoach Portable** — Raspberry Pi device for portable practice
+- **FretCoach Portable** — Raspberry Pi powered portable device for practising on-the-go
 - **FretCoach Hub** — Web analytics, progress tracking, and AI practice planning
 
+---
 ## How It Works
 
 ### Preventive Neurofeedback Systems
@@ -76,16 +100,62 @@ FretCoach's audio analysis engine evaluates your playing across four metrics:
 
 Three feedback channels:
 - **On-screen metrics** — Live scores and note detection
-- **AI coach** — Real-time verbal guidance
+- **AI Voice Coach** — Spoken guidance via GPT-4o-mini and GPT-4o-mini-TTS models
 - **Ambient lighting** — Smart bulb feedback (green = good, red = needs work)
 
-## AI Coaching
+## Audio Analysis Agent Features
 
-Powered by LLMs (Gemini 2.5 Flash, OpenAI GPT-4o, GPT-4o-mini-TTS):
-- **AI Practice Mode** — Personalized plans from practice history
-- **Live Vocal Feedback** — Real-time spoken coaching (GPT-4o-mini-TTS)
-- **Progress Tracking** — Performance trends and pattern recognition
-- **Adaptive Plans** — Evolving recommendations
+Powered by **librosa**, **NumPy**, and **SciPy**:
+
+### Real-Time Pitch Detection
+- **Algorithm:** librosa piptrack() (autocorrelation-based)
+- **Frequency:** Every 300ms
+- **Processing:** Hz → MIDI note → Pitch class (0-11)
+- **Purpose:** Instant note accuracy and intonation tracking
+
+### Scale Validation Engine
+- **Library:** 24 scales (12 Major + 12 Minor, Natural + Pentatonic)
+- **Method:** Pitch class validation against target scale
+- **Tracking:** Note histogram, scale coverage, conformity percentage
+- **Purpose:** Ensure practice stays within chosen scale
+
+### Quality Scoring System
+- **Formula:** quality = 0.55 × pitch + 0.15 × scale + 0.15 × timing + 0.15 × noise
+- **Smoothing:** Exponential Moving Average (EMA) with α = 0.10–0.40
+- **Window:** 0.8 seconds phrase grouping
+- **Purpose:** Aggregate real-time performance score
+
+### Feedback Mechanisms
+- **Visual:** WebSocket broadcast to React UI (6.67 Hz updates)
+- **Ambient:** Smart bulb HSV color control (Green → Yellow → Orange → Red)
+- **Database:** Session logging to PostgreSQL/Supabase
+- **Purpose:** Multi-channel real-time feedback
+
+**Processing:** All audio analysis runs **locally** with no cloud dependency.
+
+## AI Coaching Features
+
+Powered by **LangChain**, **OpenAI**, and **Google Gemini**:
+
+### Live Coaching (During Session)
+- **Model:** GPT-4o-mini + GPT-4o-mini-TTS
+- **Frequency:** Every 30 seconds
+- **Output:** 1-sentence corrective feedback + spoken audio
+- **Purpose:** Real-time guidance on weakest metric
+
+### AI Practice Mode (Pre-Session)
+- **Model:** Gemini 2.5 Flash
+- **Input:** Recent session history from database
+- **Output:** Personalized practice plan (scale, strictness, focus area)
+- **Purpose:** Targeted practice based on weaknesses
+
+### Web AI Coach (Post-Session)
+- **Model:** Gemini 2.5 Flash + LangGraph
+- **Interface:** Conversational chat with text-to-SQL capabilities
+- **Tools:** Database queries, trend analysis, plan generation
+- **Purpose:** Performance review and long-term strategy
+
+**Observability:** All LLM calls traced via **Comet Opik** with token counting and latency tracking
 
 Audio analysis runs **locally**. AI features use cloud APIs.
 
@@ -93,46 +163,63 @@ Audio analysis runs **locally**. AI features use cloud APIs.
 
 ## System Architecture
 
-FretCoach consists of three interconnected components connected to a central database:
+### High-Level Architecture
 
 ```
-                        ┌───────────────────────────────────┐
-                        │      PostgreSQL (Supabase)        │
-                        │  Sessions • Plans • Performance   │
-                        └───────────────┬───────────────────┘
-                                        │
-                 ┌──────────────────────┼──────────────────────┐
-                 │                      │                      │
-                 ▼                      ▼                      ▼
-┌────────────────────────┐  ┌─────────────────────┐  ┌────────────────────────┐
-│   FretCoach Studio     │  │   FretCoach Hub     │  │  FretCoach Portable    │
-│  ────────────────────  │  │  ─────────────────  │  │  ────────────────────  │
-│  Electron + React      │  │  React + FastAPI    │  │  Raspberry Pi 5        │
-│  Python FastAPI        │  │                     │  │  Python FastAPI        │
-│                        │  │  • AI Coach Chat    │  │  Integrated Audio I/O  │
-│  • Audio Analysis      │  │  • Session History  │  │                        │
-│  • Live AI Coaching    │  │  • Analytics        │  │  • Audio Analysis      │
-│  • On-screen Metrics   │  │  • Practice Plans   │  │  • AI Assisted Mode    │
-│  • Ambient Lighting    │  │                     │  │  • Ambient Lighting    │
-└───────────┬────────────┘  └─────────────────────┘  └───────────┬────────────┘
-            │                                                    │
-            ▼                                                    │
-   ┌─────────────────┐                                           │
-   │   USB Audio     │                                           │
-   │   Interface     │                                           │
-   └────────┬────────┘                                           │
-            │                                                    │
-           🎸                                                   🎸
-        Guitar                                               Guitar
+                    ┌─────────────────────────────────────────────┐
+                    │   CENTRAL DATABASE (PostgreSQL/Supabase)    │
+                    │                                             │
+                    │  • Practice Sessions & Metrics              │
+                    │  • AI-Generated Practice Plans              │
+                    │  • Cross-Device Synchronization             │
+                    └──────┬──────────────┬──────────────┬────────┘
+                           │              │              │
+         ┌─────────────────┴──────┐       │       ┌──────┴─────────────────┐
+         │                        │       │       │                        │
+         ▼                        ▼       ▼       ▼                        ▼
+┌─────────────────────┐  ┌─────────────────────────────┐  ┌─────────────────────┐
+│  FRETCOACH STUDIO   │  │     FRETCOACH HUB (Web)     │  │ FRETCOACH PORTABLE  │
+│    (Desktop App)    │  │                             │  │   (Raspberry Pi)    │
+├─────────────────────┤  ├─────────────────────────────┤  ├─────────────────────┤
+│                     │  │                             │  │                     │
+│ Stack:              │  │ Frontend:                   │  │ Hardware:           │
+│ • Electron          │  │ • React    + TypeScript     │  │ • Raspberry Pi 5    │
+│ • React             │  │ • Vite + Tailwind CSS       │  │ • Scarlett Solo USB │
+│ • Python FastAPI    │  │ • shadcn/ui + Recharts      │  │                     │
+│ • librosa + NumPy   │  │                             │  │ Stack:              │
+│                     │  │ Backend:                    │  │ • Python FastAPI    │
+│ Features:           │  │ • Python FastAPI            │  │ • librosa + NumPy   │
+│ • Live Audio        │  │ • LangGraph + LangChain     │  │ • Same Engine       │
+│   Analysis          │  │ • Gemini 2.5 Flash          │  │                     │
+│ • Real-time         │  │                             │  │ Features:           │
+│   Metrics           │  │ Features:                   │  │ • Portable Practice │
+│ • AI Voice Coach    │  │ • AI Chat Coach             │  │ • Edge Processing   │
+│ • Practice Plans    │  │ • Session Analytics         │  │ • Offline Capable   │
+│ • Smart Lighting    │  │ • Performance Trends        │  │ • Smart Lighting    │
+│                     │  │ • Practice Plan Generator   │  │ • Database Sync     │
+└──────────┬──────────┘  └─────────────────────────────┘  └──────────┬──────────┘
+           │                                                          │
+           ▼                                                          ▼
+   ┌───────────────┐                                          ┌──────────────┐
+   │ Scarlett Solo │                                          │ Integrated   │
+   │  USB Audio    │                                          │ Audio Input  │
+   └───────┬───────┘                                          └──────┬───────┘
+           │                                                         │
+           ▼                                                         ▼
+         🎸 Guitar                                                 🎸 Guitar
 
 
-                    ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
-                      💡 Smart Bulb (Tuya API)
-                    │   Controlled by Desktop &     │
-                        Portable for ambient feedback
-                    └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+                        ┌───────────────────────────────┐
+                        │   AMBIENT FEEDBACK (Optional) │
+                        │                               │
+                        │  💡 Smart Bulb (Tuya WiFi)    │
+                        │                               │
+                        │  🟢 Green  → Excellent (70%+) │
+                        │  🟡 Yellow → Good (50-70%)    │
+                        │  🟠 Orange → Average (30-50%) │
+                        │  🔴 Red    → Needs Work (<30%)│
+                        └───────────────────────────────┘
 ```
-
 ---
 
 ## 1. FretCoach Studio (Desktop Application)
@@ -150,12 +237,17 @@ Desktop application for focused practice sessions.
 - Automatic session logging and summaries
 
 ### Getting Started
+**Prerequisites:**
+- Node.js 18+
+- Python 3.12+
+- Audio interface (Focusrite Scarlett Solo recommended) or built-in mic
+
+**Installation:**
 ```bash
 cd application
 npm install
-npm run dev  # Starts frontend + backend
+npm run dev  # Starts Electron + React frontend + Python FastAPI backend
 ```
-
 > **Environment setup:** See [docs/environment-setup.md](docs/environment-setup.md)
 
 ---
@@ -166,7 +258,7 @@ npm run dev  # Starts frontend + backend
 
 Raspberry Pi 5-based portable practice device. Same analysis engine as Studio.
 
-**Status:** Prototyping phase — hardware complete, software in progress
+**Status:** Prototyping phase - but showing the possibility here!
 
 ### Features
 - Real-time edge processing
@@ -174,14 +266,24 @@ Raspberry Pi 5-based portable practice device. Same analysis engine as Studio.
 - Manual and AI practice modes
 - Database sync
 
-### Current Progress
-Hardware operational. Software integration ongoing.
+**Hardware:**
+- Raspberry Pi 5 (8GB RAM)
+- Focusrite Scarlett Solo USB
+- microSD 64GB+
+
+**Current Progress:**
+- ✅ Hardware setup complete
+- ✅ Audio I/O testing successful
+- ✅ Software integration in progress
+- ✅ Database sync mechanism
+- 📋 Planned: Physical enclosure design using 3D printers, footswitch control, LCD touchscreen 
 
 ---
 
 ## 3. FretCoach Hub (Web Platform)
 
-**Access:** [fretcoach.online](https://fretcoach.online) | **Location:** `/web/`
+***Website:** [fretcoach.online](https://fretcoach.online)
+**Anlytics and AI Coach Dashboard:** [fretcoach.online/dashboard](https://fretcoach.online/dashboard)
 
 Web platform for analytics and practice planning.
 
@@ -193,16 +295,18 @@ Web platform for analytics and practice planning.
 
 ### Getting Started
 
+**Local Development:**
+
 **Backend:**
 ```bash
-cd web/server
+cd web/web-backend
 pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 **Frontend:**
 ```bash
-cd web
+cd web/web-frontend
 npm install
 npm run dev  # http://localhost:5173
 ```
@@ -225,6 +329,37 @@ Smart bulb integration for visual performance feedback.
 
 ---
 
+## Technology Stack
+
+### Desktop Application
+| Layer | Technology |
+|-------|------------|
+| Desktop Runtime | Electron 28 |
+| Frontend | React 18, Vite, Tailwind CSS |
+| Backend | Python 3.12+, FastAPI 0.109+ |
+| Audio Processing | librosa, NumPy, SciPy, sounddevice |
+| Communication | REST API, WebSocket |
+
+### Web Platform
+| Layer | Technology |
+|-------|------------|
+| Frontend | React 18, TypeScript, Vite, Tailwind CSS |
+| UI Components | shadcn/ui, Radix UI, Recharts |
+| State Management | TanStack React Query, React Router v6 |
+| Backend | Python FastAPI, LangChain, LangGraph |
+| Deployment | Vercel (frontend), Render/Railway (backend) |
+
+### Shared Infrastructure
+| Component | Technology |
+|-----------|------------|
+| Database | PostgreSQL (Supabase) |
+| LLM Providers | OpenAI (GPT-4o-mini, TTS), Google Gemini 2.5 Flash |
+| AI Orchestration | LangChain, LangGraph |
+| Observability | Comet Opik |
+| Smart Bulb | Tuya Cloud API (tinytuya 1.17.4) |
+
+---
+
 ## Database Schema
 
 FretCoach uses PostgreSQL hosted on Supabase with two core tables:
@@ -235,81 +370,43 @@ FretCoach uses PostgreSQL hosted on Supabase with two core tables:
 | `ai_practice_plans` | AI-generated recommendations linked to sessions |
 
 ---
-
-## Environment Setup
-
-See complete setup guide: [docs/environment-setup.md](docs/environment-setup.md)
-
-**Quick reference:** Configure database (Supabase), AI keys (OpenAI, Gemini), smart bulb (Tuya), and observability (Opik).
-
----
-
-## Project Structure
-
-```
-FretCoach/
-├── application/          # FretCoach Studio (Electron + React)
-│   ├── electron/         # Electron main process
-│   ├── src/              # React components & UI
-│   └── build/            # App icons
-├── backend/              # Shared Python Backend
-│   ├── api/              # FastAPI routes & services
-│   ├── core/             # audio analysis agent engine
-│   └── sql/              # Database schemas
-├── web/                  # FretCoach Hub (Web Platform)
-│   ├── src/              # React frontend
-│   ├── server/           # FastAPI backend
-│   └── public/           # Static assets
-├── portable/             # FretCoach Portable (Raspberry Pi Device)
-└── images/               # Project assets
-```
-
----
-
 ## Feature Matrix
 
 | Feature | Studio | Hub | Portable |
 |---------|:------:|:---:|:--------:|
-| Real-time Audio Analysis | ✓ | — | ✓ |
-| AI Practice Coach | ✓ | ✓ | ✓ |
-| Live AI Feedback | ✓ | — | ✓ |
-| Session Logging | ✓ | View | ✓ |
-| Ambient Lighting | ✓ | — | ✓ |
-| Practice Plans | ✓ | Generate | ✓ |
-| Performance Charts | — | ✓ | — |
+| Real-time Audio Analysis | ✅ | — | ✅ |
+| 4 Metric Evaluation | ✅ | — | ✅ |
+| Live Visual Feedback | ✅ | — | 🚧 |
+| Smart Bulb Integration | ✅ | — | ✅ |
+| AI Voice Coaching | ✅ | — | 📋 |
+| AI Practice Plans | ✅ | ✅ | 📋 |
+| Session Logging | ✅ | View | ✅ |
+| Performance Analytics | — | ✅ | — |
+| AI Chat Coach | — | ✅ | — |
+| Trend Visualization | — | ✅ | — |
+| Cross-Device Sync | ✅ | ✅ | ✅ |
+| Offline Capable | ✅ | — | ✅ |
+
+**Legend:** ✅ Complete | 🚧 In Progress | 📋 Planned
 
 ---
 
-## Tech Stack
+## Documentation
 
-| Layer | Technology |
-|-------|------------|
-| Desktop Frontend | Electron, React |
-| Desktop Backend | Python, FastAPI |
-| Web Frontend | React, Vite, Tailwind |
-| Web Backend | FastAPI |
-| Database | PostgreSQL (Supabase) |
-| AI/LLM | LangChain, OpenAI, Google Gemini |
-| Observability | Comet Opik |
-| Smart Bulb | Tuya API |
+- [Architecture Overview](docs/architecture.md) — Comprehensive technical documentation
+- [Environment Setup](docs/environment-setup.md) — Configuration guide
+- [Desktop Application](docs/desktop-app.md) — Studio setup and usage
+- [Audio Engine](docs/audio-engine.md) — Signal processing details
+- [Opik Integration](opik/README.md) — Use of Opik
 
 ---
 
-## Philosophy
+## Contributing
 
-**Prevention, Not Correction**
+FretCoach is under active development. Contributions, bug reports, and feature requests are welcome.
 
-FretCoach operates inside the motor learning window — providing instant guidance during skill execution before mistakes encode.
-
-**Why:**
-- Traditional feedback arrives days/weeks late (lessons, recordings)
-- Motor patterns solidify before mistakes are identified
-- 10–20× harder to unlearn than prevent (neural research)
-- FretCoach closes the loop from days to **milliseconds**
-
-Real-time scores, ambient lighting, and AI coaching create an engaging neuroadaptive experience. Every note reinforces correct patterns before incorrect ones form.
-
-Built for guitar. Designed to extend to other instruments and motor skills.
+**Built with:** Electron, React, Python, FastAPI, LangChain, OpenAI, Google Gemini, PostgreSQL, Supabase
 
 ---
 
+**FretCoach** — *Preventive AI for guitar mastery*
