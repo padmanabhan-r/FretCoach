@@ -522,7 +522,10 @@ function App() {
 
           {setupStep === 'scale' && (
             <div className="mt-12 max-w-4xl mx-auto">
-              <ScaleSelection onComplete={handleScaleSelectionComplete} />
+              <ScaleSelection
+                onComplete={handleScaleSelectionComplete}
+                onBack={() => setSetupStep('mode')}
+              />
             </div>
           )}
 
@@ -732,6 +735,10 @@ function App() {
                     scaleConformity={state.scaleConformity}
                     timingStability={state.timingStability}
                     isRunning={state.isRunning}
+                    debugInfo={state.debugInfo}
+                    totalNotesPlayed={state.totalNotesPlayed}
+                    correctNotes={state.correctNotes}
+                    wrongNotes={state.wrongNotes}
                   />
                 </div>
               </div>
