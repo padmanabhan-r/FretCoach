@@ -12,7 +12,10 @@ This directory contains the complete documentation for FretCoach, published as G
 
 ### System Components
 - **[desktop-app.md](desktop-app.md)** - Desktop application deep dive
-- **[ai-coaching.md](ai-coaching.md)** - LLM-powered adaptive coaching system
+- **[portable-app.md](portable-app.md)** - Raspberry Pi portable device documentation
+- **[web-dashboard.md](web-dashboard.md)** - Web analytics and AI coach platform
+- **[audio-analysis-agent-engine.md](audio-analysis-agent-engine.md)** - Real-time audio processing (Fast Loop)
+- **[ai-coach-agent-engine.md](ai-coach-agent-engine.md)** - LLM-powered adaptive coaching (Slow Loop)
 
 ### Architecture & Technical
 - **[architecture.md](architecture.md)** - Overall system design and component interaction
@@ -179,8 +182,11 @@ python3 -m http.server 8000
 | quickstart.md | ✅ Complete | Setup guide, first session walkthrough |
 | judges-start-here.md | ✅ Complete | Demo guide, Opik integration, evaluation |
 | desktop-app.md | ✅ Complete | Desktop application deep dive |
+| portable-app.md | ✅ Complete | Raspberry Pi device documentation |
+| web-dashboard.md | ✅ Complete | Web analytics and AI coach platform |
 | architecture.md | ✅ Complete | System architecture, components, database |
-| ai-coaching.md | ✅ Complete | AI coaching system, LLM integration |
+| audio-analysis-agent-engine.md | ✅ Complete | Real-time audio processing engine |
+| ai-coach-agent-engine.md | ✅ Complete | AI coaching system, LLM integration |
 | appendix-audio-math.md | ✅ Complete | DSP mathematics, formulas, algorithms |
 | README.md | ✅ Complete | Documentation structure and publishing guide |
 

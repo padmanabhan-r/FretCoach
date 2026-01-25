@@ -1,0 +1,241 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+/* FretCoach Custom Theme - Orangish Color Scheme */
+
+/* Primary Orange/Amber Colors */
+$fretcoach-orange: #ff6b35;
+$fretcoach-dark-orange: #d9541f;
+$fretcoach-light-orange: #ff8c5a;
+$fretcoach-amber: #ffa500;
+$fretcoach-dark-bg: #1a1a1a;
+$fretcoach-medium-bg: #2d2d2d;
+$fretcoach-text: #f5f5f5;
+
+/* Header Gradient - Orange Theme */
+.page-header {
+  background: linear-gradient(135deg, #ff6b35 0%, #d9541f 50%, #ff8c5a 100%) !important;
+  background-image: linear-gradient(135deg, #ff6b35, #d9541f, #ff8c5a) !important;
+}
+
+/* Project Name and Tagline */
+.project-name {
+  color: #ffffff !important;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.project-tagline {
+  color: #fff5f0 !important;
+  opacity: 0.95;
+}
+
+/* Links - Orange Theme */
+a {
+  color: $fretcoach-orange !important;
+  text-decoration: none;
+
+  &:hover {
+    color: $fretcoach-light-orange !important;
+    text-decoration: underline;
+  }
+}
+
+/* Buttons */
+.btn {
+  background: linear-gradient(to bottom, $fretcoach-orange, $fretcoach-dark-orange) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+
+  &:hover {
+    background: linear-gradient(to bottom, $fretcoach-light-orange, $fretcoach-orange) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+  }
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  color: #333333;
+
+  a {
+    color: $fretcoach-dark-orange !important;
+
+    &:hover {
+      color: $fretcoach-orange !important;
+    }
+  }
+}
+
+/* Code Blocks */
+code {
+  background-color: #fff5f0;
+  border: 1px solid #ffd4b8;
+  color: $fretcoach-dark-orange;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+pre {
+  background-color: #2d2d2d;
+  border: 1px solid $fretcoach-dark-orange;
+
+  code {
+    background-color: transparent;
+    border: none;
+    color: #f5f5f5;
+  }
+}
+
+/* Blockquotes */
+blockquote {
+  border-left: 4px solid $fretcoach-orange;
+  background-color: #fff5f0;
+  padding: 0.5rem 1rem;
+  margin: 1rem 0;
+
+  p {
+    margin: 0.5rem 0;
+  }
+}
+
+/* Tables */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+
+  th {
+    background: linear-gradient(to bottom, $fretcoach-orange, $fretcoach-dark-orange);
+    color: white;
+    padding: 0.75rem;
+    text-align: left;
+    border: 1px solid $fretcoach-dark-orange;
+  }
+
+  td {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+  }
+
+  tr:nth-child(even) {
+    background-color: #fff5f0;
+  }
+
+  tr:hover {
+    background-color: #ffe8d6;
+  }
+}
+
+/* Horizontal Rules */
+hr {
+  border: 0;
+  height: 2px;
+  background: linear-gradient(to right, transparent, $fretcoach-orange, transparent);
+  margin: 2rem 0;
+}
+
+/* Inline code in headings */
+h1 code, h2 code, h3 code, h4 code, h5 code, h6 code {
+  background-color: #ffe8d6;
+  color: $fretcoach-dark-orange;
+  font-size: 0.9em;
+}
+
+/* Main content area */
+.main-content {
+  h1, h2 {
+    border-bottom: 2px solid $fretcoach-orange;
+    padding-bottom: 0.3rem;
+  }
+
+  h3 {
+    border-bottom: 1px solid #ffd4b8;
+    padding-bottom: 0.2rem;
+  }
+}
+
+/* Navigation links at bottom of pages */
+.main-content p:has(strong:contains("Navigation")) {
+  background-color: #fff5f0;
+  border-left: 4px solid $fretcoach-orange;
+  padding: 1rem;
+  margin-top: 2rem;
+}
+
+/* Images */
+img {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  height: auto;
+}
+
+/* Emphasis */
+strong {
+  color: $fretcoach-dark-orange;
+}
+
+/* Lists */
+ul li::marker {
+  color: $fretcoach-orange;
+}
+
+ol li::marker {
+  color: $fretcoach-orange;
+  font-weight: bold;
+}
+
+/* Task lists (checkboxes) */
+.task-list-item-checkbox {
+  accent-color: $fretcoach-orange;
+}
+
+/* Badges/shields.io images */
+img[src*="shields.io"], img[src*="badge"] {
+  box-shadow: none;
+  border-radius: 4px;
+}
+
+/* Footer */
+.site-footer {
+  border-top: 2px solid $fretcoach-orange;
+
+  a {
+    color: $fretcoach-dark-orange !important;
+  }
+}
+
+/* Syntax highlighting adjustments for orange theme */
+.highlight {
+  background-color: #2d2d2d;
+  border: 1px solid $fretcoach-dark-orange;
+  border-radius: 4px;
+
+  .k, .kd { color: $fretcoach-orange; }  /* Keywords */
+  .s, .s1, .s2 { color: #ffa500; }       /* Strings */
+  .nf { color: $fretcoach-light-orange; } /* Function names */
+}
+
+/* Mobile responsiveness */
+@media screen and (max-width: 768px) {
+  .page-header {
+    padding: 2rem 1rem;
+  }
+
+  .project-name {
+    font-size: 1.5rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .page-header {
+    background: $fretcoach-orange !important;
+  }
+
+  a {
+    color: $fretcoach-dark-orange !important;
+    text-decoration: underline;
+  }
+}

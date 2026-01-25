@@ -27,7 +27,7 @@ Preventive intervention inside the motor learning window.
 
 FretCoach consists of three connected components sharing a central database for seamless cross-device practice tracking.
 
-![FretCoach Trifecta](/images/FretCoach%20Trifecta.jpeg)
+![FretCoach Trifecta](assets/images/FretCoach%20Trifecta.jpeg)
 
 - **FretCoach Studio** — Desktop app for focused practice with real-time analysis and AI coaching
 - **FretCoach Portable** — Raspberry Pi device for practice anywhere
@@ -53,7 +53,10 @@ AI-powered preventive neurofeedback for guitar. Built to extend to other instrum
 
 ### System Components
 - **[Desktop Application](desktop-app.md)** — Primary training environment with real-time analysis
-- **[AI Coaching System](ai-coaching.md)** — How the intelligent coaching works
+- **[Portable Application](portable-app.md)** — Raspberry Pi device for practice anywhere
+- **[Web Dashboard](web-dashboard.md)** — Analytics and AI coach web platform
+- **[Audio Analysis Agent Engine](audio-analysis-agent-engine.md)** — Real-time audio processing (Fast Loop)
+- **[AI Coach Agent Engine](ai-coach-agent-engine.md)** — Intelligent coaching system (Slow Loop)
 
 ### Technical Details
 - **[System Architecture](architecture.md)** — Overall design and component interaction

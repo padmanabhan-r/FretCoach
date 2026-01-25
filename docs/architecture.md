@@ -8,7 +8,7 @@ Complete technical overview of FretCoach's multi-component architecture.
 
 Three-component ecosystem with central database for cross-device practice tracking.
 
-![FretCoach Trifecta](/images/FretCoach%20Trifecta.jpeg)
+![FretCoach Trifecta](assets/images/FretCoach%20Trifecta.jpeg)
 
 **Components:**
 - **FretCoach Studio** — Desktop app for focused practice
@@ -26,7 +26,7 @@ Three-component ecosystem with central database for cross-device practice tracki
 
 Two complementary systems: real-time deterministic + intelligent LLM.
 
-![FretCoach Brain Architecture](/images/FretCoach%20Brain.png)
+![FretCoach Brain Architecture](assets/images/FretCoach%20Brain.png)
 
 ### Fast Loop: Audio Analysis Agent (Deterministic)
 **Purpose:** Real-time monitoring (<300ms latency)

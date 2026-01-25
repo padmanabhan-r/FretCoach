@@ -396,7 +396,10 @@ FretCoach uses PostgreSQL hosted on Supabase with two core tables:
 - [Architecture Overview](docs/architecture.md) — Comprehensive technical documentation
 - [Environment Setup](docs/environment-setup.md) — Configuration guide
 - [Desktop Application](docs/desktop-app.md) — Studio setup and usage
-- [Audio Engine](docs/audio-engine.md) — Signal processing details
+- [Audio Analysis Agent Engine](docs/audio-analysis-agent-engine.md) — Real-time audio processing (Fast Loop)
+- [AI Coach Agent Engine](docs/ai-coach-agent-engine.md) — LLM-powered coaching (Slow Loop)
+- [Portable Application](docs/portable-app.md) — Raspberry Pi device documentation
+- [Web Dashboard](docs/web-dashboard.md) — Analytics and AI coach platform
 - [Opik Integration](opik/README.md) — Use of Opik
 
 ---

@@ -264,7 +264,8 @@ Use this to quickly assess FretCoach:
 - **Full Docs:** Start at [index.md](index.md)
 - **Quickstart:** [quickstart.md](quickstart.md)
 - **Architecture:** [architecture.md](architecture.md)
-- **AI Coaching Details:** [ai-coaching.md](ai-coaching.md)
+- **AI Coach Agent Engine:** [ai-coach-agent-engine.md](ai-coach-agent-engine.md)
+- **Audio Analysis Agent Engine:** [audio-analysis-agent-engine.md](audio-analysis-agent-engine.md)
 
 ---
 
@@ -299,4 +300,5 @@ Use this to quickly assess FretCoach:
 - [← Back to Index](index.md)
 - [Full Documentation →](index.md)
 - [Architecture Details →](architecture.md)
-- [AI Coaching System →](ai-coaching.md)
+- [AI Coach Agent Engine →](ai-coach-agent-engine.md)
+- [Audio Analysis Agent Engine →](audio-analysis-agent-engine.md)

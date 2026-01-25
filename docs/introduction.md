@@ -77,7 +77,7 @@ Play note → Instant analysis → Immediate feedback → Adjust → Next note
 
 FretCoach combines two complementary systems to deliver both speed and intelligence.
 
-![FretCoach Brain Architecture](/images/FretCoach%20Brain.png)
+![FretCoach Brain Architecture](assets/images/FretCoach%20Brain.png)
 
 **Audio Analysis Agent (Fast Loop - Deterministic)**
 - Real-time processing with <300ms latency
@@ -113,7 +113,7 @@ Quantified improvement across all metrics.
 
 FretCoach consists of three connected components that work together seamlessly through a central database.
 
-![FretCoach Trifecta](/images/FretCoach%20Trifecta.jpeg)
+![FretCoach Trifecta](assets/images/FretCoach%20Trifecta.jpeg)
 
 ### FretCoach Studio (Desktop Application)
 Desktop app for focused practice. Connects via USB audio interface, analyzes in real-time, displays metrics, and provides AI coaching.

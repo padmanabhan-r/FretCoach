@@ -366,4 +366,5 @@ OPIK_WORKSPACE=your_workspace  # Optional
 
 **Navigation:**
 - [← Back to Index](index.md)
-- [AI Coaching Details →](ai-coaching.md)
+- [AI Coach Agent Engine →](ai-coach-agent-engine.md)
+- [Audio Analysis Agent Engine →](audio-analysis-agent-engine.md)

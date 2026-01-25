@@ -323,8 +323,9 @@ pip install -r backend/requirements.txt
 
 Now that you have FretCoach running:
 
-→ **[Desktop Application Guide](desktop-app.md)** — Deep dive into all features  
-→ **[AI Coaching System](ai-coaching.md)** — Learn how AI recommendations work  
+→ **[Desktop Application Guide](desktop-app.md)** — Deep dive into all features
+→ **[AI Coach Agent Engine](ai-coach-agent-engine.md)** — Learn how AI recommendations work
+→ **[Audio Analysis Agent Engine](audio-analysis-agent-engine.md)** — Learn how real-time audio analysis works
 → **[Environment Setup](environment-setup.md)** — Complete configuration guide
 
 ---

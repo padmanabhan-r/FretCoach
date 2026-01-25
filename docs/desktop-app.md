@@ -107,7 +107,7 @@ Request Recommendation → Review AI Suggestion → Accept → Start Session →
 
 The AI uses OpenAI GPT-4o-mini or Google Gemini to analyze patterns and generate recommendations. Every recommendation is traced in Comet Opik.
 
-**See:** [AI Coaching System](ai-coaching.md) for details.
+**See:** [AI Coach Agent Engine](ai-coach-agent-engine.md) for details.
 
 ### 3. Live AI Coach Feedback
 
