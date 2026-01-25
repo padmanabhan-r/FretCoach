@@ -1,6 +1,6 @@
 # System Architecture
 
-Complete technical overview of FretCoach's multi-component architecture.
+Complete technical overview of FretCoach's multi-component architecture. While currently optimized for guitar learning, the architecture is designed to support multiple instruments in the future.
 
 ---
 
@@ -24,7 +24,7 @@ Three-component ecosystem with central database for cross-device practice tracki
 
 ## Dual-Brain Architecture
 
-Two complementary systems: real-time deterministic + intelligent LLM.
+Two complementary systems: real-time deterministic + intelligent LLM. This architecture is designed to be instrument-agnostic, with the audio analysis engine adaptable to different instruments' characteristics.
 
 ![FretCoach Brain Architecture](/images/FretCoach%20Brain.png)
 
@@ -41,6 +41,7 @@ Two complementary systems: real-time deterministic + intelligent LLM.
 - Predictable latency (no LLM calls)
 - Offline operation
 - Consistent metrics
+- Instrument-specific parameters configurable without architectural changes
 
 ### Slow Loop: AI Coach (LLM-Powered)
 **Purpose:** Intelligent pattern recognition and guidance
@@ -119,7 +120,7 @@ FretCoach consists of three main components sharing a central PostgreSQL databas
 ## Component 1: Desktop Application
 
 ### Purpose
-Primary training environment for focused practice with real-time audio analysis and live AI coaching.
+Primary training environment for focused music practice with real-time audio analysis and live AI coaching. Currently optimized for guitar, with architecture designed to support additional instruments.
 
 ### Technology Stack
 
@@ -328,7 +329,7 @@ Cloud-based analytics platform for session review, trend analysis, and AI chat c
 ## Component 3: Portable Device (Raspberry Pi)
 
 ### Purpose
-Edge computing practice device—a guitar pedal-like unit running the same analysis engine locally.
+Edge computing practice device—a music practice pedal-like unit running the same analysis engine locally. Initially designed for guitar practice, with potential to support multiple instruments through configurable audio analysis parameters.
 
 ### Technology Stack
 
@@ -391,9 +392,9 @@ Edge computing practice device—a guitar pedal-like unit running the same analy
 ### Use Cases
 
 1. **Backstage warmup** — Practice before a performance without a laptop
-2. **Travel practice** — Portable device fits in guitar case
+2. **Travel practice** — Portable device fits in instrument case
 3. **Offline practice** — Works without internet (syncs later)
-4. **Bedroom practice** — Minimal setup, pedal-like form factor
+4. **Bedroom/studio practice** — Minimal setup, pedal-like form factor for any instrument
 
 ---
 

@@ -1,8 +1,8 @@
 # Introduction to FretCoach
 
-## Preventive Neurofeedback for Guitar
+## Preventive Neurofeedback for Music Learning
 
-FretCoach is a real-time preventive AI system that reshapes motor learning before correction is required. Analyzes playing during execution, tracks four metrics (pitch accuracy, scale conformity, timing stability, noise control), delivers feedback through three channels:
+FretCoach is a real-time adaptive AI music learning system designed to help learners improve faster by receiving feedback while they practice, not after. Initially targeting guitar players, FretCoach reshapes motor learning before correction is required. It analyzes playing during execution, tracks four metrics (pitch accuracy, scale conformity, timing stability, noise control), and delivers feedback through three channels:
 
 - **On-screen metrics** — Live scoring and note detection
 - **AI coaching** — Real-time verbal guidance
@@ -17,16 +17,16 @@ Professional-grade coaching for every practice session — instant feedback, pat
 
 ## The Solo Practice Problem
 
-Solo practice without feedback:
-- Can't detect out-of-tune notes
+Solo music practice without feedback:
+- Can't detect out-of-tune notes or pitch issues
 - Can't measure timing drift
 - Can't identify wrong notes in real-time
-- Can't assess string noise
-- Can't track actual improvement
+- Can't assess unwanted noise or artifacts
+- Can't track actual improvement objectively
 
 Delayed feedback arrives after motor patterns encode. Lessons, recordings, performances — all post-execution. By then, mistakes are practiced hundreds of times.
 
-FretCoach delivers instant feedback during execution, not after.
+FretCoach delivers instant feedback during execution, not after. This approach is applicable to any instrument where real-time audio analysis can provide actionable feedback.
 
 ---
 
@@ -149,24 +149,27 @@ All three components share a **central database** (PostgreSQL via Supabase), ena
 
 ---
 
-## Current Focus: Scales
+## Current Focus: Guitar Scale Practice
 
-The current implementation focuses on **scale practice**—the foundational building blocks of music. Every great solo, improvisation, and melodic phrase is built from scales.
+The initial implementation focuses on **guitar scale practice**—the foundational building blocks of music. Every great solo, improvisation, and melodic phrase is built from scales.
 
-Supported scales:
+Supported scales for guitar:
 - Major/Minor Diatonic (7 notes)
 - Major/Minor Pentatonic (5 notes)
 - All 12 keys
 
-FretCoach ensures you're playing the right notes, in time, with clean technique—building the muscle memory that every guitarist needs.
+FretCoach ensures you're playing the right notes, in time, with clean technique—building the muscle memory that every musician needs. This focused approach allows us to perfect the feedback system before expanding to other instruments.
 
 ---
 
 ## Future Vision
 
-Built for guitar. Designed to extend to vocals, bass, drums, and other motor skills where real-time feedback accelerates learning.
+Built initially for guitar. Designed from the ground up to extend to vocals, bass, drums, piano, wind instruments, and other musical skills where real-time feedback accelerates learning.
 
-Current focus: preventive neurofeedback for guitar practice.
+The architecture—combining fast deterministic audio analysis with intelligent AI coaching—is instrument-agnostic. As FretCoach matures, the same preventive neurofeedback approach will be adapted to help learners master any instrument where audio analysis can provide actionable guidance.
+
+**Current focus:** Perfecting preventive neurofeedback for guitar learners.
+**Long-term vision:** A comprehensive music learning platform supporting multiple instruments and practice modalities.
 
 ---
 

@@ -1,18 +1,22 @@
-# FretCoach - AI-Powered Guitar Training
+# FretCoach - AI-Powered Music Learning System
 
-> **Turn your 2026 guitar resolutions into reality.**
+> **Turn your 2026 music learning resolutions into reality.**
 
 ![FretCoach](images/FretCoach.jpeg)
 
-**Real-time AI coaching for guitar practice**
+**Real-time AI coaching for music practice — initially designed for guitar**
 
 ---
 
 ## Overview
 
-FretCoach is a real-time AI guitar practice system that reshapes motor learning before conscious correction is required. It listens to every note you play and provides **instant feedback** — closing the loop from days to milliseconds — helping you build correct technique before bad habits form.
+FretCoach is a real-time adaptive AI music learning system designed to help learners improve faster by receiving feedback while they practice, not after. Initially targeting guitar players, the system continuously listens to a user's performance and evaluates key aspects of playing such as pitch accuracy, timing stability, scale conformity, and unwanted noise in real time.
 
-> 🧠 **Neuroscience insight:** It's 10–20× harder to unlearn a motor habit than to prevent it. Early-stage neuroplasticity is fast and fragile — FretCoach operates inside this critical window. 
+Using AI-driven analysis, FretCoach detects mistakes as they happen and provides instant, actionable feedback through visual cues, live performance metrics, and adaptive guidance. This allows learners to immediately self-correct during play, preventing incorrect technique and bad muscle memory from being reinforced through repetition.
+
+By closing the feedback loop in music practice, FretCoach transforms practice from passive repetition into an active learning process. It reduces dependence on constant instructor supervision, supports self-learning at scale, and makes structured, effective music training more accessible to a wider audience.
+
+> 🧠 **Neuroscience insight:** It's 10–20× harder to unlearn a motor habit than to prevent it. Early-stage neuroplasticity is fast and fragile — FretCoach operates inside this critical window.
 
 **FretCoach doesn't correct — it prevents.**
 
@@ -20,7 +24,7 @@ FretCoach is a real-time AI guitar practice system that reshapes motor learning 
 
 ### Why Prevention Matters
 
-Traditional guitar feedback arrives **days or weeks late**:
+Traditional music feedback arrives **days or weeks late**:
 - Weekly lessons with an instructor
 - Reviewing your own recordings after practice
 - Posting videos online for feedback
@@ -35,7 +39,7 @@ Traditional guitar feedback arrives **days or weeks late**:
 3. **Multi-channel feedback:** Visual + ambient + vocal reinforcement
 4. **Gamification:** Scores, color feedback, and progress tracking
 
-Every note you play receives immediate evaluation. Correct patterns are reinforced. Incorrect patterns are flagged **before they become habits**.
+Every note receives immediate evaluation. Correct patterns are reinforced. Incorrect patterns are flagged **before they become habits**.
 
 **Result:** Neuroadaptive learning that shapes motor behavior in real-time, not retroactively.
 
@@ -62,13 +66,13 @@ FretCoach operates across three interconnected components sharing a central data
 ---
 ## How It Works
 
-### Preventive Neurofeedback Systems
+### Preventive Neurofeedback for Music Learning
 
 FretCoach is a **Preventive Neurofeedback System** — it shapes motor behavior in real time before maladaptive patterns form. Instead of corrective feedback after mistakes solidify, FretCoach intervenes **during skill execution** inside the brain's plasticity window.
 
 > **Prevention is neuroadaptive. Correction is retrofitting.**
 
-Architecture: **dual-brain system** combining fast deterministic processing with intelligent AI coaching.
+Architecture: **dual-brain system** combining fast deterministic processing with intelligent AI coaching. While initially built for guitar, the architecture is designed to extend to other instruments and musical skills.
 
 ![FretCoach Brain Architecture](images/FretCoach%20Brain.png)
 
@@ -409,4 +413,4 @@ FretCoach is under active development. Contributions, bug reports, and feature r
 
 ---
 
-**FretCoach** — *Preventive AI for guitar mastery*
+**FretCoach** — *Preventive AI for music mastery, starting with guitar*

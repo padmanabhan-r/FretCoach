@@ -1,6 +1,6 @@
 # Quickstart Guide
 
-Get FretCoach up and running in 5 minutes.
+Get FretCoach up and running in 5 minutes. This guide focuses on the guitar learning implementation—the initial target instrument for the FretCoach system.
 
 ---
 

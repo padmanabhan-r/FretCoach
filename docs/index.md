@@ -1,6 +1,6 @@
 # FretCoach Documentation
 
-> *"An AI guitar pedal that trains your brain, not your tone."*
+> *"An AI music coach that trains your brain, not your tone — starting with guitar."*
 
 [![Live Demo](https://img.shields.io/badge/Demo-fretcoach.online-blue)](https://fretcoach.online)
 
@@ -8,11 +8,11 @@
 
 ## The Problem
 
-Solo practice without feedback reinforces both good and bad habits equally. By the time mistakes are identified, motor patterns are already encoded. Unlearning is 10–20× harder than prevention.
+Solo music practice without feedback reinforces both good and bad habits equally. By the time mistakes are identified, motor patterns are already encoded. Unlearning is 10–20× harder than prevention.
 
 ## The Solution
 
-FretCoach provides millisecond-level feedback during skill execution. Real-time analysis across four metrics: **pitch accuracy**, **scale conformity**, **timing stability**, and **noise control**.
+FretCoach is a real-time adaptive AI music learning system that provides millisecond-level feedback during skill execution. Initially designed for guitar players, it delivers real-time analysis across four metrics: **pitch accuracy**, **scale conformity**, **timing stability**, and **noise control**.
 
 Three feedback channels:
 - **On-screen metrics** — Real-time scoring and note detection
@@ -39,9 +39,11 @@ All three components sync through PostgreSQL (Supabase), enabling the AI coach t
 
 ## The Vision
 
-AI-powered preventive neurofeedback for guitar. Built to extend to other instruments and motor skills.
+AI-powered preventive neurofeedback for music learning. Initially built for guitar, designed to extend to vocals, bass, drums, piano, and other instruments where real-time feedback accelerates skill acquisition.
 
-**Goal:** Reshape motor learning before correction is required.
+Using AI-driven analysis, FretCoach detects mistakes as they happen and provides instant, actionable feedback. By closing the feedback loop in music practice, it transforms learning from passive repetition into an active process—reducing dependence on constant instructor supervision and making structured, effective music training accessible to a wider audience.
+
+**Goal:** Reshape motor learning before correction is required—for any instrument.
 
 ---
 
