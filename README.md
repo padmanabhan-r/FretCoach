@@ -282,8 +282,8 @@ Raspberry Pi 5-based portable practice device. Same analysis engine as Studio.
 
 ## 3. FretCoach Hub (Web Platform)
 
-***Website:** [fretcoach.online](https://fretcoach.online)
-**Anlytics and AI Coach Dashboard:** [fretcoach.online/dashboard](https://fretcoach.online/dashboard)
+***Website:** [fretcoach.online](https://www.fretcoach.online)
+**Anlytics and AI Coach Dashboard:** [fretcoach.online/dashboard](https://www.fretcoach.online/dashboard)
 
 Web platform for analytics and practice planning.
 
