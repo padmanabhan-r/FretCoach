@@ -163,7 +163,7 @@ function AIRecommendation({ recommendation, onAccept, onReject, onTryAnother, lo
               onClick={onReject}
               className="bg-card hover:bg-card/80 text-foreground font-semibold py-3 px-6 rounded-lg transition-all border border-border"
             >
-              Back
+              ← Back to mode selection
             </button>
           </div>
           {/* Try Another Button */}

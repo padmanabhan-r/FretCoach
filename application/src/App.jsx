@@ -522,7 +522,10 @@ function App() {
 
           {setupStep === 'scale' && (
             <div className="mt-12 max-w-4xl mx-auto">
-              <ScaleSelection onComplete={handleScaleSelectionComplete} />
+              <ScaleSelection
+                onComplete={handleScaleSelectionComplete}
+                onBack={() => setSetupStep('mode')}
+              />
             </div>
           )}
 

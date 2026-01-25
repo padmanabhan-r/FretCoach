@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api';
 
-const ScaleSelection = ({ onComplete }) => {
+const ScaleSelection = ({ onComplete, onBack }) => {
   const [scales, setScales] = useState({ major: [], minor: [] });
   const [selectedScale, setSelectedScale] = useState('');
   const [scaleType, setScaleType] = useState('natural');
@@ -99,6 +99,15 @@ const ScaleSelection = ({ onComplete }) => {
             </div>
           </div>
         </div>
+
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="mt-6 px-6 py-3 bg-card hover:bg-card/80 text-foreground rounded-lg transition-all border border-border"
+          >
+            ← Back to mode selection
+          </button>
+        )}
       </div>
     );
   }
@@ -136,9 +145,9 @@ const ScaleSelection = ({ onComplete }) => {
 
         <button
           onClick={() => setStep(1)}
-          className="text-muted-foreground hover:text-foreground text-sm"
+          className="px-6 py-3 bg-card hover:bg-card/80 text-foreground rounded-lg transition-all border border-border"
         >
-          Back to scale selection
+          ← Back to scale selection
         </button>
       </div>
     );
@@ -235,7 +244,7 @@ const ScaleSelection = ({ onComplete }) => {
           onClick={() => setStep(2)}
           className="px-6 py-3 bg-card hover:bg-card/80 text-foreground rounded-lg transition-all border border-border"
         >
-          Back
+          ← Back
         </button>
         <button
           onClick={handleComplete}

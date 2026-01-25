@@ -35,7 +35,7 @@ load_dotenv(find_dotenv())
 live_coach_model = ChatOpenAI(
     model="gpt-4o-mini",
     temperature=0.7,  # Slightly more creative for motivational feedback
-    max_tokens=150  # Keep responses short
+    max_tokens=200  # Room for 2-3 sentences with context
 )
 
 # Initialize OpenAI client for TTS
@@ -68,25 +68,20 @@ def get_opik_config(session_id: str, trace_name: str) -> dict:
     }
 
 # System prompt for coaching
-COACHING_SYSTEM_PROMPT = """You are a direct, practical guitar coach analyzing real-time playing data.
+COACHING_SYSTEM_PROMPT = """You are an energetic, direct guitar coach giving real-time feedback during practice.
 
-Your feedback must be:
-- CORRECTIVE: Address the actual problem shown in the metrics
-- SPECIFIC: Reference the exact metric that needs work
-- ACTIONABLE: Give one concrete technique to try RIGHT NOW
-- BRIEF: 1 sentence maximum
-
-DO NOT:
-- Use generic motivational phrases like "Great job!" or "Keep it up!"
-- Be vague about what needs improvement
-- Give multiple suggestions at once
+Your feedback MUST have 3 parts in 2-3 sentences total:
+1. ACKNOWLEDGE strength: Quickly name what's going well (1 metric that's highest)
+2. IDENTIFY problem: Point out what's struggling (the weakest metric)
+3. FIX IT NOW: Give ONE specific action to improve the weak area immediately
 
 Interpretation guide:
 - Pitch Accuracy: How cleanly notes are being fretted. Low = pressing too hard/soft, poor finger placement
 - Scale Conformity: Whether notes are in the chosen scale and whether they are covering the full range of the scale. Low = playing wrong notes or playing in just one position, not knowing the scale positions
 - Timing Stability: Consistency of note spacing. Low = rushing, dragging, or uneven rhythm
 
-For the WEAKEST metric, provide a specific corrective instruction."""
+Be conversational and direct - you're talking to a student during practice, not writing a report.
+Use "you" and "your". Be specific about numbers when helpful."""
 
 COACHING_USER_TEMPLATE = """Session metrics after {elapsed_time} practicing {scale_name}:
 
@@ -94,11 +89,11 @@ Pitch Accuracy: {pitch_accuracy}% ({pitch_assessment})
 Scale Conformity: {scale_conformity}% ({scale_assessment})
 Timing Stability: {timing_stability}% ({timing_assessment})
 
+Strongest area: {strongest_area_name} at {strongest_score}%
 Weakest area: {weakest_area_name} at {weakest_score}%
-Notes played so far: {notes_played}
-Correct notes: {correct_notes} | Wrong notes: {wrong_notes}
+Notes played: {notes_played} ({correct_notes} correct, {wrong_notes} wrong)
 
-Give ONE specific corrective instruction for the weakest metric:"""
+Give feedback that acknowledges the strength, identifies the weakness, and tells them exactly what to fix right now:"""
 
 
 def get_performance_label(score: float) -> str:
@@ -159,10 +154,11 @@ async def generate_and_play_tts(
         # Generate and stream TTS audio
         async with openai_client.audio.speech.with_streaming_response.create(
             model="gpt-4o-mini-tts",
-            voice="onyx",
+            voice="coral",  # Coral is more energetic and natural than onyx
             input=feedback_text,
-            instructions="Speak in a direct, encouraging tone like a guitar coach giving real-time feedback to a student during practice.",
+            instructions="You're an energetic guitar coach giving quick, direct feedback during practice. Speak naturally and conversationally, like you're in the room with the student. Keep the energy up and pace brisk.",
             response_format="pcm",
+            speed=1.15,  # 15% faster for more dynamic delivery
         ) as response:
             # Play audio in real-time using the singleton player
             await player.play(response)
@@ -171,7 +167,8 @@ async def generate_and_play_tts(
             "status": "played",
             "text_length": len(feedback_text),
             "model": "gpt-4o-mini-tts",
-            "voice": "onyx"
+            "voice": "echo",
+            "speed": 1.15
         }
 
     except Exception as e:
@@ -228,7 +225,7 @@ async def generate_coaching_feedback(
     # Format elapsed time
     elapsed_time = format_elapsed_time(elapsed_seconds)
 
-    # Identify the weakest area with detailed info
+    # Identify the strongest and weakest areas
     metrics = {
         "Pitch Accuracy": pitch_accuracy,
         "Scale Conformity": scale_conformity,
@@ -236,6 +233,8 @@ async def generate_coaching_feedback(
     }
     weakest_area_name = min(metrics, key=metrics.get)
     weakest_score = metrics[weakest_area_name]
+    strongest_area_name = max(metrics, key=metrics.get)
+    strongest_score = metrics[strongest_area_name]
 
     # Get assessments for each metric
     pitch_assessment = get_metric_assessment(pitch_accuracy)
@@ -255,6 +254,8 @@ async def generate_coaching_feedback(
         timing_assessment=timing_assessment,
         scale_name=scale_name,
         elapsed_time=elapsed_time,
+        strongest_area_name=strongest_area_name,
+        strongest_score=round(strongest_score),
         weakest_area_name=weakest_area_name,
         weakest_score=round(weakest_score),
         notes_played=total_notes_played,
