@@ -376,16 +376,16 @@ FretCoach uses PostgreSQL hosted on Supabase with two core tables:
 |---------|:------:|:---:|:--------:|
 | Real-time Audio Analysis | ✅ | — | ✅ |
 | 4 Metric Evaluation | ✅ | — | ✅ |
-| Live Visual Feedback | ✅ | — | 🚧 |
+| Live Visual Feedback | ✅ | — | ✅|
 | Smart Bulb Integration | ✅ | — | ✅ |
 | AI Voice Coaching | ✅ | — | 📋 |
-| AI Practice Plans | ✅ | ✅ | 📋 |
+| AI Practice Plans | ✅ | ✅ | ✅ |
 | Session Logging | ✅ | View | ✅ |
-| Performance Analytics | — | ✅ | — |
-| AI Chat Coach | — | ✅ | — |
-| Trend Visualization | — | ✅ | — |
-| Cross-Device Sync | ✅ | ✅ | ✅ |
-| Offline Capable | ✅ | — | ✅ |
+| Performance Analytics | 📋 | ✅ | — |
+| AI Chat Coach | 📋 | ✅ | — |
+| Trend Visualization | 📋 | ✅ | — |
+| Cloud Sync | ✅ | ✅ | ✅ |
+| Offline Capable | ✅ (Manual Mode)| — | ✅ (Manual Mode)|
 
 **Legend:** ✅ Complete | 🚧 In Progress | 📋 Planned
 
