@@ -735,6 +735,10 @@ function App() {
                     scaleConformity={state.scaleConformity}
                     timingStability={state.timingStability}
                     isRunning={state.isRunning}
+                    debugInfo={state.debugInfo}
+                    totalNotesPlayed={state.totalNotesPlayed}
+                    correctNotes={state.correctNotes}
+                    wrongNotes={state.wrongNotes}
                   />
                 </div>
               </div>

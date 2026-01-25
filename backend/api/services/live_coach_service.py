@@ -34,8 +34,8 @@ load_dotenv(find_dotenv())
 # Initialize LLM - using a fast model for real-time feedback
 live_coach_model = ChatOpenAI(
     model="gpt-4o-mini",
-    temperature=0.7,  # Slightly more creative for motivational feedback
-    max_tokens=200  # Room for 2-3 sentences with context
+    temperature=0.9,  # Higher creativity for varied feedback
+    max_tokens=100  # Room for 30-word feedback with context
 )
 
 # Initialize OpenAI client for TTS
@@ -46,9 +46,12 @@ _audio_player = None
 
 
 async def get_audio_player():
-    """Get or create a singleton audio player instance."""
+    """Get or create a singleton audio player instance with optimized settings."""
     global _audio_player
     if _audio_player is None:
+        # LocalAudioPlayer with default settings
+        # Note: OpenAI's LocalAudioPlayer doesn't expose buffer configuration,
+        # but using PCM format with streaming helps reduce latency issues
         _audio_player = LocalAudioPlayer()
     return _audio_player
 
@@ -68,32 +71,34 @@ def get_opik_config(session_id: str, trace_name: str) -> dict:
     }
 
 # System prompt for coaching
-COACHING_SYSTEM_PROMPT = """You are an energetic, direct guitar coach giving real-time feedback during practice.
+COACHING_SYSTEM_PROMPT = """You are a direct guitar coach giving quick real-time feedback.
 
-Your feedback MUST have 3 parts in 2-3 sentences total:
-1. ACKNOWLEDGE strength: Quickly name what's going well (1 metric that's highest)
-2. IDENTIFY problem: Point out what's struggling (the weakest metric)
-3. FIX IT NOW: Give ONE specific action to improve the weak area immediately
+Your feedback MUST be 1-2 sentences, maximum 30 words total.
 
-Interpretation guide:
-- Pitch Accuracy: How cleanly notes are being fretted. Low = pressing too hard/soft, poor finger placement
-- Scale Conformity: Whether notes are in the chosen scale and whether they are covering the full range of the scale. Low = playing wrong notes or playing in just one position, not knowing the scale positions
-- Timing Stability: Consistency of note spacing. Low = rushing, dragging, or uneven rhythm
+Format: "[What's good], but [what's weak] - [specific actionable fix]"
 
-Be conversational and direct - you're talking to a student during practice, not writing a report.
-Use "you" and "your". Be specific about numbers when helpful."""
+Metric interpretations and specific fixes:
+- Pitch Accuracy: How cleanly notes are fretted (low = finger pressure issues)
+  → Fix: "ease finger pressure" or "focus on clean fretting"
 
-COACHING_USER_TEMPLATE = """Session metrics after {elapsed_time} practicing {scale_name}:
+- Scale Conformity: Playing correct scale notes across fretboard positions (low = stuck in one position or wrong notes)
+  → Fix: "explore positions 5-7" or "move up the fretboard" or "try higher positions now"
 
-Pitch Accuracy: {pitch_accuracy}% ({pitch_assessment})
-Scale Conformity: {scale_conformity}% ({scale_assessment})
-Timing Stability: {timing_stability}% ({timing_assessment})
+- Timing Stability: Consistency of note spacing (low = rushing, dragging, uneven rhythm)
+  → Fix: "use a metronome" or "practice with metronome at 60 BPM" or "slow down and count"
 
-Strongest area: {strongest_area_name} at {strongest_score}%
-Weakest area: {weakest_area_name} at {weakest_score}%
-Notes played: {notes_played} ({correct_notes} correct, {wrong_notes} wrong)
+Examples:
+- "Timing is solid at 98%, but scale conformity at 73% means you're stuck. Move up to the 5th position now."
+- "Pitch is excellent and timing good, but scale conformity needs work. Explore different fretboard positions - try 7th and 9th frets."
+- "Great scale coverage, but timing stability is low at 45%. Practice with a metronome to build consistency."
 
-Give feedback that acknowledges the strength, identifies the weakness, and tells them exactly what to fix right now:"""
+Be direct, conversational, and vary your wording. Maximum 30 words."""
+
+COACHING_USER_TEMPLATE = """Metrics: Pitch {pitch_accuracy}%, Scale {scale_conformity}%, Timing {timing_stability}%
+Strongest: {strongest_area_name} ({strongest_score}%)
+Weakest: {weakest_area_name} ({weakest_score}%)
+
+Give 1-2 sentences (max 30 words) - what's good, what's weak, specific actionable fix:"""
 
 
 def get_performance_label(score: float) -> str:
@@ -167,8 +172,9 @@ async def generate_and_play_tts(
             "status": "played",
             "text_length": len(feedback_text),
             "model": "gpt-4o-mini-tts",
-            "voice": "echo",
-            "speed": 1.15
+            "voice": "coral",
+            "speed": 1.15,
+            "format": "pcm"
         }
 
     except Exception as e:

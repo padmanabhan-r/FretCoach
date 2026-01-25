@@ -9,6 +9,28 @@ import librosa
 # These functions are called hundreds of times per second during live audio processing
 
 
+def detect_note_onset(audio, sample_rate, threshold=0.15):
+    """
+    Detect if there's a note onset (attack) in the audio frame.
+    Simple energy-based detection - if there's enough energy, count it as a note.
+
+    Args:
+        audio: Audio buffer (numpy array)
+        sample_rate: Audio sample rate
+        threshold: Energy threshold (not used in simplified version)
+
+    Returns:
+        bool: True if onset detected, False otherwise
+    """
+    # Simple energy threshold - if the frame has enough energy, it's a note
+    # This works better for guitar than complex onset detection
+    energy = np.mean(audio ** 2)
+
+    # Very low threshold - just check if there's meaningful audio
+    # This will be filtered by the pitch detection anyway
+    return energy > 1e-6
+
+
 
 def pitch_correctness(audio, sample_rate, target_pitch_classes, debug=False):
     """
@@ -86,55 +108,66 @@ def timing_cleanliness(audio, sample_rate, onset_history=None):
     return 0.5
 
 
-def calculate_note_timing_stability(onset_times_ms, window_size=8, consistency_threshold=0.15):
+def calculate_note_timing_stability(onset_times_ms, window_size=15, consistency_threshold=0.15):
     """
     Calculate timing stability based on note onset times.
-    Measures consistency of intervals in recent notes using coefficient of variation.
+    SIMPLIFIED: Measures what percentage of intervals are reasonably consistent.
 
     Args:
         onset_times_ms: List of note onset times in milliseconds
-        window_size: Number of notes to analyze (default 8, requires minimum 3)
-        consistency_threshold: CV threshold for "in time" (default 0.15 = 15% variation)
+        window_size: Number of notes to analyze (default 15)
+        consistency_threshold: Not used in simplified version
 
     Returns:
         Tuple of (score, notes_analyzed)
         - score: Float between 0.0 and 1.0 (0.0 = very inconsistent, 1.0 = perfectly consistent)
         - notes_analyzed: Number of notes that could be analyzed
     """
-    if len(onset_times_ms) < 2:
-        # Can't calculate with less than 2 notes (need 1 interval)
+    if len(onset_times_ms) < 3:
+        # Need at least 3 notes to calculate timing (2 intervals)
         return 0.0, len(onset_times_ms)
 
-    # Take the last window_size notes, but only if we have them
+    # Take the last window_size notes
     window = min(window_size, len(onset_times_ms))
     recent_onsets = onset_times_ms[-window:]
 
     # Calculate intervals between consecutive notes
-    intervals = list(np.diff(recent_onsets))
+    intervals = np.array(list(np.diff(recent_onsets)))
 
-    if len(intervals) < 1:
+    if len(intervals) < 2:
         return 0.0, len(recent_onsets)
 
-    # Calculate mean and std of intervals
-    mean_interval = np.mean(intervals)
-    std_interval = np.std(intervals)
+    # Calculate median interval (more robust than mean)
+    median_interval = np.median(intervals)
 
-    if mean_interval < 1.0:  # Less than 1ms, invalid
+    if median_interval < 50.0:  # Less than 50ms = too fast to be intentional
         return 0.0, len(recent_onsets)
 
-    # Calculate coefficient of variation (normalized standard deviation)
-    # CV = std / mean
-    # CV of 0.0 = perfectly consistent intervals
-    # CV of 0.15 = 15% variation (acceptable)
-    # CV of 0.5+ = 50%+ variation (very inconsistent)
-    cv = std_interval / mean_interval
+    # Debug: Print timing info
+    import random
+    if random.random() < 0.1:  # Print 10% of the time
+        print(f"[TIMING DEBUG] {window} notes, median interval: {median_interval:.0f}ms, intervals: {intervals[:5]}")
 
-    # Convert CV to score using exponential decay
-    # CV=0 -> score=1.0 (perfect)
-    # CV=0.15 -> score=0.86 (good)
-    # CV=0.3 -> score=0.74 (acceptable)
-    # CV=0.5+ -> score approaches 0 (bad)
-    timing_score = np.exp(-2.0 * cv)
+    # SIMPLIFIED APPROACH: Count how many intervals are within 50% of the median
+    # This is much more forgiving than CV
+    lower_bound = median_interval * 0.5  # 50% slower is OK
+    upper_bound = median_interval * 1.5  # 50% faster is OK
+
+    intervals_in_range = np.sum((intervals >= lower_bound) & (intervals <= upper_bound))
+    consistency_ratio = intervals_in_range / len(intervals)
+
+    # Convert to score:
+    # 100% in range → 1.0 (perfect)
+    # 80% in range → 0.8 (very good)
+    # 60% in range → 0.6 (acceptable)
+    # 40% in range → 0.4 (needs work)
+    # < 40% in range → poor
+
+    timing_score = consistency_ratio
+
+    # Small boost if you have enough data (reward playing more)
+    if window >= 8:
+        timing_score = min(1.0, timing_score * 1.1)  # 10% bonus for 8+ notes
 
     return float(np.clip(timing_score, 0.0, 1.0)), window
 
