@@ -12,7 +12,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -30,6 +29,12 @@ venv/
 .venv/
 ENV/
 env/
+# Python lib directories (in venv/build contexts)
+**/venv/**/lib/
+**/env/**/lib/
+**/ENV/**/lib/
+build/lib/
+dist/lib/
 
 # Environment variables
 .env
