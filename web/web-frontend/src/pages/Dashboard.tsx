@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { format, subDays } from "date-fns";
 import { useSessions, type DateRangeFilter } from "@/hooks/useSessions";
 import { sendChatMessage, savePracticePlan, formatDuration, formatDate, type ChatMessage, type ChartData } from "@/lib/api";
@@ -572,8 +573,8 @@ const Dashboard = () => {
                                 : "bg-muted"
                             }`}
                           >
-                            <div className="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0">
-                              <ReactMarkdown>{message.content}</ReactMarkdown>
+                            <div className="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0 prose-table:my-2 prose-th:border prose-th:p-2 prose-td:border prose-td:p-2">
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
                             </div>
                           </div>
                           {message.role === "user" && (
@@ -696,7 +697,10 @@ const Dashboard = () => {
                                   : "bg-muted"
                               }`}
                             >
-                              <ReactMarkdown className="text-sm prose prose-sm dark:prose-invert max-w-none">
+                              <ReactMarkdown
+                                className="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0 prose-table:my-2 prose-th:border prose-th:p-2 prose-td:border prose-td:p-2"
+                                remarkPlugins={[remarkGfm]}
+                              >
                                 {message.content}
                               </ReactMarkdown>
                               {message.chartData && (
