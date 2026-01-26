@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-01-26T19:35:34.756269",
+  "dataset": "coaching_feedback_evaluation",
+  "model": "gpt-4o-mini",
+  "samples": 20,
+  "results": [
+    {
+      "name": "Structured V2 - Metrics",
+      "avg_score": 0.865,
+      "sample_count": 20,
+      "variant": "V2"
+    },
+    {
+      "name": "Learning Science V3",
+      "avg_score": 0.8575,
+      "sample_count": 20,
+      "variant": "Science"
+    },
+    {
+      "name": "Concise V4 - Direct",
+      "avg_score": 0.8375,
+      "sample_count": 20,
+      "variant": "V4"
+    },
+    {
+      "name": "Baseline V1 - Original",
+      "avg_score": 0.83,
+      "sample_count": 20,
+      "variant": "V1"
+    }
+  ]
+}

@@ -9,12 +9,16 @@ from .custom_metrics import (
     CoachingHelpfulness,
     RecommendationAccuracy,
     PracticePlanCompletionRate,
-    LearningProgressRate
+    LearningProgressRate,
+    ResponseRelevance,
+    SafetyModeration
 )
 
 __all__ = [
     "CoachingHelpfulness",
     "RecommendationAccuracy",
     "PracticePlanCompletionRate",
-    "LearningProgressRate"
+    "LearningProgressRate",
+    "ResponseRelevance",
+    "SafetyModeration"
 ]
