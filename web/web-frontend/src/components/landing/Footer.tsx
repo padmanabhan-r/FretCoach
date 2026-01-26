@@ -1,4 +1,4 @@
-import { Guitar, Github, Twitter, Mail } from "lucide-react";
+import { Guitar, Github } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -18,14 +18,8 @@ const Footer = () => {
               An adaptive AI learning agent that transforms unstructured practice into a guided learning loop.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="https://github.com/padmanabhan-r/FretCoach" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                 <Github className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Mail className="h-5 w-5" />
               </a>
             </div>
           </div>
@@ -62,18 +56,13 @@ const Footer = () => {
             <h4 className="font-semibold mb-4">Resources</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <a href="https://padmanabhan-r.github.io/FretCoach/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                   Documentation
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <a href="https://github.com/padmanabhan-r/FretCoach" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                   GitHub
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Support
                 </a>
               </li>
             </ul>

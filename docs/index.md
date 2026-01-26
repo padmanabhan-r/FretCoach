@@ -133,6 +133,7 @@ Three feedback channels:
 ## Technology Stack
 
 ### Desktop Application
+
 | Layer | Technology |
 |-------|------------|
 | Desktop Runtime | Electron 28 |
@@ -142,6 +143,7 @@ Three feedback channels:
 | Communication | REST API, WebSocket |
 
 ### Web Platform
+
 | Layer | Technology |
 |-------|------------|
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS |
@@ -151,6 +153,7 @@ Three feedback channels:
 | Deployment | Vercel (frontend), Railway (backend) |
 
 ### Shared Infrastructure
+
 | Component | Technology |
 |-----------|------------|
 | Database | PostgreSQL (Supabase) |
