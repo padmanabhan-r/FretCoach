@@ -21,12 +21,16 @@ from openai.helpers import LocalAudioPlayer
 # Import Opik for tracking with LangChain integration
 try:
     from opik.integrations.langchain import OpikTracer
-    from opik import track
+    from opik import track, opik_context
     OPIK_ENABLED = True
 except ImportError:
     OpikTracer = None
+    opik_context = None
     track = lambda **kwargs: lambda f: f  # No-op decorator if Opik not available
     OPIK_ENABLED = False
+
+# Import cost tracking utilities
+from backend.core.llm_utils import track_llm_call
 
 # Load environment variables
 load_dotenv(find_dotenv())
@@ -279,6 +283,29 @@ async def generate_coaching_feedback(
     )
     feedback = response.content
 
+    # Add cost tracking and session metadata to trace
+    if OPIK_ENABLED and opik_context:
+        # Track LLM cost
+        llm_metadata = track_llm_call(
+            prompt=COACHING_SYSTEM_PROMPT + "\n" + user_message,
+            response=feedback,
+            model="gpt-4o-mini",
+            additional_metadata={
+                "session_metrics": {
+                    "pitch_accuracy": round(pitch_accuracy, 2),
+                    "scale_conformity": round(scale_conformity, 2),
+                    "timing_stability": round(timing_stability, 2),
+                    "overall_score": round(overall_score, 2)
+                },
+                "weakest_area": weakest_area_name.lower().replace(" ", "_"),
+                "scale_name": scale_name,
+                "elapsed_seconds": elapsed_seconds
+            }
+        )
+
+        # Update current trace with metadata
+        opik_context.update_current_trace(metadata=llm_metadata)
+
     # Map to simple key for frontend
     weakest_key_map = {
         "Pitch Accuracy": "pitch",
@@ -354,6 +381,37 @@ Give a brief, encouraging session summary:""")
         },
         config=opik_config
     )
+
+    # Add cost tracking and session metadata to trace
+    if OPIK_ENABLED and opik_context:
+        # Build full prompt for token counting
+        full_prompt = f"""Duration: {duration}
+Scale: {scale_name}
+Final Stats:
+- Pitch Accuracy: {round(pitch_accuracy)}%
+- Scale Conformity: {round(scale_conformity)}%
+- Timing Stability: {round(timing_stability)}%
+- Overall: {overall_performance}"""
+
+        # Track LLM cost
+        llm_metadata = track_llm_call(
+            prompt=full_prompt,
+            response=summary,
+            model="gpt-4o-mini",
+            additional_metadata={
+                "final_metrics": {
+                    "pitch_accuracy": round(pitch_accuracy, 2),
+                    "scale_conformity": round(scale_conformity, 2),
+                    "timing_stability": round(timing_stability, 2),
+                    "overall_score": round(overall_score, 2)
+                },
+                "scale_name": scale_name,
+                "total_duration_seconds": total_duration_seconds
+            }
+        )
+
+        # Update current trace with metadata
+        opik_context.update_current_trace(metadata=llm_metadata)
 
     return {
         "summary": summary.strip(),

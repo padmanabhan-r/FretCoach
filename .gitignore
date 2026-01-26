@@ -75,3 +75,8 @@ application/out/
 .cache/
 .backup/
 .kiro/
+
+# Opik planning and internal docs
+opik-plan/
+PHASE*-VALIDATION.md
+PHASE*-COMPLETED.md

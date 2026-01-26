@@ -1,12 +1,28 @@
 """
 Database tools for LangGraph agent to dynamically query FretCoach database
+Includes Opik tracing for observability
 """
 import json
 import uuid
+import time
 from typing import Dict, Any, List, Optional
 from langchain_core.tools import tool
 from datetime import datetime
 from psycopg2.extras import RealDictCursor
+
+# Import Opik for tracing
+try:
+    from opik import track, opik_context
+    OPIK_ENABLED = True
+except ImportError:
+    OPIK_ENABLED = False
+    # No-op decorators if Opik not available
+    def track(*args, **kwargs):
+        def decorator(func):
+            return func
+        return decorator
+    opik_context = None
+
 from database import get_db_connection
 
 
@@ -56,10 +72,11 @@ def get_database_schema() -> str:
     return DATABASE_SCHEMA
 
 
-@tool
+@track(name="execute_sql_query", tags=["database", "sql", "read"])
 def execute_sql_query(query: str) -> str:
     """
     Execute a SQL SELECT query against the fretcoach database and return results.
+    Traced with Opik for observability.
 
     IMPORTANT RULES:
     - Only SELECT queries are allowed (no INSERT, UPDATE, DELETE, DROP, etc.)
@@ -76,15 +93,22 @@ def execute_sql_query(query: str) -> str:
     Example:
         execute_sql_query(query="SELECT AVG(pitch_accuracy) as avg_pitch FROM fretcoach.sessions WHERE user_id = 'user123'")
     """
+    start_time = time.time()
+    query_length = len(query)
+
     # Security check: only allow SELECT queries
     query_upper = query.strip().upper()
     if not query_upper.startswith("SELECT"):
+        duration_ms = (time.time() - start_time) * 1000
+        _update_trace("execute_sql_query", False, duration_ms, query_length, 0, "Only SELECT queries allowed")
         return "Error: Only SELECT queries are allowed. No INSERT, UPDATE, DELETE, or DDL operations permitted."
 
     # Block dangerous SQL keywords
     dangerous_keywords = ["DROP", "TRUNCATE", "ALTER", "CREATE", "INSERT", "UPDATE", "DELETE", "GRANT", "REVOKE"]
     for keyword in dangerous_keywords:
         if keyword in query_upper:
+            duration_ms = (time.time() - start_time) * 1000
+            _update_trace("execute_sql_query", False, duration_ms, query_length, 0, f"Forbidden keyword: {keyword}")
             return f"Error: Query contains forbidden keyword: {keyword}"
 
     try:
@@ -105,6 +129,9 @@ def execute_sql_query(query: str) -> str:
                         if isinstance(value, datetime):
                             row[key] = value.isoformat()
 
+                duration_ms = (time.time() - start_time) * 1000
+                _update_trace("execute_sql_query", True, duration_ms, query_length, len(data))
+
                 # Return formatted results
                 if len(data) == 0:
                     return "Query executed successfully. No results found."
@@ -112,10 +139,31 @@ def execute_sql_query(query: str) -> str:
                 return json.dumps({"success": True, "data": data, "row_count": len(data)}, indent=2)
 
     except Exception as e:
+        duration_ms = (time.time() - start_time) * 1000
+        _update_trace("execute_sql_query", False, duration_ms, query_length, 0, str(e))
         return f"Error executing query: {str(e)}"
 
 
-@tool
+def _update_trace(operation: str, success: bool, duration_ms: float, query_length: int, rows_returned: int, error: str = None):
+    """Helper to update Opik trace with operation metadata"""
+    if OPIK_ENABLED and opik_context:
+        metadata = {
+            "tool_type": "sql_execution",
+            "query_length": query_length,
+            "rows_returned": rows_returned,
+            "duration_ms": round(duration_ms, 2),
+            "success": success
+        }
+        if error:
+            metadata["error"] = error
+
+        try:
+            opik_context.update_current_span(metadata=metadata)
+        except Exception:
+            pass  # Silently fail if tracing fails
+
+
+@track(name="save_practice_plan", tags=["database", "write", "practice-plan"])
 def save_practice_plan(
     user_id: str,
     practice_plan: str,
@@ -123,6 +171,7 @@ def save_practice_plan(
 ) -> Dict[str, Any]:
     """
     Save a generated practice plan to the database.
+    Traced with Opik for observability.
 
     Args:
         user_id (str): User identifier
@@ -135,6 +184,9 @@ def save_practice_plan(
             - practice_id (str): UUID of the saved practice plan
             - error (str, optional): Error message if save failed
     """
+    start_time = time.time()
+    plan_length = len(practice_plan)
+
     try:
         practice_id = str(uuid.uuid4())
 
@@ -148,6 +200,9 @@ def save_practice_plan(
                 cursor.execute(query, [practice_id, user_id, practice_plan, executed_session_id])
                 conn.commit()
 
+        duration_ms = (time.time() - start_time) * 1000
+        _update_save_trace("save_practice_plan", True, duration_ms, plan_length, practice_id)
+
         return {
             "success": True,
             "practice_id": practice_id,
@@ -155,7 +210,29 @@ def save_practice_plan(
         }
 
     except Exception as e:
+        duration_ms = (time.time() - start_time) * 1000
+        _update_save_trace("save_practice_plan", False, duration_ms, plan_length, None, str(e))
         return {
             "success": False,
             "error": str(e)
         }
+
+
+def _update_save_trace(operation: str, success: bool, duration_ms: float, plan_length: int, practice_id: str = None, error: str = None):
+    """Helper to update Opik trace for save operations"""
+    if OPIK_ENABLED and opik_context:
+        metadata = {
+            "tool_type": "database_write",
+            "plan_length": plan_length,
+            "duration_ms": round(duration_ms, 2),
+            "success": success
+        }
+        if practice_id:
+            metadata["practice_id"] = practice_id
+        if error:
+            metadata["error"] = error
+
+        try:
+            opik_context.update_current_span(metadata=metadata)
+        except Exception:
+            pass

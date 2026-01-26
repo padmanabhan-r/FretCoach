@@ -18,10 +18,15 @@ from sqlalchemy import create_engine, text
 # Import Opik for tracking with LangChain integration
 try:
     from opik.integrations.langchain import OpikTracer
+    from opik import opik_context
     OPIK_ENABLED = True
 except ImportError:
     OpikTracer = None
+    opik_context = None
     OPIK_ENABLED = False
+
+# Import cost tracking utilities
+from backend.core.llm_utils import calculate_cost
 
 # Load environment variables
 load_dotenv(find_dotenv())
@@ -41,8 +46,53 @@ engine = create_engine(db_uri, pool_pre_ping=True)
 model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
 
-def get_opik_config(user_id: str, trace_name: str, practice_id: str = None) -> dict:
-    """Create Opik config for LangChain calls tied to user session"""
+def get_user_context(analysis: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Extract user context from analysis for enhanced tracing.
+    Determines skill level and summarizes user state.
+    """
+    total_sessions = analysis.get("total_sessions", 0)
+
+    if total_sessions == 0:
+        return {
+            "skill_level": "beginner",
+            "sessions_count": 0,
+            "avg_pitch_accuracy": 0.0,
+            "avg_scale_conformity": 0.0,
+            "avg_timing_stability": 0.0,
+            "overall_performance": 0.0
+        }
+
+    # Get average metrics
+    aggregates = analysis.get("aggregates", {})
+    avg_pitch = aggregates.get("avg_pitch_accuracy", 0.0)
+    avg_scale = aggregates.get("avg_scale_conformity", 0.0)
+    avg_timing = aggregates.get("avg_timing_stability", 0.0)
+
+    # Calculate overall performance
+    overall_performance = (avg_pitch + avg_scale + avg_timing) / 3
+
+    # Classify skill level based on overall performance and session count
+    if total_sessions < 5 or overall_performance < 0.5:
+        skill_level = "beginner"
+    elif overall_performance >= 0.8:
+        skill_level = "advanced"
+    else:
+        skill_level = "intermediate"
+
+    return {
+        "skill_level": skill_level,
+        "sessions_count": total_sessions,
+        "avg_pitch_accuracy": round(avg_pitch, 3),
+        "avg_scale_conformity": round(avg_scale, 3),
+        "avg_timing_stability": round(avg_timing, 3),
+        "overall_performance": round(overall_performance, 3),
+        "weakest_area": analysis.get("weakest_area", "unknown")
+    }
+
+
+def get_opik_config(user_id: str, trace_name: str, practice_id: str = None, user_context: Dict = None) -> dict:
+    """Create Opik config for LangChain calls tied to user session with rich metadata"""
     if not OPIK_ENABLED or not OpikTracer:
         return {}
 
@@ -50,8 +100,12 @@ def get_opik_config(user_id: str, trace_name: str, practice_id: str = None) -> d
     if practice_id:
         metadata["practice_id"] = practice_id
 
+    # Add user context to metadata for better trace filtering
+    if user_context:
+        metadata.update(user_context)
+
     tracer = OpikTracer(
-        tags=["ai-mode", trace_name],
+        tags=["ai-mode", trace_name, f"skill-{user_context.get('skill_level', 'unknown')}"] if user_context else ["ai-mode", trace_name],
         metadata=metadata
     )
     return {
@@ -337,13 +391,49 @@ Generate a practice recommendation that:
 6. For advanced users (high scores), use higher strictness (0.7-0.9)
 """
 
-    # Get Opik config for tracing the LLM call
-    opik_config = get_opik_config(user_id, "practice-recommendation")
+    # Get user context for enhanced tracing
+    user_context = get_user_context(analysis)
 
+    # Get Opik config for tracing the LLM call with user context
+    opik_config = get_opik_config(user_id, "practice-recommendation", user_context=user_context)
+
+    # Invoke LLM with structured output
     recommendation = structured_llm.invoke(
         [{"role": "user", "content": prompt}],
         config=opik_config
     )
+
+    # Add cost tracking metadata to the trace
+    if OPIK_ENABLED and opik_context:
+        from backend.core.llm_utils import count_tokens
+
+        # Estimate token counts
+        input_tokens = count_tokens(prompt, "gpt-4o-mini")
+        # Structured output is typically smaller, estimate based on JSON size
+        output_text = json.dumps({
+            "scale_name": recommendation.scale_name,
+            "scale_type": recommendation.scale_type,
+            "focus_area": recommendation.focus_area,
+            "reasoning": recommendation.reasoning,
+            "strictness": recommendation.strictness,
+            "sensitivity": recommendation.sensitivity
+        })
+        output_tokens = count_tokens(output_text, "gpt-4o-mini")
+
+        cost = calculate_cost("gpt-4o-mini", input_tokens, output_tokens)
+
+        # Update trace metadata with cost info
+        opik_context.update_current_trace(
+            metadata={
+                "model": "gpt-4o-mini",
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+                "total_tokens": input_tokens + output_tokens,
+                "total_cost": cost,
+                "cost_currency": "USD"
+            }
+        )
+
     return recommendation
 
 
