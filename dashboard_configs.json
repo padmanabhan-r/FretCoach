@@ -1,0 +1,207 @@
+{
+  "learning_progress": {
+    "name": "FretCoach Learning Progress",
+    "description": "Track user improvement over time with key learning metrics",
+    "widgets": [
+      {
+        "name": "Overall Performance Trend",
+        "type": "line_chart",
+        "config": {
+          "x_axis": "date",
+          "y_axis": "avg_score",
+          "group_by": "week",
+          "metrics": [
+            "overall_performance",
+            "pitch_accuracy",
+            "scale_conformity",
+            "timing_stability"
+          ],
+          "description": "Average user performance across all metrics over time"
+        }
+      },
+      {
+        "name": "Sessions Tracked",
+        "type": "stats",
+        "config": {
+          "metric": "session_count",
+          "description": "Total number of practice sessions tracked"
+        }
+      },
+      {
+        "name": "Skill Level Distribution",
+        "type": "bar_chart",
+        "config": {
+          "group_by": "skill_level",
+          "metric": "user_count",
+          "description": "Distribution of users by skill level"
+        }
+      },
+      {
+        "name": "Weekly Improvement Rate",
+        "type": "line_chart",
+        "config": {
+          "x_axis": "week",
+          "y_axis": "improvement_pct",
+          "description": "Week-over-week improvement percentage"
+        }
+      },
+      {
+        "name": "Practice Plan Completion",
+        "type": "gauge",
+        "config": {
+          "metric": "completion_rate",
+          "thresholds": {
+            "warning": 0.6,
+            "critical": 0.4
+          },
+          "description": "Percentage of practice plans that are executed"
+        }
+      }
+    ]
+  },
+  "ai_quality": {
+    "name": "FretCoach AI Quality",
+    "description": "Monitor AI coaching and recommendation quality metrics",
+    "widgets": [
+      {
+        "name": "Coaching Helpfulness Over Time",
+        "type": "line_chart",
+        "config": {
+          "x_axis": "date",
+          "y_axis": "avg_score",
+          "data_source": "feedback_scores",
+          "filter": {
+            "name": "coaching_helpfulness"
+          },
+          "description": "Daily average coaching helpfulness score"
+        }
+      },
+      {
+        "name": "Recommendation Accuracy",
+        "type": "line_chart",
+        "config": {
+          "x_axis": "date",
+          "y_axis": "avg_score",
+          "data_source": "feedback_scores",
+          "filter": {
+            "name": "recommendation_accuracy"
+          },
+          "description": "Daily average recommendation accuracy score"
+        }
+      },
+      {
+        "name": "Average Helpfulness Score",
+        "type": "stats",
+        "config": {
+          "data_source": "feedback_scores",
+          "filter": {
+            "name": "coaching_helpfulness"
+          },
+          "description": "Overall average coaching helpfulness score"
+        }
+      },
+      {
+        "name": "Response Quality Distribution",
+        "type": "histogram",
+        "config": {
+          "data_source": "feedback_scores",
+          "filter": {
+            "name": "coaching_helpfulness"
+          },
+          "bins": 10,
+          "range": [
+            0,
+            1
+          ],
+          "description": "Distribution of coaching helpfulness scores"
+        }
+      },
+      {
+        "name": "Score Trend by Skill Level",
+        "type": "bar_chart",
+        "config": {
+          "x_axis": "skill_level",
+          "y_axis": "avg_score",
+          "group_by": "date",
+          "description": "Helpfulness score trend by user skill level"
+        }
+      }
+    ]
+  },
+  "system_health": {
+    "name": "FretCoach System Health",
+    "description": "Monitor system performance, costs, and errors",
+    "widgets": [
+      {
+        "name": "Daily Trace Volume",
+        "type": "line_chart",
+        "config": {
+          "x_axis": "date",
+          "y_axis": "count",
+          "data_source": "traces",
+          "description": "Number of traces per day"
+        }
+      },
+      {
+        "name": "Error Rate",
+        "type": "line_chart",
+        "config": {
+          "x_axis": "date",
+          "y_axis": "rate",
+          "data_source": "traces",
+          "metric": "error_count / total_count * 100",
+          "description": "Percentage of traces with errors"
+        }
+      },
+      {
+        "name": "Daily Cost",
+        "type": "line_chart",
+        "config": {
+          "x_axis": "date",
+          "y_axis": "total_cost",
+          "data_source": "traces",
+          "filter": {
+            "metadata.total_cost": {
+              "$gt": 0
+            }
+          },
+          "description": "Daily API cost in USD"
+        }
+      },
+      {
+        "name": "Cost Per Session",
+        "type": "stats",
+        "config": {
+          "data_source": "traces",
+          "metric": "AVG(metadata.total_cost)",
+          "description": "Average cost per session (USD)"
+        }
+      },
+      {
+        "name": "Token Usage",
+        "type": "line_chart",
+        "config": {
+          "x_axis": "date",
+          "y_axis": "total_tokens",
+          "data_source": "traces",
+          "description": "Daily token usage"
+        }
+      },
+      {
+        "name": "LLM Latency",
+        "type": "line_chart",
+        "config": {
+          "x_axis": "date",
+          "y_axis": "avg_latency_ms",
+          "data_source": "spans",
+          "filter": {
+            "name": {
+              "$regex": ".*coaching.*"
+            }
+          },
+          "description": "Average LLM response latency (ms)"
+        }
+      }
+    ]
+  }
+}

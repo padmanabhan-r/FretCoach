@@ -32,6 +32,15 @@ except ImportError:
 # Import cost tracking utilities
 from backend.core.llm_utils import track_llm_call
 
+# Import production monitoring for auto-scoring
+try:
+    from evaluation.production_monitoring import ProductionAutoScorer
+    auto_scorer = ProductionAutoScorer(model="gpt-4o-mini", sampling_rate=0.1)
+    AUTO_SCORING_ENABLED = True
+except ImportError:
+    auto_scorer = None
+    AUTO_SCORING_ENABLED = False
+
 # Load environment variables
 load_dotenv(find_dotenv())
 
@@ -305,6 +314,29 @@ async def generate_coaching_feedback(
 
         # Update current trace with metadata
         opik_context.update_current_trace(metadata=llm_metadata)
+
+    # Auto-score coaching feedback (production monitoring)
+    if AUTO_SCORING_ENABLED and auto_scorer:
+        try:
+            input_data = {
+                "metrics": {
+                    "pitch": pitch_accuracy / 100,
+                    "scale": scale_conformity / 100,
+                    "timing": timing_stability / 100
+                },
+                "weakest_area": weakest_area_name.lower().replace(" ", "_"),
+                "skill_level": "intermediate",  # Could be enhanced with user context
+                "scale_name": scale_name
+            }
+            score_result = auto_scorer.score_coaching_feedback(
+                input_data=input_data,
+                output=feedback,
+                trace_id=session_id or "unknown"
+            )
+            if score_result:
+                print(f"[Auto-score] Helpfulness: {score_result['score']:.3f}")
+        except Exception as e:
+            print(f"[Auto-score] Error: {e}")
 
     # Map to simple key for frontend
     weakest_key_map = {

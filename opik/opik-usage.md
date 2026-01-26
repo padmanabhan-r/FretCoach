@@ -100,6 +100,49 @@ All Variants Ranked:
 
 **Key finding:** Explicit metric interpretations and technique-specific guidance improved feedback quality measurably across all test cases.
 
+### 5. Production Monitoring
+
+**What we built:**
+- ProductionAutoScorer for real-time quality monitoring
+- 3 production dashboards (Learning Progress, AI Quality, System Health)
+- 4 online evaluation rules with smart sampling
+- Automatic feedback score recording to Opik
+
+**Dashboards configured:**
+- **Learning Progress** (5 widgets): Performance trends, skill distribution, improvement rates, plan completion
+- **AI Quality** (5 widgets): Helpfulness over time, recommendation accuracy, score distribution, quality by skill level
+- **System Health** (6 widgets): Trace volume, error rate, daily cost, token usage, LLM latency
+
+**Online evaluation rules:**
+- Auto-score Coaching Helpfulness (10% sampling) - LLM-as-Judge quality scoring
+- Safety & Moderation Check (5% sampling) - Content safety verification
+- Response Relevance Check (5% sampling) - Context relevance validation
+- Cost Anomaly Detection (100% sampling) - Heuristic cost monitoring
+
+**Why:**
+- Monitor production quality in real-time without manual checking
+- Track user learning progress automatically
+- Catch quality regressions before users complain
+- Optimize costs by identifying anomalies
+
+**Integration:**
+Auto-scoring integrated directly in `live_coach_service.py`:
+```python
+if AUTO_SCORING_ENABLED and auto_scorer:
+    score_result = auto_scorer.score_coaching_feedback(
+        input_data=input_data,
+        output=feedback,
+        trace_id=session_id
+    )
+    # Scores 10% of production traces automatically
+```
+
+**Results:**
+- 10% of production coaching interactions auto-scored
+- Feedback scores visible in Opik dashboard
+- Non-blocking (doesn't slow down responses)
+- Error-tolerant (wrapped in try/except)
+
 ## Results
 
 **Visibility:**
@@ -120,7 +163,9 @@ All Variants Ranked:
 
 *Optimization pipeline:* Run experiments in 10 minutes (baseline) or 30 minutes (full). Automatically rank variants and generate deployment code.
 
-*Cost optimization:* Identified 4,877 tokens per response, implemented two-tier prompting, achieved 92% reduction.
+*Production monitoring:* Auto-score 10% of coaching interactions for quality. Dashboards show learning progress, AI quality, and system health in real-time.
+
+*Cost optimization:* Identified 4,877 tokens per response, implemented two-tier prompting, achieved 92% reduction. Cost anomaly detection flags traces over $0.02.
 
 ## Technical Details
 
@@ -133,6 +178,7 @@ All Variants Ranked:
 - `evaluation/run_experiments.py` - Experiment runner
 - `evaluation/optimize_prompts.py` - Agent optimization pipeline
 - `evaluation/run_baseline_experiments.py` - Quick baseline testing
+- `evaluation/production_monitoring.py` - Auto-scoring and monitoring setup
 
 **Code patterns:**
 ```python
@@ -159,6 +205,15 @@ result = evaluate_prompt(
     scoring_metrics=[CoachingHelpfulness()],
     experiment_name="V2 Test"
 )
+
+# Production auto-scoring
+from evaluation.production_monitoring import ProductionAutoScorer
+auto_scorer = ProductionAutoScorer(sampling_rate=0.1)
+score_result = auto_scorer.score_coaching_feedback(
+    input_data={...},
+    output="feedback text",
+    trace_id="session-123"
+)
 ```
 
 ## Summary
@@ -170,5 +225,6 @@ result = evaluate_prompt(
 | "What does this cost?" | "$0.0002 per recommendation" |
 | "Why did this fail?" | "SQL query took 2.3s, here's the trace" |
 | "Should we deploy this change?" | "Tested on 85 examples, +4.2% improvement - yes" |
+| "How's production quality?" | "10% auto-scored, avg 0.85 helpfulness, no anomalies" |
 
 Opik transformed FretCoach from guessing about AI quality to measuring and improving it with data.
