@@ -200,4 +200,4 @@ Try the web dashboard to:
 
 - [Introduction →](introduction.md)
 - [Quickstart Guide →](quickstart.md)
-- [← Back to GitHub Repo](../)
+- [← Back to GitHub Repo](https://github.com/padmanabhan-r/FretCoach)
