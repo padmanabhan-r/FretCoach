@@ -74,3 +74,4 @@ application/out/
 *.tmp
 .cache/
 .backup/
+.kiro/

@@ -8,6 +8,8 @@ Desktop training environment for real-time guitar practice with AI coaching and 
 
 FretCoach Studio is the primary practice interface for FretCoach. It provides real-time audio analysis, live AI coaching with vocal feedback, on-screen metrics, and smart bulb integration — all synced to a central database for cross-device tracking.
 
+![Studio Home Page](../docs/assets/images/studio/1.%20Studio%20-%20Home%20Page.png)
+
 ## Key Features
 
 - **Real-time Audio Analysis** — Continuous evaluation of pitch, scale conformity, timing, and noise
@@ -20,6 +22,36 @@ FretCoach Studio is the primary practice interface for FretCoach. It provides re
 - **Performance Metrics** — Real-time scoring across four metrics
 
 ![FretCoach Brain Architecture](/images/FretCoach%20Brain.png)
+
+### Practice Modes
+
+**Mode Selection:**
+
+![Mode Selection](../docs/assets/images/studio/2.%20Studio%20-%20Mode%20Selection.png)
+
+**Manual Mode - Scale Selection:**
+
+![Scale Selection](../docs/assets/images/studio/3.%20Studio%20-%20Manual%20Mode%20-%20Scale%20Selection.png)
+
+**Manual Mode - Scale Type:**
+
+![Scale Type](../docs/assets/images/studio/4.%20Studio%20-%20Manual%20Mode%20-%20Scale%20Type.png)
+
+**Manual Mode - Practice Settings:**
+
+![Practice Settings](../docs/assets/images/studio/5.%20Studio%20-%20Manual%20Mode%20-%20Practice%20Settings.png)
+
+**AI Mode - Coach Analyzing:**
+
+![Coach Analyzing](../docs/assets/images/studio/6.%20Studio%20-%20Coach%20Analysing.png)
+
+**AI Mode - Recommendations:**
+
+![AI Recommendations](../docs/assets/images/studio/8.%20Studio%20-%20AI%20Coach%20Rec.png)
+
+**Live Practice Session:**
+
+![Live Session](../docs/assets/images/studio/9.%20Studio%20-%20Live%20Session.png)
 
 ## Tech Stack
 

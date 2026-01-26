@@ -2,6 +2,8 @@
 
 The desktop application is your primary training environment—a standalone Electron app with integrated Python backend for real-time audio analysis and AI coaching.
 
+![FretCoach Studio Home Page](assets/images/studio/1.%20Studio%20-%20Home%20Page.png)
+
 ---
 
 ## Overview
@@ -73,6 +75,8 @@ Metrics stream to the frontend via WebSocket at ~300ms intervals for live displa
 
 ### 2. Dual Practice Modes
 
+![Mode Selection](assets/images/studio/2.%20Studio%20-%20Mode%20Selection.png)
+
 #### Manual Mode
 
 **Use case:** Targeted practice on specific scales
@@ -89,6 +93,18 @@ Metrics stream to the frontend via WebSocket at ~300ms intervals for live displa
 Select Scale → Adjust Settings → Start Session → Play → Get Feedback → End Session
 ```
 
+**Scale Selection:**
+
+![Scale Selection](assets/images/studio/3.%20Studio%20-%20Manual%20Mode%20-%20Scale%20Selection.png)
+
+**Scale Type Selection:**
+
+![Scale Type](assets/images/studio/4.%20Studio%20-%20Manual%20Mode%20-%20Scale%20Type.png)
+
+**Practice Settings:**
+
+![Practice Settings](assets/images/studio/5.%20Studio%20-%20Manual%20Mode%20-%20Practice%20Settings.png)
+
 #### AI Mode
 
 **Use case:** Adaptive learning with personalized recommendations
@@ -104,6 +120,14 @@ Select Scale → Adjust Settings → Start Session → Play → Get Feedback →
 ```
 Request Recommendation → Review AI Suggestion → Accept → Start Session → Play → End Session
 ```
+
+**AI Coach Analyzing Session History:**
+
+![Coach Analyzing](assets/images/studio/6.%20Studio%20-%20Coach%20Analysing.png)
+
+**AI Recommendations:**
+
+![AI Recommendations](assets/images/studio/8.%20Studio%20-%20AI%20Coach%20Rec.png)
 
 The AI uses OpenAI GPT-4o-mini or Google Gemini to analyze patterns and generate recommendations. Every recommendation is traced in Comet Opik.
 
@@ -140,6 +164,8 @@ Your feedback must be:
 
 Real-time metrics displayed with color-coded performance indicators:
 
+![Live Session](assets/images/studio/9.%20Studio%20-%20Live%20Session.png)
+
 **Metric Display:**
 ```
 ┌──────────────────────────────┐
@@ -156,7 +182,7 @@ Notes Played: 142 (138 correct, 4 wrong)
 
 **Color legend:**
 - 🟢 Green: 70%+ (Excellent)
-- 🟡 Yellow-Green: 50-70% (Good)  
+- 🟡 Yellow-Green: 50-70% (Good)
 - 🟠 Yellow: 30-50% (Average)
 - 🔴 Red: <30% (Needs Work)
 

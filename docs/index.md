@@ -1,47 +1,87 @@
 # FretCoach Documentation
 
-> *"An AI guitar pedal that trains your brain, not your tone."*
+> **Turn your 2026 guitar resolutions into reality.**
 
 [![Live Demo](https://img.shields.io/badge/Demo-fretcoach.online-blue)](https://fretcoach.online)
 
----
+![FretCoach](assets/images/FretCoach.jpeg)
 
-## The Problem
-
-Solo practice without feedback reinforces both good and bad habits equally. By the time mistakes are identified, motor patterns are already encoded. Unlearning is 10–20× harder than prevention.
-
-## The Solution
-
-FretCoach provides millisecond-level feedback during skill execution. Real-time analysis across four metrics: **pitch accuracy**, **scale conformity**, **timing stability**, and **noise control**.
-
-Three feedback channels:
-- **On-screen metrics** — Real-time scoring and note detection
-- **AI coaching** — Verbal guidance during practice
-- **Ambient lighting** — Smart bulb visual feedback
-
-Preventive intervention inside the motor learning window.
+**Real-time AI coaching for guitar practice**
 
 ---
 
-## The Ecosystem
+## Overview
 
-FretCoach consists of three connected components sharing a central database for seamless cross-device practice tracking.
+FretCoach is a real-time AI guitar practice system that reshapes motor learning before conscious correction is required. It listens to every note you play and provides **instant feedback** — closing the loop from days to milliseconds — helping you build correct technique before bad habits form.
+
+> 🧠 **Neuroscience insight:** It's 10–20× harder to unlearn a motor habit than to prevent it. Early-stage neuroplasticity is fast and fragile — FretCoach operates inside this critical window.
+
+**FretCoach doesn't correct — it prevents.**
+
+## Philosophy: Prevention Over Correction
+
+Traditional guitar feedback arrives **days or weeks late**:
+- Weekly lessons with an instructor
+- Reviewing your own recordings after practice
+- Posting videos online for feedback
+
+**FretCoach closes the feedback loop from days to milliseconds:**
+
+1. **Fast Loop (<300ms):** Real-time audio analysis provides instant metrics
+2. **Slow Loop (1-2s):** AI coach offers strategic guidance
+3. **Multi-channel feedback:** Visual + ambient + vocal reinforcement
+4. **Gamification:** Scores, color feedback, and progress tracking
+
+Every note you play receives immediate evaluation. Correct patterns are reinforced. Incorrect patterns are flagged **before they become habits**.
+
+**Result:** Neuroadaptive learning that shapes motor behavior in real-time, not retroactively.
+
+---
+
+## Platform Ecosystem
+
+FretCoach operates across three interconnected components sharing a central database.
 
 ![FretCoach Trifecta](assets/images/FretCoach%20Trifecta.jpeg)
 
-- **FretCoach Studio** — Desktop app for focused practice with real-time analysis and AI coaching
-- **FretCoach Portable** — Raspberry Pi device for practice anywhere
-- **FretCoach Hub** — Web platform for analytics, session history, and practice planning
+- **FretCoach Studio** — Desktop app for real-time practice with AI coaching and ambient feedback
 
-All three components sync through PostgreSQL (Supabase), enabling the AI coach to access your complete practice history regardless of which device you use.
+  ![Studio Session](assets/images/studio/9.%20Studio%20-%20Live%20Session.png)
+
+- **FretCoach Portable** — Raspberry Pi powered portable device for practising on-the-go
+
+- **FretCoach Hub** — Web analytics, progress tracking, and AI practice planning
+
+  ![Hub Dashboard](assets/images/hub/3.%20Hub%20-%20Dashboard.png)
 
 ---
 
-## The Vision
+## How It Works
 
-AI-powered preventive neurofeedback for guitar. Built to extend to other instruments and motor skills.
+### Preventive Neurofeedback Systems
 
-**Goal:** Reshape motor learning before correction is required.
+FretCoach is a **Preventive Neurofeedback System** — it shapes motor behavior in real time before maladaptive patterns form. Instead of corrective feedback after mistakes solidify, FretCoach intervenes **during skill execution** inside the brain's plasticity window.
+
+> **Prevention is neuroadaptive. Correction is retrofitting.**
+
+Architecture: **dual-brain system** combining fast deterministic processing with intelligent AI coaching.
+
+![FretCoach Brain Architecture](assets/images/FretCoach%20Brain.png)
+
+### The Two Systems
+
+**Audio Analysis Agent (Fast Loop)**
+- Real-time processing (<300ms latency)
+- Preventive intervention during execution
+- Continuous pitch, scale, timing, noise evaluation
+- Local processing, no cloud dependency
+
+**AI Coach (Slow Loop)**
+- LLM-powered preventive coaching
+- Pattern analysis and personalized practice plans
+- On-demand (not real-time critical)
+
+Hybrid architecture: local speed + AI intelligence = intervention before habits solidify.
 
 ---
 
@@ -66,39 +106,58 @@ AI-powered preventive neurofeedback for guitar. Built to extend to other instrum
 
 ## Key Features
 
-### Real-Time Audio Analysis
-- Four performance metrics: pitch accuracy, scale conformity, timing stability, noise control
-- Deterministic local processing with zero latency
-- USB audio interface or built-in microphone support
+- **Real-time audio analysis** — Continuous evaluation during playing
+- **Multi-channel feedback** — Visual metrics, AI vocal feedback, and environmental feedback through ambient lighting
+- **Intelligent practice** — AI-generated practice plans based on your history
+- **Instant feedback loop** — Millisecond-level feedback that prevents mistakes before they become habits
+- **Cross-device sync** — Practice anywhere, track everything in one place
 
-### AI Coaching
-- **Live vocal feedback** — Real-time spoken coaching using GPT-4o-mini-TTS during practice
-- **Practice planning** — Personalized recommendations based on performance history
-- **Natural language queries** — Text-to-SQL agent in web dashboard for asking questions about your data
-- **Multiple LLM support** — Gemini 2.5 Flash, GPT-4o Mini, Minimax 2.1, Deepseek Chat 3.1
-- **Observable** — Full trace logging via Comet Opik
+### Performance Metrics
 
-### Multi-Sensory Feedback
-- **Visual** — On-screen metrics with color-coded performance indicators
-- **Verbal** — AI coach commentary during and after sessions
-- **Ambient** — Smart bulb color shifts from red (struggling) to green (excellent)
+FretCoach's audio analysis engine evaluates your playing across four metrics:
+
+| Metric | What It Measures |
+|--------|------------------|
+| **Pitch Accuracy** | Note accuracy against the target scale |
+| **Scale Conformity** | Scale coverage and adherence |
+| **Timing Stability** | Rhythmic consistency |
+| **Noise Control** | String noise and unwanted artifacts |
+
+Three feedback channels:
+- **On-screen metrics** — Live scores and note detection
+- **AI Voice Coach** — Spoken guidance via GPT-4o-mini and GPT-4o-mini-TTS models
+- **Ambient lighting** — Smart bulb feedback (green = good, red = needs work)
 
 ---
 
 ## Technology Stack
 
+### Desktop Application
 | Layer | Technology |
 |-------|------------|
-| Desktop Frontend | Electron, React |
-| Desktop Backend | Python, FastAPI |
-| Web Frontend | React, Vite, Tailwind CSS |
-| Web Backend | Python, FastAPI |
+| Desktop Runtime | Electron 28 |
+| Frontend | React 18, Vite, Tailwind CSS |
+| Backend | Python 3.12+, FastAPI 0.109+ |
+| Audio Processing | librosa, NumPy, SciPy, sounddevice |
+| Communication | REST API, WebSocket |
+
+### Web Platform
+| Layer | Technology |
+|-------|------------|
+| Frontend | React 18, TypeScript, Vite, Tailwind CSS |
+| UI Components | shadcn/ui, Radix UI, Recharts |
+| State Management | TanStack React Query, React Router v6 |
+| Backend | Python FastAPI, LangChain, LangGraph |
+| Deployment | Vercel (frontend), Railway (backend) |
+
+### Shared Infrastructure
+| Component | Technology |
+|-----------|------------|
 | Database | PostgreSQL (Supabase) |
-| File Storage | Buckets (Supabase) |
-| Agent Orchestration | Custom orchestration for audio analysis agent engine, LangChain/LangGraph for AI coach |
-| Portable Hardware | Raspberry Pi 5, Scarlett Solo USB Audio Interface |
+| LLM Providers | OpenAI (GPT-4o-mini, TTS), Google Gemini 2.5 Flash |
+| AI Orchestration | LangChain, LangGraph |
 | Observability | Comet Opik |
-| Deployment | Vercel (web frontend), Railway (web backend) |
+| Smart Bulb | Tuya Cloud API (tinytuya 1.17.4) |
 
 ---
 
@@ -113,14 +172,24 @@ Try the web dashboard to:
 
 ---
 
-## Current Progress
+## Feature Matrix
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Desktop Application | ~60% | Core functionality complete. Fine-tuning and evaluation with Opik in progress. |
-| Web Dashboard | ~90% | Nearly complete. Deployment pending. |
-| Portable Device | ~30% | Hardware setup complete (RPi 5 + Scarlett Solo). Audio analysis agent engine adaptation in progress. |
-| Database | Complete | Supabase schema fully set up and operational. |
+| Feature | Studio | Hub | Portable |
+|---------|:------:|:---:|:--------:|
+| Real-time Audio Analysis | ✅ | — | ✅ |
+| 4 Metric Evaluation | ✅ | — | ✅ |
+| Live Visual Feedback | ✅ | — | ✅|
+| Smart Bulb Integration | ✅ | — | ✅ |
+| AI Voice Coaching | ✅ | — | 📋 |
+| AI Practice Plans | ✅ | ✅ | ✅ |
+| Session Logging | ✅ | View | ✅ |
+| Performance Analytics | 📋 | ✅ | — |
+| AI Chat Coach | 📋 | ✅ | — |
+| Trend Visualization | 📋 | ✅ | — |
+| Cloud Sync | ✅ | ✅ | ✅ |
+| Offline Capable | ✅ (Manual Mode)| — | ✅ (Manual Mode)|
+
+**Legend:** ✅ Complete | 🚧 In Progress | 📋 Planned
 
 ---
 

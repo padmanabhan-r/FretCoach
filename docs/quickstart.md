@@ -109,6 +109,8 @@ When the app launches, you'll be prompted to select your audio input:
 
 **Tip:** USB audio interfaces provide much better quality and lower latency.
 
+![Studio Home Page](assets/images/studio/1.%20Studio%20-%20Home%20Page.png)
+
 ### 2. Choose Practice Mode
 
 **Manual Mode:**
@@ -123,12 +125,16 @@ When the app launches, you'll be prompted to select your audio input:
 
 For your first session, try **Manual Mode** to get familiar with the interface.
 
+![Mode Selection](assets/images/studio/2.%20Studio%20-%20Mode%20Selection.png)
+
 ### 3. Select a Scale
 
 Choose from the scale library:
 - **C Major Diatonic** — Good starting point (C-D-E-F-G-A-B)
 - **A Minor Pentatonic** — Popular for rock/blues (A-C-D-E-G)
 - Any of 24 scales across all keys
+
+![Scale Selection](assets/images/studio/3.%20Studio%20-%20Manual%20Mode%20-%20Scale%20Selection.png)
 
 ### 4. Adjust Settings
 
@@ -146,6 +152,8 @@ Choose from the scale library:
 - Toggle on to sync with a smart bulb
 - Requires Tuya credentials in `.env`
 
+![Practice Settings](assets/images/studio/5.%20Studio%20-%20Manual%20Mode%20-%20Practice%20Settings.png)
+
 ### 5. Start Playing
 
 Click **Start Session** and begin playing the scale. You'll immediately see:
@@ -153,6 +161,8 @@ Click **Start Session** and begin playing the scale. You'll immediately see:
 - Current note detection
 - Performance quality score (0-100)
 - Live AI coach feedback (appears after a few seconds)
+
+![Live Session](assets/images/studio/9.%20Studio%20-%20Live%20Session.png)
 
 ### 6. End Session
 

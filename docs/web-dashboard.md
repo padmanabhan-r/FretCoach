@@ -2,7 +2,7 @@
 
 Post-practice analytics, performance tracking, and conversational AI coaching through an intuitive web interface.
 
-![FretCoach Web Dashboard](assets/images/web-dashboard.jpg)
+![FretCoach Hub Home](assets/images/hub/1.%20Hub%20-%20Home.png)
 
 ---
 
@@ -11,6 +11,8 @@ Post-practice analytics, performance tracking, and conversational AI coaching th
 **FretCoach Hub** ([fretcoach.online](https://www.fretcoach.online)) is the analytics and planning center of the FretCoach ecosystem. While FretCoach Studio and Portable focus on **real-time practice**, the Hub provides **post-session analysis, trend visualization, and conversational AI coaching**.
 
 **Core Purpose:** Transform practice data into actionable insights and long-term improvement strategies.
+
+![Hub Features](assets/images/hub/2.%20Hub%20-%20Features.png)
 
 ---
 
@@ -53,7 +55,7 @@ AI-powered insights → Personalized plan → Targeted practice → Progress tra
 
 **Visual trend analysis of all practice sessions**
 
-![Web Dashboard Analytics](assets/images/web-dashboard.jpg)
+![Hub Dashboard](assets/images/hub/3.%20Hub%20-%20Dashboard.png)
 
 #### Session History Table
 
@@ -166,7 +168,7 @@ AI-powered insights → Personalized plan → Targeted practice → Progress tra
 
 **Conversational interface for practice guidance and data exploration**
 
-![AI Coach Chat Interface](assets/images/web-dashboard.jpg)
+![Hub AI Coach](assets/images/hub/4.%20Hub%20-%20AI%20Coach.png)
 
 #### Architecture: Hybrid Text-to-SQL Agent
 

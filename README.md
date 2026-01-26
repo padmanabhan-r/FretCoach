@@ -228,6 +228,12 @@ Audio analysis runs **locally**. AI features use cloud APIs.
 
 Desktop application for focused practice sessions.
 
+<p align="center">
+  <img src="docs/assets/images/studio/1. Studio - Home Page.png" alt="FretCoach Studio Home" width="320"/>
+  <img src="docs/assets/images/studio/2. Studio - Mode Selection.png" alt="FretCoach Studio Mode Selection" width="320"/>
+  <img src="docs/assets/images/studio/9. Studio - Live Session.png" alt="FretCoach Studio Live Session" width="320"/>
+</p>
+
 ### Features
 - Real-time audio analysis (USB interface or built-in mic)
 - Live visual metrics and performance scoring
@@ -286,6 +292,12 @@ Raspberry Pi 5-based portable practice device. Same analysis engine as Studio.
 **Anlytics and AI Coach Dashboard:** [fretcoach.online/dashboard](https://www.fretcoach.online/dashboard)
 
 Web platform for analytics and practice planning.
+
+<p align="center">
+  <img src="docs/assets/images/hub/1. Hub - Home.png" alt="FretCoach Hub Home" width="320"/>
+  <img src="docs/assets/images/hub/3. Hub - Dashboard.png" alt="FretCoach Hub Dashboard" width="320"/>
+  <img src="docs/assets/images/hub/4. Hub - AI Coach.png" alt="FretCoach Hub AI Coach" width="320"/>
+</p>
 
 ### Features
 - AI chat coach (text-to-SQL agent + Gemini 2.5 Flash)

@@ -8,8 +8,7 @@ FretCoach is a real-time preventive AI system that reshapes motor learning befor
 - **AI coaching** — Real-time verbal guidance
 - **Ambient lighting** — Color-coded performance feedback
 
-![Screenshot Placeholder: Live Practice Session]
-*[TODO: Add screenshot showing all feedback channels in action]*
+![Live Practice Session](assets/images/studio/9.%20Studio%20-%20Live%20Session.png)
 
 Professional-grade coaching for every practice session — instant feedback, pattern tracking, adaptive guidance.
 
@@ -118,6 +117,8 @@ FretCoach consists of three connected components that work together seamlessly t
 ### FretCoach Studio (Desktop Application)
 Desktop app for focused practice. Connects via USB audio interface, analyzes in real-time, displays metrics, and provides AI coaching.
 
+![Studio Home](assets/images/studio/1.%20Studio%20-%20Home%20Page.png)
+
 **When to use:** Dedicated practice sessions
 
 ### FretCoach Portable (Raspberry Pi Device)
@@ -127,6 +128,8 @@ Raspberry Pi 5 device with the same analysis engine. Supports Manual and AI mode
 
 ### FretCoach Hub (Web Platform)
 Web analytics platform. Review sessions, chat with AI coach, generate practice plans, track progress.
+
+![Hub Dashboard](assets/images/hub/3.%20Hub%20-%20Dashboard.png)
 
 **When to use:** Planning and reviewing
 
