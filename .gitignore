@@ -75,6 +75,7 @@ application/out/
 .cache/
 .backup/
 .kiro/
+notes/
 
 # Opik planning and internal docs
 opik-plan/
