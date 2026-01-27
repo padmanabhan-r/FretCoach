@@ -75,3 +75,18 @@ application/out/
 .cache/
 .backup/
 .kiro/
+
+# Opik planning and internal docs
+opik-plan/
+PHASE*-VALIDATION.md
+PHASE*-COMPLETED.md
+OPIK-IMPACT-REPORT.md
+DEMO-SCRIPT.md
+SCREENSHOTS-GUIDE.md
+
+# Generated evaluation results (regenerated each run)
+baseline_experiments.json
+optimization_results.json
+dashboard_configs.json
+online_evaluation_rules.json
+optimized_coaching_prompt.py
