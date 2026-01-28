@@ -11,18 +11,14 @@ import os
 import json
 import uuid
 import re
+from datetime import datetime
 from psycopg2.extras import RealDictCursor
 from database import get_db_connection
 from langgraph_workflow import invoke_workflow
 
 # Import Opik for tracking
-try:
-    from opik import track
-except ImportError:
-    def track(name=None, **kwargs):
-        def decorator(func):
-            return func
-        return decorator
+from opik import track
+from opik.api_objects import opik_context
 
 router = APIRouter()
 
@@ -194,8 +190,12 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
     Processes user messages via LangGraph workflow with dynamic SQL generation.
     Maintains backward compatibility with frontend expectations.
     """
-    # Set thread_id for conversation tracking
-    thread_id = request.thread_id or f"chat-{request.user_id}"
+    # Set thread_id for conversation tracking with hub-specific format
+    if not request.thread_id:
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        thread_id = f"hub-{request.user_id}-aicoach-chat-{timestamp}"
+    else:
+        thread_id = request.thread_id
 
     try:
         # Get quick context for response enrichment
@@ -297,6 +297,16 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
 
         # Extract practice plan if present
         practice_plan = extract_practice_plan_from_response(ai_content, tool_calls)
+
+        # Add "practice-plan" tag to Opik trace if practice plan was generated
+        if practice_plan:
+            try:
+                current_span = opik_context.get_current_span()
+                if current_span:
+                    current_span.update(tags=["practice-plan"])
+            except Exception as e:
+                # Silently ignore Opik errors
+                pass
 
         # Remove JSON from response text if practice plan was extracted
         if practice_plan and not practice_plan.get("saved"):
