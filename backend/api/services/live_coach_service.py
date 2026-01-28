@@ -19,14 +19,8 @@ from openai import AsyncOpenAI
 from openai.helpers import LocalAudioPlayer
 
 # Import Opik for tracking with LangChain integration
-try:
-    from opik.integrations.langchain import OpikTracer
-    from opik import track
-    OPIK_ENABLED = True
-except ImportError:
-    OpikTracer = None
-    track = lambda **kwargs: lambda f: f  # No-op decorator if Opik not available
-    OPIK_ENABLED = False
+from opik.integrations.langchain import OpikTracer
+from opik import track
 
 # Load environment variables
 load_dotenv(find_dotenv())
@@ -58,9 +52,6 @@ async def get_audio_player():
 
 def get_opik_config(session_id: str, trace_name: str) -> dict:
     """Create Opik config for LangChain calls tied to session_id"""
-    if not OPIK_ENABLED or not OpikTracer:
-        return {}
-
     tracer = OpikTracer(
         tags=["live-coach", trace_name],
         metadata={"session_id": session_id}

@@ -23,16 +23,8 @@ from scales import MAJOR_DIATONIC, MINOR_DIATONIC, MAJOR_PENTATONIC, MINOR_PENTA
 
 from ..state import SessionState, AudioState, DebugInfo
 
-# Import Opik for tracking (non-blocking)
-try:
-    from opik import track
-    OPIK_ENABLED = True
-except ImportError:
-    def track(name):
-        def decorator(func):
-            return func
-        return decorator
-    OPIK_ENABLED = False
+# Import Opik for tracking
+from opik import track
 
 
 def audio_callback(indata, outdata, frames, time_info, status, config, audio_state: AudioState):

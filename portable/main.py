@@ -45,13 +45,8 @@ from scales import (
 )
 from session_logger import get_session_logger, SessionLogger
 
-# Optional: Opik tracing for AI mode (same pattern as desktop)
-try:
-    from opik.integrations.langchain import OpikTracer
-    OPIK_ENABLED = True
-except ImportError:
-    OpikTracer = None
-    OPIK_ENABLED = False
+# Opik tracing for AI mode
+from opik.integrations.langchain import OpikTracer
 
 # Console for rich output
 console = Console()
@@ -438,17 +433,15 @@ Generate a practice recommendation that:
 3. Sets appropriate strictness/sensitivity based on skill level
 """
 
-        # Get Opik config for tracing (same pattern as desktop)
-        opik_config = {}
-        if OPIK_ENABLED and OpikTracer:
-            tracer = OpikTracer(
-                tags=["ai-mode", "portable-recommendation"],
-                metadata={"user_id": user_id, "device": "raspberry_pi"}
-            )
-            opik_config = {
-                "callbacks": [tracer],
-                "configurable": {"thread_id": f"portable-{user_id}"}
-            }
+        # Get Opik config for tracing
+        tracer = OpikTracer(
+            tags=["ai-mode", "portable-recommendation"],
+            metadata={"user_id": user_id, "device": "raspberry_pi"}
+        )
+        opik_config = {
+            "callbacks": [tracer],
+            "configurable": {"thread_id": f"portable-{user_id}"}
+        }
 
         recommendation = structured_llm.invoke(
             [{"role": "user", "content": prompt}],
