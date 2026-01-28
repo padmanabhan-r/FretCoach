@@ -256,15 +256,6 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
         if not result or not result.get("success"):
             raise HTTPException(status_code=500, detail="Workflow execution failed")
 
-        # Update Opik trace to only include current turn (not entire conversation history)
-        try:
-            opik_context.update_current_trace(
-                input={"user_message": last_user_msg},
-                output={"ai_response": result.get("response", ""), "tool_calls": result.get("tool_calls", [])}
-            )
-        except Exception:
-            pass
-
         # Extract response and tool results
         ai_content = result.get("response", "")
 
