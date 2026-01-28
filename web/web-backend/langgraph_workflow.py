@@ -63,9 +63,9 @@ def get_llm_with_tools(use_fallback: bool = False):
         use_openai = os.getenv("USE_OPENAI_MODEL", "").lower() == "true"
 
         if use_openai:
-            # Use OpenAI GPT-4o-mini
+            # Use OpenAI with model from OPENAI_MODEL env var
             llm = ChatOpenAI(
-                model="gpt-4o-mini",
+                model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
                 temperature=0.7
             )
         else:
@@ -274,7 +274,7 @@ def get_model_name(use_fallback: bool = False) -> str:
         return "MiniMax-M2.1"
     else:
         use_openai = os.getenv("USE_OPENAI_MODEL", "").lower() == "true"
-        return "gpt-4o-mini" if use_openai else "gemini-2.5-flash"
+        return os.getenv("OPENAI_MODEL", "gpt-4o-mini") if use_openai else "gemini-2.5-flash"
 
 
 def invoke_workflow(
@@ -335,19 +335,24 @@ def invoke_workflow(
     # Get model name for tags and metadata
     model_name = get_model_name(use_fallback)
 
-    # Base tags for all traces
-    base_tags = ["fretcoach-hub", "ai-coach-chat", "from-hub-dashboard", model_name]
+    # Base tags for all AI coach chat traces
+    base_tags = [
+        "fretcoach-hub",
+        "ai-coach-chat",
+        "from-hub-dashboard",
+        "practice-plan",
+        model_name
+    ]
 
-    # Configure Opik tracing (note: practice-plan tag will be added after we check the response)
+    # Configure Opik tracing
     tracer = OpikTracer(
         project_name=os.getenv("OPIK_PROJECT_NAME", "FretCoach"),
         tags=base_tags,
         metadata={
             "user_id": user_id,
-            "thread_id": thread_id or "no-thread",
             "model": model_name
         },
-        graph=workflow.get_graph(xray=True)  # Enable graph visualization in Opik
+        graph=workflow.get_graph(xray=True)
     )
     config = {"callbacks": [tracer]}
 

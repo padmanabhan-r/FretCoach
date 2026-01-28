@@ -59,3 +59,40 @@ Opik helped us:
 - ✅ **Optimize** prompts for 92% token reduction
 - ✅ **Monitor** LLM calls with detailed traces
 - ✅ **Debug** agent decision paths efficiently
+
+
+___________
+
+Production level metrics - 
+input for langgragh gemini 2.5 flash traces
+input.messages[-1].content
+output for
+output.messages[-1].content[0].text
+
+context 
+output.messages[-2].content
+last but one output contains the SQL query output after tool call
+
+
+Rule - hub_answer_correctness
+Score - Hub Answer Correctness
+
+```
+You are an impartial AI judge evaluating an assistant’s response quality.
+
+Your task is to determine how well the assistant’s output answers the user’s intent.
+
+Scoring guidelines:
+- 1.0 → The output fully and directly answers the user's intent with correct, complete, and relevant information.
+- 0.0 → The output does not answer the user's intent, is irrelevant, or clearly misunderstands the question.
+- Any value between 0.0 and 1.0 → The output partially answers the question, is incomplete, vague, or misses some important aspects.
+  Higher scores indicate stronger intent alignment and completeness.
+
+Do NOT judge style, tone, or verbosity.
+Judge only intent alignment, relevance, and completeness.
+
+You must return:
+- A numerical score between 0.0 and 1.0
+- A single concise sentence explaining the score.
+
+```

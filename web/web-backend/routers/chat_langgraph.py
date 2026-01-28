@@ -11,14 +11,12 @@ import os
 import json
 import uuid
 import re
-from datetime import datetime
 from psycopg2.extras import RealDictCursor
 from database import get_db_connection
 from langgraph_workflow import invoke_workflow
 
 # Import Opik for tracking
-from opik import track
-from opik.api_objects import opik_context
+from opik import track, opik_context
 
 router = APIRouter()
 
@@ -190,12 +188,29 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
     Processes user messages via LangGraph workflow with dynamic SQL generation.
     Maintains backward compatibility with frontend expectations.
     """
-    # Set thread_id for conversation tracking with hub-specific format
-    if not request.thread_id:
-        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        thread_id = f"hub-{request.user_id}-aicoach-chat-{timestamp}"
-    else:
-        thread_id = request.thread_id
+    # Set thread_id for conversation tracking
+    thread_id = request.thread_id or f"hub-{request.user_id}"
+
+    # Determine model name
+    use_openai = os.getenv("USE_OPENAI_MODEL", "").lower() == "true"
+    model_name = "gpt-4o-mini" if use_openai else "gemini-2.5-flash"
+
+    # Set thread_id and tags in Opik trace
+    try:
+        opik_context.update_current_trace(
+            thread_id=thread_id,
+            tags=[
+                "fretcoach-hub",
+                "ai-coach-chat",
+                "from-hub-dashboard",
+                "practice-plan",
+                "ai-coach-chat-thread",
+                "ai-coach-chat-full-conversation",
+                model_name
+            ]
+        )
+    except Exception:
+        pass
 
     try:
         # Get quick context for response enrichment
@@ -240,6 +255,15 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
 
         if not result or not result.get("success"):
             raise HTTPException(status_code=500, detail="Workflow execution failed")
+
+        # Update Opik trace to only include current turn (not entire conversation history)
+        try:
+            opik_context.update_current_trace(
+                input={"user_message": last_user_msg},
+                output={"ai_response": result.get("response", ""), "tool_calls": result.get("tool_calls", [])}
+            )
+        except Exception:
+            pass
 
         # Extract response and tool results
         ai_content = result.get("response", "")
@@ -297,16 +321,6 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
 
         # Extract practice plan if present
         practice_plan = extract_practice_plan_from_response(ai_content, tool_calls)
-
-        # Add "practice-plan" tag to Opik trace if practice plan was generated
-        if practice_plan:
-            try:
-                current_span = opik_context.get_current_span()
-                if current_span:
-                    current_span.update(tags=["practice-plan"])
-            except Exception as e:
-                # Silently ignore Opik errors
-                pass
 
         # Remove JSON from response text if practice plan was extracted
         if practice_plan and not practice_plan.get("saved"):
