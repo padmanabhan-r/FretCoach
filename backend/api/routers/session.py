@@ -6,16 +6,8 @@ from fastapi import APIRouter
 import sys
 import os
 
-# Import Opik for tracking (non-blocking)
-try:
-    from opik import track
-    OPIK_ENABLED = True
-except ImportError:
-    def track(name):
-        def decorator(func):
-            return func
-        return decorator
-    OPIK_ENABLED = False
+# Import Opik for tracking
+from opik import track
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'core'))

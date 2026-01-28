@@ -16,12 +16,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import create_engine, text
 
 # Import Opik for tracking with LangChain integration
-try:
-    from opik.integrations.langchain import OpikTracer
-    OPIK_ENABLED = True
-except ImportError:
-    OpikTracer = None
-    OPIK_ENABLED = False
+from opik.integrations.langchain import OpikTracer
 
 # Load environment variables
 load_dotenv(find_dotenv())
@@ -43,9 +38,6 @@ model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
 def get_opik_config(user_id: str, trace_name: str, practice_id: str = None) -> dict:
     """Create Opik config for LangChain calls tied to user session"""
-    if not OPIK_ENABLED or not OpikTracer:
-        return {}
-
     metadata = {"user_id": user_id}
     if practice_id:
         metadata["practice_id"] = practice_id
