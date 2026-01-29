@@ -34,6 +34,7 @@ class CoachingRequest(BaseModel):
     total_notes_played: int = Field(0, ge=0, description="Total notes played so far")
     correct_notes: int = Field(0, ge=0, description="Number of notes in scale")
     wrong_notes: int = Field(0, ge=0, description="Number of notes outside scale")
+    mode: str = Field("manual-mode", description="Practice mode: 'ai-mode' or 'manual-mode'")
 
 
 class SummaryRequest(BaseModel):
@@ -44,6 +45,7 @@ class SummaryRequest(BaseModel):
     scale_name: str = Field(..., description="Scale that was practiced")
     total_duration_seconds: int = Field(..., ge=0, description="Total session duration")
     session_id: Optional[str] = Field(None, description="Optional session ID")
+    mode: str = Field("manual-mode", description="Practice mode: 'ai-mode' or 'manual-mode'")
 
 
 @router.post("/feedback")
@@ -63,7 +65,8 @@ async def get_coaching_feedback(request: CoachingRequest):
             session_id=request.session_id,
             total_notes_played=request.total_notes_played,
             correct_notes=request.correct_notes,
-            wrong_notes=request.wrong_notes
+            wrong_notes=request.wrong_notes,
+            mode=request.mode
         )
         return {
             "success": True,
@@ -118,7 +121,8 @@ async def get_session_summary(request: SummaryRequest):
             timing_stability=request.timing_stability,
             scale_name=request.scale_name,
             total_duration_seconds=request.total_duration_seconds,
-            session_id=request.session_id
+            session_id=request.session_id,
+            mode=request.mode
         )
         return {
             "success": True,

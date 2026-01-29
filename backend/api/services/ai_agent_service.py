@@ -21,6 +21,9 @@ from opik.integrations.langchain import OpikTracer
 # Load environment variables
 load_dotenv(find_dotenv())
 
+# Get deployment type for tracing tags
+DEPLOYMENT_TYPE = os.getenv("DEPLOYMENT_TYPE", "fretcoach-studio")  # Default to studio
+
 # Get PostgreSQL credentials from environment
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
@@ -33,17 +36,30 @@ db_uri = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB
 engine = create_engine(db_uri, pool_pre_ping=True)
 
 # Initialize LLM - single instance
-model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+MODEL_NAME = "gpt-4o-mini"
+model = ChatOpenAI(model=MODEL_NAME, temperature=0)
 
 
 def get_opik_config(user_id: str, trace_name: str, practice_id: str = None) -> dict:
-    """Create Opik config for LangChain calls tied to user session"""
+    """
+    Create Opik config for LangChain calls tied to user session.
+    Tags include: fretcoach-core, model name, ai-mode, and deployment type.
+    """
     metadata = {"user_id": user_id}
     if practice_id:
         metadata["practice_id"] = practice_id
 
+    # Build comprehensive tags for tracing
+    tags = [
+        "fretcoach-core",
+        MODEL_NAME,
+        "ai-mode",
+        DEPLOYMENT_TYPE,
+        trace_name
+    ]
+
     tracer = OpikTracer(
-        tags=["ai-mode", trace_name],
+        tags=tags,
         metadata=metadata
     )
     return {
@@ -62,49 +78,86 @@ class PracticeRecommendation(BaseModel):
     sensitivity: float = Field(description="Recommended sensitivity level (0.0-1.0)", ge=0.0, le=1.0)
 
 
+def get_recent_practice_plans(user_id: str, limit: int = 5) -> List[Dict[str, Any]]:
+    """
+    Get recent practice plans (both executed and unexecuted) for the user.
+    Used to track what has been suggested recently to avoid repetition.
+
+    Args:
+        user_id: The user's identifier
+        limit: Maximum number of plans to retrieve
+
+    Returns:
+        List of recent practice plans with their details
+    """
+    query = text("""
+        SELECT practice_id, practice_plan, generated_at, executed_session_id
+        FROM fretcoach.ai_practice_plans
+        WHERE user_id = :user_id
+        ORDER BY generated_at DESC
+        LIMIT :limit
+    """)
+
+    with engine.connect() as conn:
+        result = conn.execute(query, {"user_id": user_id, "limit": limit})
+        rows = result.fetchall()
+
+        plans = []
+        for row in rows:
+            try:
+                plan_data = json.loads(row[1]) if row[1] else None
+                if plan_data and isinstance(plan_data, dict):
+                    plans.append({
+                        "practice_id": str(row[0]),
+                        "plan": plan_data,
+                        "generated_at": row[2],
+                        "executed": row[3] is not None
+                    })
+            except (json.JSONDecodeError, TypeError):
+                continue
+        return plans
+
+
 def get_pending_practice_plan(user_id: str) -> Optional[Dict[str, Any]]:
     """
     Check if there's an unexecuted practice plan for the user.
-    Returns the pending plan if exists and is recent (< 24 hours old), None otherwise.
+    Gets the 3 most recent plans and returns the most recent unexecuted one.
     """
     query = text("""
-        SELECT practice_id, practice_plan, generated_at
+        SELECT practice_id, practice_plan, generated_at, executed_session_id
         FROM fretcoach.ai_practice_plans
         WHERE user_id = :user_id
-          AND executed_session_id IS NULL
-          AND generated_at > :cutoff_time
         ORDER BY generated_at DESC
-        LIMIT 1
+        LIMIT 3
     """)
 
-    cutoff_time = datetime.now() - timedelta(hours=24)
-
     with engine.connect() as conn:
-        result = conn.execute(query, {"user_id": user_id, "cutoff_time": cutoff_time})
-        row = result.fetchone()
+        result = conn.execute(query, {"user_id": user_id})
+        rows = result.fetchall()
 
-        if row:
-            try:
-                # Try to parse the JSON plan
-                plan_data = json.loads(row[1]) if row[1] else None
-                if plan_data and isinstance(plan_data, dict):
-                    # Only return if it's a properly structured JSON dict
-                    return {
-                        "practice_id": str(row[0]),
-                        "plan": plan_data,
-                        "generated_at": row[2]
-                    }
-            except (json.JSONDecodeError, TypeError) as e:
-                # If JSON is invalid (plain text format), ignore this pending plan
-                # This allows the system to generate a fresh recommendation
-                print(f"Warning: Skipping non-JSON pending practice plan {row[0]}, will generate new recommendation")
-                pass
+        # Filter for unexecuted plans and pick the most recent one
+        for row in rows:
+            if row[3] is None:  # executed_session_id is NULL
+                try:
+                    # Try to parse the JSON plan
+                    plan_data = json.loads(row[1]) if row[1] else None
+                    if plan_data and isinstance(plan_data, dict):
+                        # Return the most recent unexecuted plan
+                        return {
+                            "practice_id": str(row[0]),
+                            "plan": plan_data,
+                            "generated_at": row[2]
+                        }
+                except (json.JSONDecodeError, TypeError) as e:
+                    # If JSON is invalid (plain text format), skip this plan
+                    print(f"Warning: Skipping non-JSON pending practice plan {row[0]}")
+                    continue
     return None
 
 
-def get_recent_sessions(user_id: str, limit: int = 5) -> List[Dict[str, Any]]:
+def get_recent_sessions(user_id: str, limit: int = 10) -> List[Dict[str, Any]]:
     """
-    Get recent practice sessions for analysis.
+    Get recent practice sessions for analysis (up to 10 if available).
     Direct SQL query - no LLM needed.
     """
     query = text("""
@@ -268,7 +321,9 @@ async def analyze_practice_history(user_id: str) -> Dict[str, Any]:
 
 async def generate_practice_recommendation(
     user_id: str,
-    analysis: Dict[str, Any]
+    analysis: Dict[str, Any],
+    recent_plans: Optional[List[Dict[str, Any]]] = None,
+    pending_plan: Optional[Dict[str, Any]] = None
 ) -> PracticeRecommendation:
     """
     Generate structured practice recommendation based on analysis.
@@ -277,6 +332,8 @@ async def generate_practice_recommendation(
     Args:
         user_id: The user's identifier
         analysis: Dictionary containing practice history analysis
+        recent_plans: Optional list of recent practice plans to avoid repeating
+        pending_plan: Optional pending plan that LLM can choose to keep or replace
 
     Returns:
         Structured practice recommendation
@@ -284,24 +341,44 @@ async def generate_practice_recommendation(
     # Use structured output to generate recommendation - SINGLE LLM CALL
     structured_llm = model.with_structured_output(PracticeRecommendation)
 
-    # Check if there's a pending plan to include in the context
+    # Build context about pending plan
     pending_plan_context = ""
-    if analysis.get('pending_plan'):
-        pending_plan = analysis['pending_plan']
+    if pending_plan:
+        plan_details = pending_plan["plan"]
         pending_plan_context = f"""
 
-PENDING PRACTICE PLAN:
+PENDING PRACTICE PLAN (PREVIOUSLY SUGGESTED):
 There is an unexecuted practice plan from {pending_plan['generated_at']}:
-- Scale: {pending_plan['plan']['scale_name']} ({pending_plan['plan']['scale_type']})
-- Focus: {pending_plan['plan']['focus_area']}
-- Reasoning: {pending_plan['plan']['reasoning']}
-- Strictness: {pending_plan['plan']['strictness']}
-- Sensitivity: {pending_plan['plan']['sensitivity']}
+- Scale: {plan_details['scale_name']} ({plan_details['scale_type']})
+- Focus: {plan_details['focus_area']}
+- Reasoning: {plan_details['reasoning']}
+- Strictness: {plan_details['strictness']}
+- Sensitivity: {plan_details['sensitivity']}
 
-DECISION REQUIRED:
-Review this pending plan in context of the current practice history. You have two options:
-1. If the pending plan is still relevant and it is the recent one, it must be given the priority and you can continue with it (same or similar recommendation)
-2. If the user's needs have changed or a different focus would be better, generate a new recommendation
+IMPORTANT: Review the recent practice sessions above. You have two options:
+1. If the pending plan is STILL the best choice given recent performance, recommend the SAME scale/type/focus (keep it)
+2. If recent sessions show the user needs something DIFFERENT, generate a NEW recommendation
+
+Base your decision on whether recent sessions indicate the pending plan is still optimal or if priorities have changed.
+"""
+
+    # Build context about recent suggestions to avoid repetition (only if no pending plan)
+    recent_suggestions_context = ""
+    if not pending_plan and recent_plans:
+        recent_suggestions = []
+        for plan in recent_plans[:3]:  # Use last 3 suggestions
+            recent_suggestions.append({
+                "scale": f"{plan['plan']['scale_name']} ({plan['plan']['scale_type']})",
+                "focus": plan['plan']['focus_area']
+            })
+        if recent_suggestions:
+            recent_suggestions_context = f"""
+
+RECENT SUGGESTIONS (DO NOT REPEAT):
+The following suggestions were recently made. You MUST suggest something different:
+{json.dumps(recent_suggestions, indent=2)}
+
+IMPORTANT: Choose a different scale or different scale type than what was recently suggested.
 """
 
     # Build a concise prompt with the analysis data
@@ -317,8 +394,8 @@ PRACTICE HISTORY:
 RECENTLY PRACTICED SCALES:
 {json.dumps(analysis['practiced_scales'][:5], indent=2) if analysis['practiced_scales'] else 'No scales practiced yet'}
 
-RECENT SESSIONS:
-{json.dumps(analysis['recent_sessions'][:3], indent=2) if analysis['recent_sessions'] else 'No recent sessions'}{pending_plan_context}
+RECENT SESSIONS (last 10):
+{json.dumps(analysis['recent_sessions'], indent=2) if analysis['recent_sessions'] else 'No recent sessions'}{pending_plan_context}{recent_suggestions_context}
 
 Generate a practice recommendation that:
 1. Focuses on the weakest metric area ({analysis['weakest_area']})
@@ -385,41 +462,96 @@ async def save_practice_plan(user_id: str, recommendation: PracticeRecommendatio
     return save_practice_plan_sync(user_id, recommendation)
 
 
-async def get_ai_practice_session(user_id: str) -> Dict[str, Any]:
+def delete_pending_plans(user_id: str) -> int:
     """
-    Main entry point for AI-driven practice session generation.
-    Optimized flow:
-    1. Check for pending (unexecuted) practice plan first
-    2. If pending plan exists and is recent, return it
-    3. Otherwise, analyze history and generate new recommendation
-
-    LLM calls are traced via OpikTracer in generate_practice_recommendation().
+    Delete all unexecuted practice plans for a user.
+    Used when user requests a new suggestion to clear old rejected plans.
 
     Args:
         user_id: The user's identifier
 
     Returns:
+        Number of plans deleted
+    """
+    delete_query = text("""
+        DELETE FROM fretcoach.ai_practice_plans
+        WHERE user_id = :user_id
+          AND executed_session_id IS NULL
+    """)
+
+    with engine.begin() as conn:
+        result = conn.execute(delete_query, {"user_id": user_id})
+        return result.rowcount
+
+
+async def get_ai_practice_session(user_id: str, request_new: bool = False) -> Dict[str, Any]:
+    """
+    Main entry point for AI-driven practice session generation.
+    Flow:
+    1. Always analyze recent practice sessions (last 10)
+    2. Check for pending (unexecuted) practice plan
+    3. Give both to LLM: sessions + pending plan (if exists)
+    4. LLM decides: keep pending plan OR generate new based on sessions
+    5. If request_new=True, force deletion of pending plans and generate new
+
+    LLM calls are traced via OpikTracer in generate_practice_recommendation().
+
+    Args:
+        user_id: The user's identifier
+        request_new: If True, force new recommendation (deletes pending plans)
+
+    Returns:
         Dictionary containing practice recommendation and metadata
     """
-    # Step 1: Check for existing pending practice plan
-    pending_plan = get_pending_practice_plan(user_id)
-    if pending_plan:
-        print(f"[AI Coach] Found pending plan from {pending_plan['generated_at']}, including in AI analysis")
-
-    # Step 2: Analyze practice history (direct SQL - no LLM, no tracing needed)
+    # Step 1: Always analyze practice history (direct SQL - no LLM, no tracing needed)
     analysis = await analyze_practice_history(user_id)
 
-    # Add pending plan to analysis context if it exists
+    # Step 2: Check for existing pending practice plan
+    pending_plan = get_pending_practice_plan(user_id)
+
+    # Step 3: Get recent practice plans BEFORE deleting to avoid repeating suggestions
+    recent_plans = get_recent_practice_plans(user_id, limit=5)
+
+    # Step 4: If requesting new, delete all pending plans now
+    if request_new and pending_plan:
+        deleted_count = delete_pending_plans(user_id)
+        if deleted_count > 0:
+            print(f"[AI Coach] User requested new suggestion, deleted {deleted_count} pending plan(s)")
+        pending_plan = None  # Clear it so LLM generates fresh
+
+    # Step 5: Generate recommendation (single LLM call - traced with OpikTracer)
+    # LLM sees: recent sessions, pending plan (if exists), and recent suggestions
+    recommendation = await generate_practice_recommendation(
+        user_id,
+        analysis,
+        recent_plans,
+        pending_plan
+    )
+
+    # Step 6: Check if LLM decided to keep the pending plan
+    # If LLM returns the same scale/type/focus as pending, reuse pending plan ID
+    kept_pending = False
+    practice_id = None
+
     if pending_plan:
-        analysis['pending_plan'] = pending_plan
+        pending_details = pending_plan["plan"]
+        if (recommendation.scale_name == pending_details["scale_name"] and
+            recommendation.scale_type == pending_details["scale_type"] and
+            recommendation.focus_area == pending_details["focus_area"]):
+            # LLM chose to keep the pending plan
+            practice_id = pending_plan["practice_id"]
+            kept_pending = True
+            print(f"[AI Coach] LLM kept existing pending plan: {practice_id}")
 
-    # Step 3: Generate recommendation (single LLM call - traced with OpikTracer)
-    recommendation = await generate_practice_recommendation(user_id, analysis)
+    # Step 7: Save as new practice plan if not keeping pending
+    if not kept_pending:
+        # Delete old pending plans if we're generating a new one
+        if pending_plan:
+            delete_pending_plans(user_id)
+            print(f"[AI Coach] LLM generated different suggestion, deleted old pending plan")
 
-    # Step 4: Save practice plan
-    practice_id = await save_practice_plan(user_id, recommendation)
-
-    print(f"[AI Coach] Generated new practice plan: {practice_id}")
+        practice_id = await save_practice_plan(user_id, recommendation)
+        print(f"[AI Coach] Generated new practice plan: {practice_id}")
 
     return {
         "practice_id": practice_id,
@@ -436,5 +568,5 @@ async def get_ai_practice_session(user_id: str) -> Dict[str, Any]:
             "weakest_area": analysis["weakest_area"],
             "metrics": analysis["metrics_summary"]
         },
-        "is_pending_plan": False
+        "is_pending_plan": kept_pending
     }

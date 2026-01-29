@@ -25,9 +25,16 @@ from opik import track
 # Load environment variables
 load_dotenv(find_dotenv())
 
+# Get deployment type for tracing tags
+DEPLOYMENT_TYPE = os.getenv("DEPLOYMENT_TYPE", "fretcoach-studio")  # Default to studio
+DEPLOYMENT_PREFIX = "studio" if "studio" in DEPLOYMENT_TYPE.lower() else "portable"
+
 # Initialize LLM - using a fast model for real-time feedback
+FEEDBACK_MODEL_NAME = "gpt-4o-mini"
+TTS_MODEL_NAME = "gpt-4o-mini-tts"
+
 live_coach_model = ChatOpenAI(
-    model="gpt-4o-mini",
+    model=FEEDBACK_MODEL_NAME,
     temperature=0.9,  # Higher creativity for varied feedback
     max_tokens=100  # Room for 30-word feedback with context
 )
@@ -50,15 +57,36 @@ async def get_audio_player():
     return _audio_player
 
 
-def get_opik_config(session_id: str, trace_name: str) -> dict:
-    """Create Opik config for LangChain calls tied to session_id"""
+def get_opik_config(session_id: str, trace_name: str, mode: str = "manual-mode") -> dict:
+    """
+    Create Opik config for LangChain calls tied to session_id.
+    Tags include: fretcoach-core, model name, mode (ai-mode/manual-mode), and deployment type.
+    Thread ID format: {deployment_prefix}-aicoach-live-feedback-{timestamp}
+
+    Args:
+        session_id: Session identifier for tracking
+        trace_name: Name of the trace (e.g., "live-feedback", "session-summary")
+        mode: Either "ai-mode" or "manual-mode" (defaults to "manual-mode")
+    """
+    # Generate timestamp for thread ID
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+
+    # Build comprehensive tags for tracing
+    tags = [
+        "fretcoach-core",
+        FEEDBACK_MODEL_NAME,
+        mode,
+        DEPLOYMENT_TYPE,
+        trace_name
+    ]
+
     tracer = OpikTracer(
-        tags=["live-coach", trace_name],
+        tags=tags,
         metadata={"session_id": session_id}
     )
     return {
         "callbacks": [tracer],
-        "configurable": {"thread_id": f"session-{session_id}"}
+        "configurable": {"thread_id": f"{DEPLOYMENT_PREFIX}-aicoach-live-feedback-{timestamp}"}
     }
 
 # System prompt for coaching
@@ -127,7 +155,10 @@ def get_metric_assessment(score: float) -> str:
     return "very low"
 
 
-@track(name="live-coach-tts", tags=["tts", "live-coach"])
+@track(
+    name="live-coach-tts",
+    tags=["fretcoach-core", TTS_MODEL_NAME, "live-coach", DEPLOYMENT_TYPE, "tts"]
+)
 async def generate_and_play_tts(
     feedback_text: str,
     session_id: Optional[str] = None
@@ -195,7 +226,8 @@ async def generate_coaching_feedback(
     session_id: Optional[str] = None,
     total_notes_played: int = 0,
     correct_notes: int = 0,
-    wrong_notes: int = 0
+    wrong_notes: int = 0,
+    mode: str = "manual-mode"
 ) -> Dict[str, Any]:
     """
     Generate live coaching feedback based on current session metrics.
@@ -211,6 +243,7 @@ async def generate_coaching_feedback(
         total_notes_played: Total number of notes played so far
         correct_notes: Number of notes in scale
         wrong_notes: Number of notes outside scale
+        mode: Either "ai-mode" or "manual-mode" (defaults to "manual-mode")
 
     Returns:
         Dictionary containing feedback and metadata
@@ -239,7 +272,7 @@ async def generate_coaching_feedback(
     timing_assessment = get_metric_assessment(timing_stability)
 
     # Get Opik config tied to session_id for tracing
-    opik_config = get_opik_config(session_id or "unknown", "live-feedback")
+    opik_config = get_opik_config(session_id or "unknown", "live-feedback", mode)
 
     # Format the user message with all metrics
     user_message = COACHING_USER_TEMPLATE.format(
@@ -293,7 +326,8 @@ async def generate_session_summary(
     timing_stability: float,
     scale_name: str,
     total_duration_seconds: int,
-    session_id: Optional[str] = None
+    session_id: Optional[str] = None,
+    mode: str = "manual-mode"
 ) -> Dict[str, Any]:
     """
     Generate a summary at the end of a practice session.
@@ -306,6 +340,7 @@ async def generate_session_summary(
         scale_name: Name of the scale practiced
         total_duration_seconds: Total session duration
         session_id: Optional session ID for tracking
+        mode: Either "ai-mode" or "manual-mode" (defaults to "manual-mode")
 
     Returns:
         Dictionary containing session summary
@@ -332,7 +367,7 @@ Give a brief, encouraging session summary:""")
     summary_chain = summary_prompt | live_coach_model | StrOutputParser()
 
     # Get Opik config tied to session_id for tracing
-    opik_config = get_opik_config(session_id or "unknown", "session-summary")
+    opik_config = get_opik_config(session_id or "unknown", "session-summary", mode)
 
     summary = await summary_chain.ainvoke(
         {

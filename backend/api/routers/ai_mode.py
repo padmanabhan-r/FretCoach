@@ -15,19 +15,20 @@ router = APIRouter()
 
 
 @router.post("/ai/recommend")
-async def get_ai_recommendation(user_id: str = "default_user") -> Dict[str, Any]:
+async def get_ai_recommendation(user_id: str = "default_user", request_new: bool = False) -> Dict[str, Any]:
     """
     Get AI-driven practice recommendation based on historical performance.
     LLM call is traced via OpikTracer in ai_agent_service.
 
     Args:
         user_id: The user identifier (default: "default_user")
+        request_new: If True, generate a new recommendation even if pending plan exists
 
     Returns:
         Practice recommendation with scale, focus area, and reasoning
     """
     try:
-        result = await get_ai_practice_session(user_id)
+        result = await get_ai_practice_session(user_id, request_new=request_new)
         return {
             "success": True,
             "data": result
