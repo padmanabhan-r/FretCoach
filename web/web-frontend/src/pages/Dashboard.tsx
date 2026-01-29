@@ -27,6 +27,8 @@ import {
   RefreshCw,
   Maximize2,
   Minimize2,
+  Play,
+  Square,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
@@ -38,13 +40,13 @@ import { PerformanceChart } from "@/components/charts/PerformanceChart";
 import type { DateRange } from "react-day-picker";
 
 // Initial welcome message for the AI Coach
-const initialMessages: ChatMessage[] = [
-  {
-    id: "1",
-    role: "assistant",
-    content: "Hi! I'm your AI practice coach. I can help you analyze your performance, suggest exercises, and answer questions about your practice sessions. Try asking me:\n\n• \"Show me my progress\"\n• \"What should I practice today?\"\n• \"How am I doing compared to average?\"\n\nHow can I help you today?",
-  }
-];
+const welcomeMessage: ChatMessage = {
+  id: "1",
+  role: "assistant",
+  content: "Hi! I'm your AI practice coach. I can help you analyze your performance, suggest exercises, and answer questions about your practice sessions. Try asking me:\n\n• \"Show me my progress\"\n• \"What should I practice today?\"\n• \"How am I doing compared to average?\"\n\nHow can I help you today?",
+};
+
+const CHAT_INACTIVITY_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 const Dashboard = () => {
   // Default to last 7 days
@@ -64,17 +66,69 @@ const Dashboard = () => {
 
   const { data, isLoading, error, refetch, isFetching } = useSessions('default_user', 6, dateRangeFilter);
   const [selectedSessionIndex, setSelectedSessionIndex] = useState(0);
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isAiTyping, setIsAiTyping] = useState(false);
   const [currentModel, setCurrentModel] = useState<string>("");
   const [isAiCoachExpanded, setIsAiCoachExpanded] = useState(false);
-  const [threadId] = useState(() => `thread-${Date.now()}`);
+  const [threadId, setThreadId] = useState<string | null>(null);
+  const [isChatActive, setIsChatActive] = useState(false);
+  const [lastActivityTime, setLastActivityTime] = useState<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const sessions = data?.sessions || [];
   const aggregates = data?.aggregates;
   const selectedSession = sessions[selectedSessionIndex];
+
+  // Chat session management
+  const startChatSession = () => {
+    const newThreadId = `hub-aicoach-chat-${Date.now()}`;
+    setThreadId(newThreadId);
+    setMessages([welcomeMessage]);
+    setIsChatActive(true);
+    setLastActivityTime(Date.now());
+  };
+
+  const endChatSession = () => {
+    setIsChatActive(false);
+    setThreadId(null);
+    setMessages([]);
+    setInputMessage("");
+    setCurrentModel("");
+  };
+
+  // Check for inactivity timeout
+  useEffect(() => {
+    if (!isChatActive) return;
+
+    const checkInactivity = () => {
+      const now = Date.now();
+      if (now - lastActivityTime >= CHAT_INACTIVITY_TIMEOUT) {
+        endChatSession();
+      }
+    };
+
+    // Check every 30 seconds
+    const intervalId = setInterval(checkInactivity, 30000);
+
+    // Also check on user activity
+    const resetActivity = () => setLastActivityTime(Date.now());
+    window.addEventListener('mousemove', resetActivity);
+    window.addEventListener('keydown', resetActivity);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('mousemove', resetActivity);
+      window.removeEventListener('keydown', resetActivity);
+    };
+  }, [isChatActive, lastActivityTime]);
+
+  // Update activity time when sending messages
+  useEffect(() => {
+    if (isChatActive && messages.length > 0) {
+      setLastActivityTime(Date.now());
+    }
+  }, [messages.length, isChatActive]);
 
   // Format date range display
   const dateRangeLabel = useMemo(() => {
@@ -89,7 +143,10 @@ const Dashboard = () => {
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim() || isAiTyping) return;
+    if (!inputMessage.trim() || isAiTyping || !isChatActive || !threadId) return;
+
+    // Update activity time
+    setLastActivityTime(Date.now());
 
     // Add user message
     const userMessage: ChatMessage = {
@@ -552,7 +609,19 @@ const Dashboard = () => {
                 {/* Messages */}
                 <ScrollArea className="flex-1 pr-4 mb-4">
                   <div className="space-y-4">
-                    {messages.map((message) => (
+                    {!isChatActive ? (
+                      <div className="flex flex-col items-center justify-center h-[300px] text-center">
+                        <Brain className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
+                        <h3 className="text-lg font-medium mb-2">AI Practice Coach</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Start a chat session to get personalized practice feedback and guidance.
+                        </p>
+                        <Button onClick={startChatSession} className="gap-2">
+                          <Play className="h-4 w-4" />
+                          Start Chat
+                        </Button>
+                      </div>
+                    ) : messages.map((message) => (
                       <div key={message.id}>
                         <div
                           className={`flex gap-3 ${
@@ -596,6 +665,7 @@ const Dashboard = () => {
                         )}
                       </div>
                     ))}
+
                     {isAiTyping && (
                       <div className="flex gap-3 justify-start">
                         <Avatar className="h-8 w-8 border-2 border-primary/20">
@@ -623,27 +693,44 @@ const Dashboard = () => {
 
                 {/* Input */}
                 <div className="flex gap-2">
-                  <Input
-                    placeholder="Ask me anything about your practice..."
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage();
-                      }
-                    }}
-                    disabled={isAiTyping}
-                    className="flex-1"
-                  />
-                  <Button
-                    onClick={handleSendMessage}
-                    disabled={!inputMessage.trim() || isAiTyping}
-                    className="gap-2"
-                  >
-                    <Send className="h-4 w-4" />
-                    Send
-                  </Button>
+                  {isChatActive ? (
+                    <>
+                      <Input
+                        placeholder="Ask me anything about your practice..."
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendMessage();
+                          }
+                        }}
+                        disabled={isAiTyping}
+                        className="flex-1"
+                      />
+                      <Button
+                        onClick={handleSendMessage}
+                        disabled={!inputMessage.trim() || isAiTyping}
+                        className="gap-2"
+                      >
+                        <Send className="h-4 w-4" />
+                        Send
+                      </Button>
+                      <Button
+                        size="icon"
+                        onClick={endChatSession}
+                        disabled={isAiTyping}
+                        className="h-10 w-10"
+                        title="End Chat"
+                      >
+                        <Square className="h-4 w-4" />
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="flex-1 text-center text-sm text-muted-foreground py-2">
+                      Press "Start Chat" above to begin
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -676,7 +763,19 @@ const Dashboard = () => {
                   {/* Messages */}
                   <ScrollArea className="flex-1 pr-4 mb-4">
                     <div className="space-y-4">
-                      {messages.map((message) => (
+                      {!isChatActive ? (
+                        <div className="flex flex-col items-center justify-center h-[400px] text-center">
+                          <Brain className="h-16 w-16 text-muted-foreground mb-4 opacity-50" />
+                          <h3 className="text-xl font-medium mb-2">AI Practice Coach</h3>
+                          <p className="text-sm text-muted-foreground mb-4 max-w-md">
+                            Start a chat session to get personalized practice feedback, analyze your performance, and receive guidance on exercises tailored to your needs.
+                          </p>
+                          <Button onClick={startChatSession} className="gap-2">
+                            <Play className="h-4 w-4" />
+                            Start Chat
+                          </Button>
+                        </div>
+                      ) : messages.map((message) => (
                         <div key={message.id}>
                           <div
                             className={`flex gap-3 ${
@@ -722,6 +821,7 @@ const Dashboard = () => {
                           </div>
                         </div>
                       ))}
+
                       {isAiTyping && (
                         <div className="flex gap-3 justify-start">
                           <Avatar className="h-8 w-8 border-2 border-primary/20">
@@ -749,27 +849,45 @@ const Dashboard = () => {
 
                   {/* Input */}
                   <div className="flex gap-2">
-                    <Input
-                      placeholder="Ask me anything about your practice..."
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendMessage();
-                        }
-                      }}
-                      disabled={isAiTyping}
-                      className="flex-1"
-                    />
-                    <Button
-                      onClick={handleSendMessage}
-                      disabled={!inputMessage.trim() || isAiTyping}
-                      className="gap-2"
-                    >
-                      <Send className="h-4 w-4" />
-                      Send
-                    </Button>
+                    {isChatActive ? (
+                      <>
+                        <Input
+                          placeholder="Ask me anything about your practice..."
+                          value={inputMessage}
+                          onChange={(e) => setInputMessage(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              e.preventDefault();
+                              handleSendMessage();
+                            }
+                          }}
+                          disabled={isAiTyping}
+                          className="flex-1"
+                        />
+                        <Button
+                          onClick={handleSendMessage}
+                          disabled={!inputMessage.trim() || isAiTyping}
+                          className="gap-2"
+                        >
+                          <Send className="h-4 w-4" />
+                          Send
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          onClick={endChatSession}
+                          disabled={isAiTyping}
+                          className="h-10 w-10"
+                          title="End Chat"
+                        >
+                          <Square className="h-4 w-4" />
+                        </Button>
+                      </>
+                    ) : (
+                      <div className="flex-1 text-center text-sm text-muted-foreground py-2">
+                        Press "Start Chat" above to begin
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
