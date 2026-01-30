@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api';
 
-const ScaleSelection = ({ onComplete, onBack, enabledMetrics, onMetricsChange }) => {
+const ScaleSelection = ({ onComplete, onBack, enabledMetrics, onMetricsChange, userId = 'default_user' }) => {
   const [scales, setScales] = useState({ major: [], minor: [] });
   const [selectedScale, setSelectedScale] = useState('');
   const [scaleType, setScaleType] = useState('natural');
@@ -41,6 +41,7 @@ const ScaleSelection = ({ onComplete, onBack, enabledMetrics, onMetricsChange })
     config.ambient_lighting = ambientLighting;
     config.strictness = strictness;
     config.sensitivity = sensitivity;
+    config.user_id = userId;
     await api.saveConfig(config);
 
     // Save session config with enabled metrics
@@ -188,8 +189,8 @@ const ScaleSelection = ({ onComplete, onBack, enabledMetrics, onMetricsChange })
       {/* Metric Toggles */}
       <div className="mb-6">
         <h3 className="text-foreground font-semibold mb-3">Metrics to Track</h3>
-        <div className="space-y-2">
-          <label className="flex items-center gap-3 cursor-pointer text-foreground">
+        <div className="flex flex-wrap gap-4">
+          <label className="flex items-center gap-2 cursor-pointer text-foreground">
             <input
               type="checkbox"
               checked={enabledMetrics?.pitch_accuracy !== false}
@@ -198,7 +199,7 @@ const ScaleSelection = ({ onComplete, onBack, enabledMetrics, onMetricsChange })
             />
             <span>Pitch Accuracy</span>
           </label>
-          <label className="flex items-center gap-3 cursor-pointer text-foreground">
+          <label className="flex items-center gap-2 cursor-pointer text-foreground">
             <input
               type="checkbox"
               checked={enabledMetrics?.scale_conformity !== false}
@@ -207,7 +208,7 @@ const ScaleSelection = ({ onComplete, onBack, enabledMetrics, onMetricsChange })
             />
             <span>Scale Conformity</span>
           </label>
-          <label className="flex items-center gap-3 cursor-pointer text-foreground">
+          <label className="flex items-center gap-2 cursor-pointer text-foreground">
             <input
               type="checkbox"
               checked={enabledMetrics?.timing_stability !== false}
@@ -220,6 +221,19 @@ const ScaleSelection = ({ onComplete, onBack, enabledMetrics, onMetricsChange })
         <p className="text-muted text-sm mt-2">
           Note: Noise control is always enabled. Disabled metrics will not be tracked or shown.
         </p>
+      </div>
+
+      {/* Practice Tips */}
+      <div className="mb-6 bg-accent/10 border border-accent/30 rounded-lg p-4">
+        <h3 className="text-foreground font-semibold mb-2 flex items-center gap-2">
+          <span>💡</span>
+          <span>Practice Tips</span>
+        </h3>
+        <ul className="text-sm text-foreground/80 space-y-1.5">
+          <li>• Rest your fingers lightly on the strings to control unwanted noise</li>
+          <li>• Press down firmly just behind the fret for clear, accurate notes</li>
+          <li>• Focus on playing clean notes rather than speed</li>
+        </ul>
       </div>
 
       {/* Strictness */}

@@ -27,6 +27,7 @@ class AudioConfig(BaseModel):
     ambient_lighting: Optional[bool] = True
     strictness: Optional[float] = 0.5
     sensitivity: Optional[float] = 0.5
+    user_id: Optional[str] = "default_user"  # User identifier for session tracking
 
 
 class SessionConfig(BaseModel):

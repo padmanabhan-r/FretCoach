@@ -86,8 +86,20 @@ class QualityResult:
 
 
 def score_to_hue(score: float) -> int:
-    """Convert quality score (0-1) to hue (0-120, red to green)."""
-    return int(np.clip(score, 0.0, 1.0) * 120)
+    """
+    Convert quality score (0-1) to hue (0-120, red to green).
+    Matches performance thresholds: 90%+ Excellent, 70%+ Good, 50%+ Average.
+    """
+    score = np.clip(score, 0.0, 1.0)
+
+    if score < 0.5:  # 0-50%: Red to Yellow (0-60)
+        return int(score * 120)
+    elif score < 0.7:  # 50-70%: Yellow to Yellow-Green (60-85)
+        return int(60 + (score - 0.5) * 125)
+    elif score < 0.9:  # 70-90%: Yellow-Green to Light Green (85-110)
+        return int(85 + (score - 0.7) * 125)
+    else:  # 90-100%: Light Green to Green (110-120)
+        return int(110 + (score - 0.9) * 100)
 
 
 def calculate_energy_threshold(sensitivity: float) -> float:

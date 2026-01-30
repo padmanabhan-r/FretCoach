@@ -102,13 +102,13 @@ def get_feedback_message(quality_state: QualityState, result: Any) -> tuple[str,
         return "🔴", "Wrong note! Stay in scale"
 
     # In scale - give feedback based on quality
-    if ema >= 0.85:
+    if ema >= 0.90:
         return "🟢", "Excellent! Keep it up!"
     elif ema >= 0.70:
         return "🟢", "Good playing!"
-    elif ema >= 0.55:
+    elif ema >= 0.50:
         return "🟡", "Getting there, stay focused"
-    elif ema >= 0.40:
+    elif ema >= 0.30:
         return "🟡", "Work on your timing"
     else:
         return "🟠", "Slow down, focus on accuracy"
@@ -116,11 +116,11 @@ def get_feedback_message(quality_state: QualityState, result: Any) -> tuple[str,
 
 def get_feedback_color(ema: float) -> str:
     """Get color for feedback based on quality score."""
-    if ema >= 0.70:
+    if ema >= 0.90:
         return "green"
-    elif ema >= 0.50:
+    elif ema >= 0.70:
         return "yellow"
-    elif ema >= 0.30:
+    elif ema >= 0.50:
         return "orange1"
     else:
         return "red"
@@ -165,9 +165,9 @@ def create_practice_display(
     lines.append("")
 
     # Progress bars
-    lines.append(create_progress_line("Pitch Accuracy", pitch_pct, "green" if pitch_pct >= 70 else "yellow" if pitch_pct >= 50 else "red"))
-    lines.append(create_progress_line("Timing Stability", timing_pct, "green" if timing_pct >= 70 else "yellow" if timing_pct >= 50 else "red"))
-    lines.append(create_progress_line("Scale Conformity", scale_conformity_pct, "green" if scale_conformity_pct >= 70 else "yellow" if scale_conformity_pct >= 50 else "red"))
+    lines.append(create_progress_line("Pitch Accuracy", pitch_pct, "green" if pitch_pct >= 90 else "yellow" if pitch_pct >= 70 else "red"))
+    lines.append(create_progress_line("Timing Stability", timing_pct, "green" if timing_pct >= 90 else "yellow" if timing_pct >= 70 else "red"))
+    lines.append(create_progress_line("Scale Conformity", scale_conformity_pct, "green" if scale_conformity_pct >= 90 else "yellow" if scale_conformity_pct >= 70 else "red"))
     lines.append("")
 
     # Feedback

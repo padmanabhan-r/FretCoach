@@ -49,6 +49,16 @@ const welcomeMessage: ChatMessage = {
 const CHAT_INACTIVITY_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 const Dashboard = () => {
+  // User selection (persisted in localStorage)
+  const [userId, setUserId] = useState<string>(() => {
+    return localStorage.getItem('fretcoach-user-id') || 'default_user';
+  });
+
+  // Update localStorage when userId changes
+  useEffect(() => {
+    localStorage.setItem('fretcoach-user-id', userId);
+  }, [userId]);
+
   // Default to last 7 days
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => ({
     from: subDays(new Date(), 7),
@@ -64,7 +74,7 @@ const Dashboard = () => {
     };
   }, [dateRange]);
 
-  const { data, isLoading, error, refetch, isFetching } = useSessions('default_user', 6, dateRangeFilter);
+  const { data, isLoading, error, refetch, isFetching } = useSessions(userId, 6, dateRangeFilter);
   const [selectedSessionIndex, setSelectedSessionIndex] = useState(0);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState("");
@@ -165,7 +175,7 @@ const Dashboard = () => {
         content: m.content,
       }));
 
-      const response = await sendChatMessage(messageHistory, 'default_user', threadId);
+      const response = await sendChatMessage(messageHistory, userId, threadId);
 
       // Track which model was used
       if (response.modelUsed) {
@@ -192,7 +202,7 @@ const Dashboard = () => {
   };
 
   const handleSavePlan = async (planId: string) => {
-    const result = await savePracticePlan(planId, 'default_user');
+    const result = await savePracticePlan(planId, userId);
     if (!result.success) {
       throw new Error(result.error || 'Failed to save plan');
     }
@@ -256,12 +266,29 @@ const Dashboard = () => {
                 <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
-              <div className="flex items-center gap-3 pl-4 border-l border-border">
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium">Default User</p>
-                  <p className="text-xs text-muted-foreground">
-                    FretCoach Premium
-                  </p>
+              {/* User Switcher */}
+              <div className="flex items-center gap-2 pl-4 border-l border-border">
+                <div className="inline-flex items-center gap-1 bg-card border border-border rounded-lg p-1">
+                  <button
+                    onClick={() => setUserId('default_user')}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      userId === 'default_user'
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                    }`}
+                  >
+                    Default User
+                  </button>
+                  <button
+                    onClick={() => setUserId('test_user')}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      userId === 'test_user'
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                    }`}
+                  >
+                    Test User
+                  </button>
                 </div>
                 <Avatar className="h-10 w-10 border-2 border-primary/20">
                   <AvatarImage src="" alt="FretCoach User" />

@@ -38,17 +38,17 @@ const VisualFeedback = ({
 
   // Get performance label based on score
   const getPerformanceLabel = (score) => {
-    if (score >= 70) return 'Excellent';
-    if (score >= 50) return 'Good';
-    if (score >= 30) return 'Average';
+    if (score >= 90) return 'Excellent';
+    if (score >= 70) return 'Good';
+    if (score >= 50) return 'Average';
     return 'Needs Work';
   };
 
   // Get color based on performance level - Red → Yellow → Green palette
   const getColor = (score) => {
-    if (score >= 70) return 'hsl(142, 76%, 45%)'; // Green - Excellent
-    if (score >= 50) return 'hsl(85, 70%, 45%)'; // Yellow-green - Good
-    if (score >= 30) return 'hsl(45, 90%, 50%)'; // Yellow - Average
+    if (score >= 90) return 'hsl(142, 76%, 45%)'; // Green - Excellent
+    if (score >= 70) return 'hsl(85, 70%, 45%)'; // Yellow-green - Good
+    if (score >= 50) return 'hsl(45, 90%, 50%)'; // Yellow - Average
     return 'hsl(0, 84%, 60%)'; // Red - Needs Work
   };
 

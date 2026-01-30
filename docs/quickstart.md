@@ -262,6 +262,33 @@ Visit http://localhost:5173 in your browser.
 - Clarity of playing
 - Low score = string buzz, fret noise, unwanted harmonics
 
+### Customizing Tracked Metrics
+
+**You can toggle metrics on/off based on your practice focus:**
+
+**Where to configure:**
+- **Manual Mode:** During scale settings (after choosing scale type)
+- **AI Mode:** Before accepting AI recommendation
+
+**What you can toggle:**
+- ✅ Pitch Accuracy (optional)
+- ✅ Scale Conformity (optional)
+- ✅ Timing Stability (optional)
+- 🔒 Noise Control (always enabled)
+
+**Benefits:**
+- Focus practice on specific areas (e.g., rhythm only)
+- Disabled metrics aren't calculated, stored, or shown
+- AI coach adapts to only mention enabled metrics
+- Overall score recalculated from active metrics only
+
+**Example use cases:**
+- **Slow practice (ignore timing):** Enable pitch + scale only
+- **Rhythm focus:** Enable timing only
+- **Default:** All metrics enabled
+
+Preferences persist across sessions.
+
 ### AI Feedback
 
 Three modes:

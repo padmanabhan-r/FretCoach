@@ -14,6 +14,7 @@ import { api } from './api';
 
 function App() {
   const [setupStep, setSetupStep] = useState('launch'); // launch, checking, audio, scale, mode, ai-recommendation, ready
+  const [userId, setUserId] = useState('default_user'); // 'default_user' or 'test_user'
   const [practiceMode, setPracticeMode] = useState('manual'); // 'manual' or 'ai'
   const [aiRecommendation, setAiRecommendation] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
@@ -157,7 +158,7 @@ function App() {
 
     try {
       // Pass request_new flag to backend to generate fresh recommendations
-      const result = await api.startAISession('default_user', forceNew);
+      const result = await api.startAISession(userId, forceNew);
 
       if (result.success) {
         setAiRecommendation(result);
@@ -191,6 +192,7 @@ function App() {
         strictness: aiRecommendation.config.strictness,
         sensitivity: aiRecommendation.config.sensitivity,
         ambient_lighting: ambientLighting,
+        user_id: userId,
       };
 
       console.log('Applying AI recommendation config:', config);
@@ -453,6 +455,33 @@ function App() {
                   <p className="text-muted-foreground">Choose how you want to practice today.</p>
                 </div>
 
+                {/* User Selector */}
+                <div className="mb-6 flex justify-center">
+                  <div className="inline-flex items-center gap-3 bg-card/50 backdrop-blur-sm border border-border rounded-lg p-2">
+                    <span className="text-sm text-muted-foreground px-2">User:</span>
+                    <button
+                      onClick={() => setUserId('default_user')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                        userId === 'default_user'
+                          ? 'bg-primary text-primary-foreground shadow-lg'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-card'
+                      }`}
+                    >
+                      Default User
+                    </button>
+                    <button
+                      onClick={() => setUserId('test_user')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                        userId === 'test_user'
+                          ? 'bg-primary text-primary-foreground shadow-lg'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-card'
+                      }`}
+                    >
+                      Test User
+                    </button>
+                  </div>
+                </div>
+
                 {/* Mode Toggle with improved layout */}
                 <ModeToggle
                   mode={practiceMode}
@@ -522,6 +551,7 @@ function App() {
                 onBack={() => setSetupStep('mode')}
                 enabledMetrics={enabledMetrics}
                 onMetricsChange={setEnabledMetrics}
+                userId={userId}
               />
             </div>
           )}

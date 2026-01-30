@@ -62,7 +62,8 @@ def start_session_impl(session_state: SessionState, audio_state: AudioState, aud
             sensitivity=audio_state.sensitivity,
             ambient_lighting=audio_state.ambient_lighting,
             scale_type=config.get("scale_type", "natural"),
-            enabled_metrics=enabled_metrics
+            enabled_metrics=enabled_metrics,
+            user_id=config.get("user_id", "default_user")
         )
         audio_state.session_id = session_id
 

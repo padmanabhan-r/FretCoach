@@ -154,8 +154,8 @@ function AIRecommendation({ recommendation, onAccept, onReject, onTryAnother, lo
             {/* Metric Toggles */}
             <div className="bg-card/30 p-4 rounded-lg">
               <h3 className="text-foreground font-semibold mb-3 text-sm">Metrics to Track</h3>
-              <div className="space-y-2">
-                <label className="flex items-center gap-3 cursor-pointer text-foreground text-sm">
+              <div className="flex flex-wrap gap-3">
+                <label className="flex items-center gap-2 cursor-pointer text-foreground text-sm">
                   <input
                     type="checkbox"
                     checked={enabledMetrics?.pitch_accuracy !== false}
@@ -164,7 +164,7 @@ function AIRecommendation({ recommendation, onAccept, onReject, onTryAnother, lo
                   />
                   <span>Pitch Accuracy</span>
                 </label>
-                <label className="flex items-center gap-3 cursor-pointer text-foreground text-sm">
+                <label className="flex items-center gap-2 cursor-pointer text-foreground text-sm">
                   <input
                     type="checkbox"
                     checked={enabledMetrics?.scale_conformity !== false}
@@ -173,7 +173,7 @@ function AIRecommendation({ recommendation, onAccept, onReject, onTryAnother, lo
                   />
                   <span>Scale Conformity</span>
                 </label>
-                <label className="flex items-center gap-3 cursor-pointer text-foreground text-sm">
+                <label className="flex items-center gap-2 cursor-pointer text-foreground text-sm">
                   <input
                     type="checkbox"
                     checked={enabledMetrics?.timing_stability !== false}
@@ -186,6 +186,19 @@ function AIRecommendation({ recommendation, onAccept, onReject, onTryAnother, lo
               <p className="text-muted-foreground text-xs mt-2">
                 Note: Noise control is always enabled
               </p>
+            </div>
+
+            {/* Practice Tips */}
+            <div className="mt-3 bg-accent/10 border border-accent/30 rounded-lg p-3">
+              <h3 className="text-foreground font-semibold mb-2 flex items-center gap-2 text-sm">
+                <span>💡</span>
+                <span>Practice Tips</span>
+              </h3>
+              <ul className="text-xs text-foreground/80 space-y-1">
+                <li>• Rest your fingers lightly on the strings to control unwanted noise</li>
+                <li>• Press down firmly just behind the fret for clear, accurate notes</li>
+                <li>• Focus on playing clean notes rather than speed</li>
+              </ul>
             </div>
           </div>
         </div>

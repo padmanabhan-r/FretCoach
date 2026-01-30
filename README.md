@@ -91,12 +91,20 @@ Hybrid architecture: local speed + AI intelligence = intervention before habits 
 
 FretCoach's audio analysis engine evaluates your playing across four metrics:
 
-| Metric | What It Measures |
-|--------|------------------|
-| **Pitch Accuracy** | Note accuracy against the target scale |
-| **Scale Conformity** | Scale coverage and adherence |
-| **Timing Stability** | Rhythmic consistency |
-| **Noise Control** | String noise and unwanted artifacts |
+| Metric | What It Measures | Configurable |
+|--------|------------------|--------------|
+| **Pitch Accuracy** | Note accuracy against the target scale | ✅ Optional |
+| **Scale Conformity** | Scale coverage and adherence | ✅ Optional |
+| **Timing Stability** | Rhythmic consistency | ✅ Optional |
+| **Noise Control** | String noise and unwanted artifacts | 🔒 Always enabled |
+
+**Metric Toggling:**
+Users can selectively enable/disable metrics (pitch, scale, timing) based on their practice focus:
+- Disabled metrics are **not calculated**, **not stored** (NULL in database), and **not shown** in UI
+- AI coach feedback adapts to only mention enabled metrics
+- Overall score is calculated from enabled metrics only
+- Weights are dynamically redistributed based on active metrics
+- Preferences persist globally across all sessions via `session_config.json`
 
 Three feedback channels:
 - **On-screen metrics** — Live scores and note detection
@@ -120,10 +128,13 @@ Powered by **librosa**, **NumPy**, and **SciPy**:
 - **Purpose:** Ensure practice stays within chosen scale
 
 ### Quality Scoring System
-- **Formula:** quality = 0.55 × pitch + 0.15 × scale + 0.15 × timing + 0.15 × noise
+- **Dynamic Weight Distribution:**
+  - When **pitch enabled**: 40-55% weight (strictness-based), remainder split among enabled metrics
+  - When **pitch disabled**: equal split among enabled metrics (scale, timing, noise)
+  - Noise control always included as mandatory baseline
 - **Smoothing:** Exponential Moving Average (EMA) with α = 0.10–0.40
 - **Window:** 0.8 seconds phrase grouping
-- **Purpose:** Aggregate real-time performance score
+- **Purpose:** Aggregate real-time performance score from enabled metrics
 
 ### Feedback Mechanisms
 - **Visual:** WebSocket broadcast to React UI (6.67 Hz updates)

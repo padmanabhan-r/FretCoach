@@ -124,11 +124,11 @@ Give 1-2 sentences (max 30 words) - what's good, what's weak, specific actionabl
 
 def get_performance_label(score: float) -> str:
     """Get performance label based on score."""
-    if score > 70:
+    if score >= 90:
         return "Excellent"
-    elif score >= 50:
+    elif score >= 70:
         return "Good"
-    elif score >= 20:
+    elif score >= 50:
         return "Average"
     return "Needs Work"
 

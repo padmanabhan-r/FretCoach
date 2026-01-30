@@ -84,9 +84,17 @@ Metrics stream to the frontend via WebSocket at ~300ms intervals for live displa
 **User controls:**
 - Scale selection (24 options across 12 keys)
 - Scale type (natural/pentatonic)
+- **Metric toggles** (enable/disable pitch, scale conformity, timing)
 - Sensitivity (how quiet a note can be detected)
 - Strictness (how harshly wrong notes are penalized)
 - Ambient lighting (on/off)
+
+**Metric Customization:**
+- Toggle individual metrics on/off based on practice focus
+- Disabled metrics are not calculated, stored, or shown in UI
+- AI coach adapts feedback to only enabled metrics
+- Overall score recalculated from active metrics only
+- Preferences persist across sessions
 
 **Flow:**
 ```
@@ -114,7 +122,8 @@ Select Scale → Adjust Settings → Start Session → Play → Get Feedback →
 2. AI identifies your weakest performance area (pitch, scale, or timing)
 3. Recommends a specific scale, scale type, and difficulty settings
 4. Provides reasoning for the recommendation
-5. User accepts or requests a new recommendation
+5. User can customize metric toggles and ambient lighting before accepting
+6. User accepts or requests a new recommendation
 
 **Flow:**
 ```
@@ -160,7 +169,59 @@ Your feedback must be:
 - BRIEF: 1-2 sentences maximum
 ```
 
-### 4. Visual Feedback System
+### 4. Metric Customization (Toggling)
+
+**Use case:** Focus practice on specific areas by disabling irrelevant metrics
+
+**Available in both modes:**
+- Manual Mode: Configure during scale settings step
+- AI Mode: Customize before accepting AI recommendation
+
+**Configurable metrics:**
+- ✅ **Pitch Accuracy** — Optional (can be toggled)
+- ✅ **Scale Conformity** — Optional (can be toggled)
+- ✅ **Timing Stability** — Optional (can be toggled)
+- 🔒 **Noise Control** — Always enabled (mandatory baseline)
+
+**What happens when a metric is disabled:**
+- **Not calculated** — No CPU cycles spent on disabled metric
+- **Not stored** — Database stores `NULL` instead of values
+- **Not displayed** — UI hides disabled metrics completely
+- **Not in AI feedback** — Coach only mentions enabled metrics
+- **Weight redistribution** — Overall score recalculated from enabled metrics only
+
+**Weight Distribution Algorithm:**
+```python
+# When pitch is enabled:
+pitch_weight = 0.40 + (strictness * 0.15)  # 40-55% based on strictness
+remaining_weight = 1.0 - pitch_weight
+other_weight = remaining_weight / (num_enabled - 1)  # Split among others
+
+# When pitch is disabled:
+equal_weight = 1.0 / num_enabled  # Equal split among enabled
+```
+
+**Example scenarios:**
+1. **Focus on rhythm only:**
+   - Enable: Timing Stability only
+   - Disable: Pitch Accuracy, Scale Conformity
+   - Result: 50% timing, 50% noise (equal split)
+
+2. **Ignore timing for slow practice:**
+   - Enable: Pitch Accuracy, Scale Conformity
+   - Disable: Timing Stability
+   - Result: 40-55% pitch, remainder split between scale and noise
+
+3. **All metrics (default):**
+   - Enable: All metrics
+   - Result: 40-55% pitch, remainder split among scale, timing, and noise
+
+**Persistence:**
+- Preferences saved to `backend/core/session_config.json`
+- Global setting across all future sessions
+- Can be changed anytime during scale/AI recommendation setup
+
+### 5. Visual Feedback System
 
 Real-time metrics displayed with color-coded performance indicators:
 
@@ -191,7 +252,7 @@ Notes Played: 142 (138 correct, 4 wrong)
 - Alpha value adjusts based on strictness setting
 - Wrong notes cause instant score drops in high strictness mode
 
-### 5. Ambient Lighting Control
+### 6. Ambient Lighting Control
 
 Optional integration with Tuya smart bulbs for subconscious feedback:
 
@@ -214,7 +275,7 @@ Optional integration with Tuya smart bulbs for subconscious feedback:
 
 **See:** [Environment Setup](environment-setup.md#smart-bulb-setup-tuya) for Tuya configuration.
 
-### 6. Session Logging and Summary
+### 7. Session Logging and Summary
 
 Every practice session is automatically saved to the PostgreSQL database:
 
