@@ -1,0 +1,7 @@
+{
+  "enabled_metrics": {
+    "pitch_accuracy": true,
+    "scale_conformity": true,
+    "timing_stability": true
+  }
+}

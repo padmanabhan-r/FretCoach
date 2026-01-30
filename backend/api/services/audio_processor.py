@@ -114,6 +114,7 @@ def process_audio(session_state: SessionState, audio_state: AudioState, audio_co
             target_pitch_classes=target_pitch_classes,
             config=quality_config,
             state=audio_state.quality,
+            enabled_metrics=audio_state.enabled_metrics
         )
 
         if result is None:
@@ -132,11 +133,12 @@ def process_audio(session_state: SessionState, audio_state: AudioState, audio_co
         else:
             pitch_accuracy_pct = 0.0
 
-        # Update session state with results
+        # Update session state with results (conditionally based on enabled metrics)
+        enabled = audio_state.enabled_metrics
         session_state.current_note = "In Scale" if result.in_scale else "Wrong Note"
-        session_state.pitch_accuracy = pitch_accuracy_pct  # Cumulative: correct / total
-        session_state.scale_conformity = result.scale_coverage  # Cumulative: coverage distribution
-        session_state.timing_stability = audio_state.quality.ema_timing  # Cumulative: EMA of timing
+        session_state.pitch_accuracy = pitch_accuracy_pct if enabled.get("pitch_accuracy", True) else None
+        session_state.scale_conformity = result.scale_coverage if enabled.get("scale_conformity", True) else None
+        session_state.timing_stability = audio_state.quality.ema_timing if enabled.get("timing_stability", True) else None
         session_state.debug_info = DebugInfo(
             detected_hz=result.detected_hz,
             detected_midi=result.detected_midi,

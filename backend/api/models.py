@@ -29,6 +29,15 @@ class AudioConfig(BaseModel):
     sensitivity: Optional[float] = 0.5
 
 
+class SessionConfig(BaseModel):
+    """Session configuration for metric toggles"""
+    enabled_metrics: Dict[str, bool] = {
+        "pitch_accuracy": True,
+        "scale_conformity": True,
+        "timing_stability": True
+    }
+
+
 class SessionMetrics(BaseModel):
     """Current session metrics"""
     is_running: bool

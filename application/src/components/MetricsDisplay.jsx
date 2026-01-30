@@ -1,12 +1,23 @@
 import React from 'react';
 
-const MetricsDisplay = ({ pitchAccuracy, scaleConformity, timingStability, isRunning, debugInfo, totalNotesPlayed = 0, correctNotes = 0, wrongNotes = 0 }) => {
+const MetricsDisplay = ({
+  pitchAccuracy,
+  scaleConformity,
+  timingStability,
+  isRunning,
+  debugInfo,
+  totalNotesPlayed = 0,
+  correctNotes = 0,
+  wrongNotes = 0,
+  enabledMetrics = { pitch_accuracy: true, scale_conformity: true, timing_stability: true }
+}) => {
   // Calculate info text for each metric
   const totalNotes = correctNotes + wrongNotes;
   const timingNotesCount = debugInfo?.notes_for_timing_analysis || 0;
 
-  const metrics = [
+  const allMetrics = [
     {
+      key: 'pitch_accuracy',
       name: 'Pitch Accuracy',
       value: pitchAccuracy,
       info: totalNotes > 0 ? `${correctNotes}/${totalNotes} correct notes` : 'Overall accuracy',
@@ -18,6 +29,7 @@ const MetricsDisplay = ({ pitchAccuracy, scaleConformity, timingStability, isRun
       colorClass: 'primary',
     },
     {
+      key: 'scale_conformity',
       name: 'Scale Conformity',
       value: scaleConformity,
       info: 'Coverage across scale positions',
@@ -29,6 +41,7 @@ const MetricsDisplay = ({ pitchAccuracy, scaleConformity, timingStability, isRun
       colorClass: 'secondary',
     },
     {
+      key: 'timing_stability',
       name: 'Timing Stability',
       value: timingStability,
       info: timingNotesCount > 0 ? `Based on ${timingNotesCount} notes` : 'Rhythm consistency',
@@ -40,6 +53,9 @@ const MetricsDisplay = ({ pitchAccuracy, scaleConformity, timingStability, isRun
       colorClass: 'accent',
     },
   ];
+
+  // Filter to only show enabled metrics
+  const metrics = allMetrics.filter(m => enabledMetrics[m.key] !== false);
 
   // Get HSL color based on metric type
   const getMetricColor = (colorClass) => {
@@ -62,7 +78,7 @@ const MetricsDisplay = ({ pitchAccuracy, scaleConformity, timingStability, isRun
         {isRunning && <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>}
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className={`grid grid-cols-1 md:grid-cols-${metrics.length} gap-4`}>
         {metrics.map((metric) => {
           const color = getMetricColor(metric.colorClass);
           const displayValue = isRunning ? metric.value : '--';

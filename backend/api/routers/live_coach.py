@@ -5,7 +5,7 @@ Provides endpoints for real-time AI coaching feedback during practice sessions.
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Dict
 
 from ..services.live_coach_service import (
     generate_coaching_feedback,
@@ -13,6 +13,7 @@ from ..services.live_coach_service import (
     generate_and_play_tts,
     stop_audio_playback
 )
+from ..services.config_service import load_session_config_from_file
 
 router = APIRouter(prefix="/live-coach", tags=["live-coach"])
 
@@ -56,6 +57,14 @@ async def get_coaching_feedback(request: CoachingRequest):
     Returns specific, actionable feedback to help the guitarist improve.
     """
     try:
+        # Load session config for enabled metrics
+        session_config = load_session_config_from_file()
+        enabled_metrics = session_config.get("enabled_metrics", {
+            "pitch_accuracy": True,
+            "scale_conformity": True,
+            "timing_stability": True
+        })
+
         result = await generate_coaching_feedback(
             pitch_accuracy=request.pitch_accuracy,
             scale_conformity=request.scale_conformity,
@@ -66,7 +75,8 @@ async def get_coaching_feedback(request: CoachingRequest):
             total_notes_played=request.total_notes_played,
             correct_notes=request.correct_notes,
             wrong_notes=request.wrong_notes,
-            mode=request.mode
+            mode=request.mode,
+            enabled_metrics=enabled_metrics
         )
         return {
             "success": True,

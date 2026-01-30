@@ -229,7 +229,8 @@ async def generate_coaching_feedback(
     total_notes_played: int = 0,
     correct_notes: int = 0,
     wrong_notes: int = 0,
-    mode: str = "manual-mode"
+    mode: str = "manual-mode",
+    enabled_metrics: Optional[Dict[str, bool]] = None
 ) -> Dict[str, Any]:
     """
     Generate live coaching feedback based on current session metrics.
@@ -246,54 +247,67 @@ async def generate_coaching_feedback(
         correct_notes: Number of notes in scale
         wrong_notes: Number of notes outside scale
         mode: Either "ai-mode" or "manual-mode" (defaults to "manual-mode")
+        enabled_metrics: Dictionary of enabled metric flags
 
     Returns:
         Dictionary containing feedback and metadata
     """
-    # Calculate overall performance
-    overall_score = (pitch_accuracy + scale_conformity + timing_stability) / 3
+    # Default enabled metrics
+    if enabled_metrics is None:
+        enabled_metrics = {
+            "pitch_accuracy": True,
+            "scale_conformity": True,
+            "timing_stability": True
+        }
+
+    # Filter metrics to only include enabled ones
+    metrics = {}
+    if enabled_metrics.get("pitch_accuracy", True):
+        metrics["Pitch Accuracy"] = pitch_accuracy
+    if enabled_metrics.get("scale_conformity", True):
+        metrics["Scale Conformity"] = scale_conformity
+    if enabled_metrics.get("timing_stability", True):
+        metrics["Timing Stability"] = timing_stability
+
+    # Calculate overall performance from enabled metrics only
+    if metrics:
+        overall_score = sum(metrics.values()) / len(metrics)
+    else:
+        overall_score = 0
+
     overall_performance = get_performance_label(overall_score)
 
     # Format elapsed time
     elapsed_time = format_elapsed_time(elapsed_seconds)
 
-    # Identify the strongest and weakest areas
-    metrics = {
-        "Pitch Accuracy": pitch_accuracy,
-        "Scale Conformity": scale_conformity,
-        "Timing Stability": timing_stability
-    }
+    # Identify the strongest and weakest areas from enabled metrics
     weakest_area_name = min(metrics, key=metrics.get)
     weakest_score = metrics[weakest_area_name]
     strongest_area_name = max(metrics, key=metrics.get)
     strongest_score = metrics[strongest_area_name]
 
-    # Get assessments for each metric
-    pitch_assessment = get_metric_assessment(pitch_accuracy)
-    scale_assessment = get_metric_assessment(scale_conformity)
-    timing_assessment = get_metric_assessment(timing_stability)
+    # Build dynamic metric values string for enabled metrics only
+    metric_values = []
+    if enabled_metrics.get("pitch_accuracy", True):
+        metric_values.append(f"Pitch {round(pitch_accuracy)}%")
+    if enabled_metrics.get("scale_conformity", True):
+        metric_values.append(f"Scale {round(scale_conformity)}%")
+    if enabled_metrics.get("timing_stability", True):
+        metric_values.append(f"Timing {round(timing_stability)}%")
+
+    metric_values_str = ", ".join(metric_values)
+    enabled_metric_names = ", ".join([k.replace("_", " ").title() for k, v in enabled_metrics.items() if v])
 
     # Get Opik config tied to session_id for tracing
     opik_config = get_opik_config(session_id or "unknown", "live-feedback", mode)
 
-    # Format the user message with all metrics
-    user_message = COACHING_USER_TEMPLATE.format(
-        pitch_accuracy=round(pitch_accuracy),
-        scale_conformity=round(scale_conformity),
-        timing_stability=round(timing_stability),
-        pitch_assessment=pitch_assessment,
-        scale_assessment=scale_assessment,
-        timing_assessment=timing_assessment,
-        scale_name=scale_name,
-        elapsed_time=elapsed_time,
-        strongest_area_name=strongest_area_name,
-        strongest_score=round(strongest_score),
-        weakest_area_name=weakest_area_name,
-        weakest_score=round(weakest_score),
-        notes_played=total_notes_played,
-        correct_notes=correct_notes,
-        wrong_notes=wrong_notes
-    )
+    # Format the user message with enabled metrics only
+    user_message = f"""Enabled metrics: {enabled_metric_names}
+{metric_values_str}
+Strongest: {strongest_area_name} ({round(strongest_score)}%)
+Weakest: {weakest_area_name} ({round(weakest_score)}%)
+
+Give 1-2 sentences (max 30 words) - what's good, what's weak, specific actionable fix:"""
 
     # Generate feedback with explicit messages (better Opik tracing visibility)
     response = await live_coach_model.ainvoke(

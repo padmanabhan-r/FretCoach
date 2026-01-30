@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
-const VisualFeedback = ({ pitchAccuracy, scaleConformity, timingStability, isRunning, isPaused = false }) => {
+const VisualFeedback = ({
+  pitchAccuracy,
+  scaleConformity,
+  timingStability,
+  isRunning,
+  isPaused = false,
+  enabledMetrics = { pitch_accuracy: true, scale_conformity: true, timing_stability: true }
+}) => {
   const [sessionSeconds, setSessionSeconds] = useState(0);
   const WARMUP_SECONDS = 10; // Wait 10 seconds before showing performance
 
@@ -19,7 +26,14 @@ const VisualFeedback = ({ pitchAccuracy, scaleConformity, timingStability, isRun
     };
   }, [isRunning, isPaused]);
 
-  const overallScore = Math.round((pitchAccuracy + scaleConformity + timingStability) / 3);
+  // Calculate overall score from enabled metrics only
+  const enabledValues = [];
+  if (enabledMetrics.pitch_accuracy) enabledValues.push(pitchAccuracy);
+  if (enabledMetrics.scale_conformity) enabledValues.push(scaleConformity);
+  if (enabledMetrics.timing_stability) enabledValues.push(timingStability);
+  const overallScore = enabledValues.length > 0
+    ? Math.round(enabledValues.reduce((a, b) => a + b, 0) / enabledValues.length)
+    : 0;
   const isWarmingUp = isRunning && sessionSeconds < WARMUP_SECONDS;
 
   // Get performance label based on score

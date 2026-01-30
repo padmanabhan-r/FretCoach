@@ -50,6 +50,22 @@ export const api = {
     return response.json();
   },
 
+  async saveSessionConfig(config) {
+    const response = await fetch(`${API_BASE_URL}/config/session`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(config),
+    });
+    return response.json();
+  },
+
+  async getSessionConfig() {
+    const response = await fetch(`${API_BASE_URL}/config/session`);
+    return response.json();
+  },
+
   // Session endpoints
   async startSession() {
     const response = await fetch(`${API_BASE_URL}/session/start`, {
@@ -87,15 +103,8 @@ export const api = {
   },
 
   // AI Mode endpoints
-  async getAIRecommendation(userId = 'default_user') {
-    const response = await fetch(`${API_BASE_URL}/ai/recommend?user_id=${userId}`, {
-      method: 'POST',
-    });
-    return response.json();
-  },
-
-  async startAISession(userId = 'default_user') {
-    const response = await fetch(`${API_BASE_URL}/ai/session/start?user_id=${userId}`, {
+  async startAISession(userId = 'default_user', requestNew = false) {
+    const response = await fetch(`${API_BASE_URL}/ai/session/start?user_id=${userId}&request_new=${requestNew}`, {
       method: 'POST',
     });
     return response.json();

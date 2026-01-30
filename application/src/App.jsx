@@ -23,6 +23,11 @@ function App() {
   const [sessionId, setSessionId] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [audioConfig, setAudioConfig] = useState(null);
+  const [enabledMetrics, setEnabledMetrics] = useState({
+    pitch_accuracy: true,
+    scale_conformity: true,
+    timing_stability: true
+  });
   const [state, setState] = useState({
     isRunning: false,
     pitchAccuracy: 0,
@@ -106,6 +111,13 @@ function App() {
   const checkConfig = async () => {
     try {
       const config = await api.getConfig();
+
+      // Load session config for enabled metrics
+      const sessionConfig = await api.getSessionConfig();
+      if (sessionConfig && sessionConfig.enabled_metrics) {
+        setEnabledMetrics(sessionConfig.enabled_metrics);
+      }
+
       if (config && config.scale_name) {
         setState(prev => ({ ...prev, targetScale: config.scale_name }));
         setAudioConfig(config); // Store config for settings panel
@@ -144,32 +156,13 @@ function App() {
     }
 
     try {
-      // Always call startAISession - the backend generates fresh recommendations
-      const result = await api.startAISession();
+      // Pass request_new flag to backend to generate fresh recommendations
+      const result = await api.startAISession('default_user', forceNew);
 
       if (result.success) {
-        // If forcing new and got the exact same recommendation, try once more
-        if (forceNew && lastAiRecommendation &&
-            result.config?.scale_name === lastAiRecommendation.config?.scale_name &&
-            result.config?.scale_type === lastAiRecommendation.config?.scale_type &&
-            result.focus_area === lastAiRecommendation.focus_area) {
-          // Try one more time for a different recommendation
-          const retryResult = await api.startAISession();
-          if (retryResult.success) {
-            setAiRecommendation(retryResult);
-            setCurrentPracticeId(retryResult.practice_id);
-            setLastAiRecommendation(retryResult);
-          } else {
-            // Fall back to original if retry fails
-            setAiRecommendation(result);
-            setCurrentPracticeId(result.practice_id);
-            setLastAiRecommendation(result);
-          }
-        } else {
-          setAiRecommendation(result);
-          setCurrentPracticeId(result.practice_id);
-          setLastAiRecommendation(result);
-        }
+        setAiRecommendation(result);
+        setCurrentPracticeId(result.practice_id);
+        setLastAiRecommendation(result);
       } else {
         setAiError('AI practice suggestions are temporarily unavailable. You can still continue in Manual Mode.');
       }
@@ -516,6 +509,8 @@ function App() {
                 onTryAnother={handleTryAnotherAI}
                 loading={aiLoading}
                 error={aiError}
+                enabledMetrics={enabledMetrics}
+                onMetricsChange={setEnabledMetrics}
               />
             </div>
           )}
@@ -525,6 +520,8 @@ function App() {
               <ScaleSelection
                 onComplete={handleScaleSelectionComplete}
                 onBack={() => setSetupStep('mode')}
+                enabledMetrics={enabledMetrics}
+                onMetricsChange={setEnabledMetrics}
               />
             </div>
           )}
@@ -714,6 +711,7 @@ function App() {
                       timingStability={state.timingStability}
                       isRunning={state.isRunning}
                       isPaused={isPaused}
+                      enabledMetrics={enabledMetrics}
                     />
 
                     <LiveCoachFeedback
@@ -739,6 +737,7 @@ function App() {
                     totalNotesPlayed={state.totalNotesPlayed}
                     correctNotes={state.correctNotes}
                     wrongNotes={state.wrongNotes}
+                    enabledMetrics={enabledMetrics}
                   />
                 </div>
               </div>

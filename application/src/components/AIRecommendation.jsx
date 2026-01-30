@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { api } from '../api';
 
-function AIRecommendation({ recommendation, onAccept, onReject, onTryAnother, loading, error }) {
+function AIRecommendation({ recommendation, onAccept, onReject, onTryAnother, loading, error, enabledMetrics, onMetricsChange }) {
   const [ambientLighting, setAmbientLighting] = useState(true);
 
   if (loading) {
@@ -41,7 +42,9 @@ function AIRecommendation({ recommendation, onAccept, onReject, onTryAnother, lo
   const { config = {}, focus_area, reasoning, is_pending_plan, analysis } = recommendation;
   const { scale_name, scale_type, strictness = 0, sensitivity = 0 } = config;
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
+    // Save session config with enabled metrics
+    await api.saveSessionConfig({ enabled_metrics: enabledMetrics });
     onAccept(ambientLighting);
   };
 
@@ -147,6 +150,43 @@ function AIRecommendation({ recommendation, onAccept, onReject, onTryAnother, lo
                 className="w-5 h-5 text-accent bg-card border-border rounded focus:ring-accent focus:ring-2"
               />
             </label>
+
+            {/* Metric Toggles */}
+            <div className="bg-card/30 p-4 rounded-lg">
+              <h3 className="text-foreground font-semibold mb-3 text-sm">Metrics to Track</h3>
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 cursor-pointer text-foreground text-sm">
+                  <input
+                    type="checkbox"
+                    checked={enabledMetrics?.pitch_accuracy !== false}
+                    onChange={(e) => onMetricsChange?.({ ...enabledMetrics, pitch_accuracy: e.target.checked })}
+                    className="w-4 h-4 text-accent bg-card border-border rounded focus:ring-accent focus:ring-2"
+                  />
+                  <span>Pitch Accuracy</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer text-foreground text-sm">
+                  <input
+                    type="checkbox"
+                    checked={enabledMetrics?.scale_conformity !== false}
+                    onChange={(e) => onMetricsChange?.({ ...enabledMetrics, scale_conformity: e.target.checked })}
+                    className="w-4 h-4 text-accent bg-card border-border rounded focus:ring-accent focus:ring-2"
+                  />
+                  <span>Scale Conformity</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer text-foreground text-sm">
+                  <input
+                    type="checkbox"
+                    checked={enabledMetrics?.timing_stability !== false}
+                    onChange={(e) => onMetricsChange?.({ ...enabledMetrics, timing_stability: e.target.checked })}
+                    className="w-4 h-4 text-accent bg-card border-border rounded focus:ring-accent focus:ring-2"
+                  />
+                  <span>Timing Stability</span>
+                </label>
+              </div>
+              <p className="text-muted-foreground text-xs mt-2">
+                Note: Noise control is always enabled
+              </p>
+            </div>
           </div>
         </div>
 

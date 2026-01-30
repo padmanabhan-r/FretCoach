@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api';
 
-const ScaleSelection = ({ onComplete, onBack }) => {
+const ScaleSelection = ({ onComplete, onBack, enabledMetrics, onMetricsChange }) => {
   const [scales, setScales] = useState({ major: [], minor: [] });
   const [selectedScale, setSelectedScale] = useState('');
   const [scaleType, setScaleType] = useState('natural');
@@ -42,6 +42,10 @@ const ScaleSelection = ({ onComplete, onBack }) => {
     config.strictness = strictness;
     config.sensitivity = sensitivity;
     await api.saveConfig(config);
+
+    // Save session config with enabled metrics
+    await api.saveSessionConfig({ enabled_metrics: enabledMetrics });
+
     onComplete(`${selectedScale} (${scaleType === 'natural' ? 'Natural' : 'Pentatonic'})`);
   };
 
@@ -179,6 +183,43 @@ const ScaleSelection = ({ onComplete, onBack }) => {
             className="w-6 h-6 text-primary bg-card border-border rounded focus:ring-primary focus:ring-2"
           />
         </label>
+      </div>
+
+      {/* Metric Toggles */}
+      <div className="mb-6">
+        <h3 className="text-foreground font-semibold mb-3">Metrics to Track</h3>
+        <div className="space-y-2">
+          <label className="flex items-center gap-3 cursor-pointer text-foreground">
+            <input
+              type="checkbox"
+              checked={enabledMetrics?.pitch_accuracy !== false}
+              onChange={(e) => onMetricsChange?.({ ...enabledMetrics, pitch_accuracy: e.target.checked })}
+              className="w-5 h-5 text-primary bg-card border-border rounded focus:ring-primary focus:ring-2"
+            />
+            <span>Pitch Accuracy</span>
+          </label>
+          <label className="flex items-center gap-3 cursor-pointer text-foreground">
+            <input
+              type="checkbox"
+              checked={enabledMetrics?.scale_conformity !== false}
+              onChange={(e) => onMetricsChange?.({ ...enabledMetrics, scale_conformity: e.target.checked })}
+              className="w-5 h-5 text-primary bg-card border-border rounded focus:ring-primary focus:ring-2"
+            />
+            <span>Scale Conformity</span>
+          </label>
+          <label className="flex items-center gap-3 cursor-pointer text-foreground">
+            <input
+              type="checkbox"
+              checked={enabledMetrics?.timing_stability !== false}
+              onChange={(e) => onMetricsChange?.({ ...enabledMetrics, timing_stability: e.target.checked })}
+              className="w-5 h-5 text-primary bg-card border-border rounded focus:ring-primary focus:ring-2"
+            />
+            <span>Timing Stability</span>
+          </label>
+        </div>
+        <p className="text-muted text-sm mt-2">
+          Note: Noise control is always enabled. Disabled metrics will not be tracked or shown.
+        </p>
       </div>
 
       {/* Strictness */}
