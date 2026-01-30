@@ -23,6 +23,7 @@ load_dotenv(find_dotenv())
 
 # Get deployment type for tracing tags
 DEPLOYMENT_TYPE = os.getenv("DEPLOYMENT_TYPE", "fretcoach-studio")  # Default to studio
+DEPLOYMENT_PREFIX = "studio" if "studio" in DEPLOYMENT_TYPE.lower() else "portable"
 
 # Get PostgreSQL credentials from environment
 DB_USER = os.getenv("DB_USER")
@@ -44,6 +45,11 @@ def get_opik_config(user_id: str, trace_name: str, practice_id: str = None) -> d
     """
     Create Opik config for LangChain calls tied to user session.
     Tags include: fretcoach-core, model name, ai-mode, and deployment type.
+    Thread ID format: {deployment_prefix}-ai-mode-{practice_id}
+
+    The practice_id ensures each AI recommendation session has a unique thread,
+    but the thread persists across multiple recommendation requests until
+    the session starts (when the plan is marked as executed).
     """
     metadata = {"user_id": user_id}
     if practice_id:
@@ -62,9 +68,13 @@ def get_opik_config(user_id: str, trace_name: str, practice_id: str = None) -> d
         tags=tags,
         metadata=metadata
     )
+
+    # Use practice_id in thread_id to maintain thread across multiple
+    # recommendation requests until session starts
+    thread_suffix = practice_id if practice_id else f"{user_id}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
     return {
         "callbacks": [tracer],
-        "configurable": {"thread_id": f"ai-mode-{user_id}"}
+        "configurable": {"thread_id": f"{DEPLOYMENT_PREFIX}-ai-mode-{thread_suffix}"}
     }
 
 
@@ -323,7 +333,8 @@ async def generate_practice_recommendation(
     user_id: str,
     analysis: Dict[str, Any],
     recent_plans: Optional[List[Dict[str, Any]]] = None,
-    pending_plan: Optional[Dict[str, Any]] = None
+    pending_plan: Optional[Dict[str, Any]] = None,
+    practice_id: Optional[str] = None
 ) -> PracticeRecommendation:
     """
     Generate structured practice recommendation based on analysis.
@@ -334,6 +345,7 @@ async def generate_practice_recommendation(
         analysis: Dictionary containing practice history analysis
         recent_plans: Optional list of recent practice plans to avoid repeating
         pending_plan: Optional pending plan that LLM can choose to keep or replace
+        practice_id: Optional practice ID to use for thread tracking
 
     Returns:
         Structured practice recommendation
@@ -406,8 +418,8 @@ Generate a practice recommendation that:
 6. For advanced users (high scores), use higher strictness (0.7-0.9)
 """
 
-    # Get Opik config for tracing the LLM call
-    opik_config = get_opik_config(user_id, "practice-recommendation")
+    # Get Opik config for tracing the LLM call (with practice_id for thread tracking)
+    opik_config = get_opik_config(user_id, "practice-recommendation", practice_id)
 
     recommendation = structured_llm.invoke(
         [{"role": "user", "content": prompt}],
@@ -416,18 +428,20 @@ Generate a practice recommendation that:
     return recommendation
 
 
-def save_practice_plan_sync(user_id: str, recommendation: PracticeRecommendation) -> str:
+def save_practice_plan_sync(user_id: str, recommendation: PracticeRecommendation, practice_id: Optional[str] = None) -> str:
     """
     Save the practice plan to the database.
 
     Args:
         user_id: The user's identifier
         recommendation: The practice recommendation to save
+        practice_id: Optional practice ID to use (if not provided, generates a new UUID)
 
     Returns:
         The practice_id (UUID) of the saved plan
     """
-    practice_id = str(uuid.uuid4())
+    if not practice_id:
+        practice_id = str(uuid.uuid4())
 
     practice_plan_json = json.dumps({
         "scale_name": recommendation.scale_name,
@@ -457,9 +471,9 @@ def save_practice_plan_sync(user_id: str, recommendation: PracticeRecommendation
     return practice_id
 
 
-async def save_practice_plan(user_id: str, recommendation: PracticeRecommendation) -> str:
+async def save_practice_plan(user_id: str, recommendation: PracticeRecommendation, practice_id: Optional[str] = None) -> str:
     """Async wrapper for save_practice_plan_sync"""
-    return save_practice_plan_sync(user_id, recommendation)
+    return save_practice_plan_sync(user_id, recommendation, practice_id)
 
 
 def delete_pending_plans(user_id: str) -> int:
@@ -519,13 +533,20 @@ async def get_ai_practice_session(user_id: str, request_new: bool = False) -> Di
             print(f"[AI Coach] User requested new suggestion, deleted {deleted_count} pending plan(s)")
         pending_plan = None  # Clear it so LLM generates fresh
 
+    # Step 4.5: Determine practice_id for thread tracking
+    # If pending plan exists, use its ID to maintain the same thread
+    # Otherwise, generate a new UUID for a new thread
+    thread_practice_id = pending_plan["practice_id"] if pending_plan else str(uuid.uuid4())
+
     # Step 5: Generate recommendation (single LLM call - traced with OpikTracer)
     # LLM sees: recent sessions, pending plan (if exists), and recent suggestions
+    # The thread_practice_id maintains the thread across multiple recommendation requests
     recommendation = await generate_practice_recommendation(
         user_id,
         analysis,
         recent_plans,
-        pending_plan
+        pending_plan,
+        practice_id=thread_practice_id
     )
 
     # Step 6: Check if LLM decided to keep the pending plan
@@ -550,7 +571,8 @@ async def get_ai_practice_session(user_id: str, request_new: bool = False) -> Di
             delete_pending_plans(user_id)
             print(f"[AI Coach] LLM generated different suggestion, deleted old pending plan")
 
-        practice_id = await save_practice_plan(user_id, recommendation)
+        # Use the same practice_id that was used for the thread
+        practice_id = await save_practice_plan(user_id, recommendation, practice_id=thread_practice_id)
         print(f"[AI Coach] Generated new practice plan: {practice_id}")
 
     return {

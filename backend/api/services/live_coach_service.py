@@ -61,16 +61,16 @@ def get_opik_config(session_id: str, trace_name: str, mode: str = "manual-mode")
     """
     Create Opik config for LangChain calls tied to session_id.
     Tags include: fretcoach-core, model name, mode (ai-mode/manual-mode), and deployment type.
-    Thread ID format: {deployment_prefix}-aicoach-live-feedback-{timestamp}
+    Thread ID format: {session_id}-live-aicoach-feedback
+
+    All live coaching feedback for a session goes into the same thread,
+    identified by the session_id.
 
     Args:
-        session_id: Session identifier for tracking
+        session_id: Session identifier for tracking and threading
         trace_name: Name of the trace (e.g., "live-feedback", "session-summary")
         mode: Either "ai-mode" or "manual-mode" (defaults to "manual-mode")
     """
-    # Generate timestamp for thread ID
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-
     # Build comprehensive tags for tracing
     tags = [
         "fretcoach-core",
@@ -84,9 +84,11 @@ def get_opik_config(session_id: str, trace_name: str, mode: str = "manual-mode")
         tags=tags,
         metadata={"session_id": session_id}
     )
+
+    # Use session_id for thread to group all feedback for this session
     return {
         "callbacks": [tracer],
-        "configurable": {"thread_id": f"{DEPLOYMENT_PREFIX}-aicoach-live-feedback-{timestamp}"}
+        "configurable": {"thread_id": f"{session_id}-live-aicoach-feedback"}
     }
 
 # System prompt for coaching
