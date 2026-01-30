@@ -6,6 +6,11 @@ Provides REST API endpoints for the Electron app to communicate with the Python 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+# Configure Opik
+from opik import configure
+configure()
+print("[Opik] Configured successfully")
+
 from .routers import devices, config, session, metrics, scales, ai_mode, live_coach
 
 app = FastAPI(title="FretCoach API")
