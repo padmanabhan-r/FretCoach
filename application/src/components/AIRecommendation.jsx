@@ -1,7 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-function AIRecommendation({ recommendation, onAccept, onReject, onTryAnother, loading, error }) {
+function AIRecommendation({ recommendation, onAccept, onReject, onTryAnother, loading, error, userId = 'default_user' }) {
   const [ambientLighting, setAmbientLighting] = useState(true);
+  const [enabledMetrics, setEnabledMetrics] = useState({
+    pitch_accuracy: true,
+    scale_conformity: true,
+    timing_stability: true
+  });
+
+  // Load user's current metric preferences
+  useEffect(() => {
+    const loadUserMetrics = async () => {
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/config/session?user_id=${userId}`);
+        if (response.ok) {
+          const config = await response.json();
+          if (config.enabled_metrics) {
+            setEnabledMetrics(config.enabled_metrics);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load user metrics:', error);
+      }
+    };
+    loadUserMetrics();
+  }, [userId]);
 
   if (loading) {
     return (
@@ -41,8 +64,18 @@ function AIRecommendation({ recommendation, onAccept, onReject, onTryAnother, lo
   const { config = {}, focus_area, reasoning, is_pending_plan, analysis } = recommendation;
   const { scale_name, scale_type, strictness = 0, sensitivity = 0 } = config;
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
+    // Save session config with enabled metrics for the current user
+    await fetch(`http://127.0.0.1:8000/config/session?user_id=${userId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled_metrics: enabledMetrics })
+    });
     onAccept(ambientLighting);
+  };
+
+  const handleMetricToggle = (metric) => {
+    setEnabledMetrics(prev => ({ ...prev, [metric]: !prev[metric] }));
   };
 
   return (
@@ -131,6 +164,41 @@ function AIRecommendation({ recommendation, onAccept, onReject, onTryAnother, lo
                 </span>
               </div>
             </div>
+          </div>
+
+          {/* Metrics to Track */}
+          <div className="pt-2 border-t border-border">
+            <div className="text-sm font-medium text-foreground mb-2">Metrics to Track</div>
+            <div className="flex flex-wrap gap-2">
+              <label className="flex items-center px-3 py-2 bg-card/30 rounded cursor-pointer hover:bg-card/50 transition-all">
+                <input
+                  type="checkbox"
+                  checked={enabledMetrics.pitch_accuracy}
+                  onChange={() => handleMetricToggle('pitch_accuracy')}
+                  className="w-4 h-4 text-accent bg-card border-border rounded focus:ring-accent mr-2"
+                />
+                <span className="text-foreground text-sm">Pitch Accuracy</span>
+              </label>
+              <label className="flex items-center px-3 py-2 bg-card/30 rounded cursor-pointer hover:bg-card/50 transition-all">
+                <input
+                  type="checkbox"
+                  checked={enabledMetrics.scale_conformity}
+                  onChange={() => handleMetricToggle('scale_conformity')}
+                  className="w-4 h-4 text-accent bg-card border-border rounded focus:ring-accent mr-2"
+                />
+                <span className="text-foreground text-sm">Scale Conformity</span>
+              </label>
+              <label className="flex items-center px-3 py-2 bg-card/30 rounded cursor-pointer hover:bg-card/50 transition-all">
+                <input
+                  type="checkbox"
+                  checked={enabledMetrics.timing_stability}
+                  onChange={() => handleMetricToggle('timing_stability')}
+                  className="w-4 h-4 text-accent bg-card border-border rounded focus:ring-accent mr-2"
+                />
+                <span className="text-foreground text-sm">Timing Stability</span>
+              </label>
+            </div>
+            <div className="text-xs text-muted-foreground mt-2">Note: Noise control is always enabled</div>
           </div>
 
           {/* Ambient Lighting Toggle */}

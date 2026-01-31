@@ -27,6 +27,16 @@ class AudioConfig(BaseModel):
     ambient_lighting: Optional[bool] = True
     strictness: Optional[float] = 0.5
     sensitivity: Optional[float] = 0.5
+    user_id: Optional[str] = "default_user"  # User identifier for session tracking
+
+
+class SessionConfig(BaseModel):
+    """Session configuration for metric toggles"""
+    enabled_metrics: Dict[str, bool] = {
+        "pitch_accuracy": True,
+        "scale_conformity": True,
+        "timing_stability": True
+    }
 
 
 class SessionMetrics(BaseModel):

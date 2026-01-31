@@ -13,13 +13,14 @@ FretCoach Studio is the primary practice interface for FretCoach. It provides re
 ## Key Features
 
 - **Real-time Audio Analysis** — Continuous evaluation of pitch, scale conformity, timing, and noise
+- **Customizable Metrics** — Toggle metrics on/off based on practice focus; disabled metrics are not calculated, stored, or shown
 - **Live AI Coaching** — Spoken feedback during practice using GPT-4o-mini-TTS
 - **Dual Practice Modes:**
-  - *Manual Mode* — Choose your own scale, sensitivity, and strictness
-  - *AI Mode* — Get AI-recommended practice plans based on history
+  - *Manual Mode* — Choose your own scale, sensitivity, strictness, and enabled metrics
+  - *AI Mode* — Get AI-recommended practice plans based on history with metric customization
 - **Ambient Lighting** — Smart bulb visual feedback (green = good, red = needs work)
-- **Session Logging** — Automatic save to Supabase PostgreSQL
-- **Performance Metrics** — Real-time scoring across four metrics
+- **Session Logging** — Automatic save to Supabase PostgreSQL with NULL values for disabled metrics
+- **Performance Metrics** — Real-time scoring with dynamic weight redistribution
 
 ![FretCoach Brain Architecture](/images/FretCoach%20Brain.png)
 

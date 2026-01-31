@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
-const VisualFeedback = ({ pitchAccuracy, scaleConformity, timingStability, isRunning, isPaused = false }) => {
+const VisualFeedback = ({
+  pitchAccuracy,
+  scaleConformity,
+  timingStability,
+  isRunning,
+  isPaused = false,
+  enabledMetrics = { pitch_accuracy: true, scale_conformity: true, timing_stability: true }
+}) => {
   const [sessionSeconds, setSessionSeconds] = useState(0);
   const WARMUP_SECONDS = 10; // Wait 10 seconds before showing performance
 
@@ -19,22 +26,35 @@ const VisualFeedback = ({ pitchAccuracy, scaleConformity, timingStability, isRun
     };
   }, [isRunning, isPaused]);
 
-  const overallScore = Math.round((pitchAccuracy + scaleConformity + timingStability) / 3);
+  // Calculate overall score from enabled metrics only (excluding null/disabled values)
+  const enabledValues = [];
+  if (enabledMetrics.pitch_accuracy && pitchAccuracy !== null && pitchAccuracy !== undefined) {
+    enabledValues.push(pitchAccuracy);
+  }
+  if (enabledMetrics.scale_conformity && scaleConformity !== null && scaleConformity !== undefined) {
+    enabledValues.push(scaleConformity);
+  }
+  if (enabledMetrics.timing_stability && timingStability !== null && timingStability !== undefined) {
+    enabledValues.push(timingStability);
+  }
+  const overallScore = enabledValues.length > 0
+    ? Math.round(enabledValues.reduce((a, b) => a + b, 0) / enabledValues.length)
+    : 0;
   const isWarmingUp = isRunning && sessionSeconds < WARMUP_SECONDS;
 
   // Get performance label based on score
   const getPerformanceLabel = (score) => {
-    if (score >= 70) return 'Excellent';
-    if (score >= 50) return 'Good';
-    if (score >= 30) return 'Average';
+    if (score >= 90) return 'Excellent';
+    if (score >= 70) return 'Good';
+    if (score >= 50) return 'Average';
     return 'Needs Work';
   };
 
   // Get color based on performance level - Red → Yellow → Green palette
   const getColor = (score) => {
-    if (score >= 70) return 'hsl(142, 76%, 45%)'; // Green - Excellent
-    if (score >= 50) return 'hsl(85, 70%, 45%)'; // Yellow-green - Good
-    if (score >= 30) return 'hsl(45, 90%, 50%)'; // Yellow - Average
+    if (score >= 90) return 'hsl(142, 76%, 45%)'; // Green - Excellent
+    if (score >= 70) return 'hsl(85, 70%, 45%)'; // Yellow-green - Good
+    if (score >= 50) return 'hsl(45, 90%, 50%)'; // Yellow - Average
     return 'hsl(0, 84%, 60%)'; // Red - Needs Work
   };
 

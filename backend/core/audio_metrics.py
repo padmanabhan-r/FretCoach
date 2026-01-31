@@ -6,7 +6,7 @@ Used by both the API (audio_processor.py) and CLI (fret_coach.py).
 import time
 import numpy as np
 from dataclasses import dataclass, field
-from typing import Dict, Set, Optional, Tuple
+from typing import Dict, Set, Optional, Tuple, Dict
 
 from audio_features import (
     pitch_correctness,
@@ -86,8 +86,20 @@ class QualityResult:
 
 
 def score_to_hue(score: float) -> int:
-    """Convert quality score (0-1) to hue (0-120, red to green)."""
-    return int(np.clip(score, 0.0, 1.0) * 120)
+    """
+    Convert quality score (0-1) to hue (0-120, red to green).
+    Matches performance thresholds: 90%+ Excellent, 70%+ Good, 50%+ Average.
+    """
+    score = np.clip(score, 0.0, 1.0)
+
+    if score < 0.5:  # 0-50%: Red to Yellow (0-60)
+        return int(score * 120)
+    elif score < 0.7:  # 50-70%: Yellow to Yellow-Green (60-85)
+        return int(60 + (score - 0.5) * 125)
+    elif score < 0.9:  # 70-90%: Yellow-Green to Light Green (85-110)
+        return int(85 + (score - 0.7) * 125)
+    else:  # 90-100%: Light Green to Green (110-120)
+        return int(110 + (score - 0.9) * 100)
 
 
 def calculate_energy_threshold(sensitivity: float) -> float:
@@ -100,11 +112,70 @@ def calculate_ema_alpha(strictness: float) -> float:
     return 0.10 + (strictness * 0.30)  # Range: 0.10 to 0.40
 
 
+def calculate_weighted_quality(
+    pitch_score: float,
+    scale_score: float,
+    timing_score: float,
+    noise_score: float,
+    strictness: float,
+    enabled_metrics: Dict[str, bool]
+) -> float:
+    """
+    Calculate quality with dynamic weight distribution based on enabled metrics.
+
+    Args:
+        pitch_score: Pitch correctness score (0-1)
+        scale_score: Pitch stability score (0-1)
+        timing_score: Timing stability score (0-1)
+        noise_score: Noise control score (0-1)
+        strictness: Strictness parameter (0-1)
+        enabled_metrics: Dictionary of enabled metric flags
+
+    Returns:
+        Weighted quality score (0-1)
+    """
+    # Noise is always enabled (mandatory)
+    enabled_count = 1
+
+    # Count enabled metrics
+    pitch_enabled = enabled_metrics.get("pitch_accuracy", True)
+    scale_enabled = enabled_metrics.get("scale_conformity", True)
+    timing_enabled = enabled_metrics.get("timing_stability", True)
+
+    if pitch_enabled:
+        enabled_count += 1
+    if scale_enabled:
+        enabled_count += 1
+    if timing_enabled:
+        enabled_count += 1
+
+    # Calculate weights
+    if pitch_enabled:
+        pitch_weight = 0.40 + (strictness * 0.15)  # 40-55%
+        remaining = 1.0 - pitch_weight
+        other_weight = remaining / (enabled_count - 1)  # Exclude pitch
+
+        quality = pitch_weight * pitch_score
+        quality += other_weight * scale_score if scale_enabled else 0
+        quality += other_weight * timing_score if timing_enabled else 0
+        quality += other_weight * noise_score
+    else:
+        # Equal split among enabled
+        equal_weight = 1.0 / enabled_count
+        quality = 0
+        quality += equal_weight * scale_score if scale_enabled else 0
+        quality += equal_weight * timing_score if timing_enabled else 0
+        quality += equal_weight * noise_score
+
+    return quality
+
+
 def process_audio_frame(
     audio: np.ndarray,
     target_pitch_classes: Set[int],
     config: QualityConfig,
     state: QualityState,
+    enabled_metrics: Optional[Dict[str, bool]] = None
 ) -> Optional[QualityResult]:
     """
     Process a single audio frame and update quality metrics.
@@ -176,14 +247,20 @@ def process_audio_frame(
 
     # Calculate weighted quality score
     strictness = config.strictness
-    pitch_weight = 0.40 + (strictness * 0.15)
-    other_weight = (1.0 - pitch_weight) / 3
+    if enabled_metrics is None:
+        enabled_metrics = {
+            "pitch_accuracy": True,
+            "scale_conformity": True,
+            "timing_stability": True
+        }
 
-    quality = (
-        pitch_weight * p +
-        other_weight * s +
-        other_weight * timing_score +
-        other_weight * n
+    quality = calculate_weighted_quality(
+        pitch_score=p,
+        scale_score=s,
+        timing_score=timing_score,
+        noise_score=n,
+        strictness=strictness,
+        enabled_metrics=enabled_metrics
     )
 
     # Apply wrong note penalty based on strictness

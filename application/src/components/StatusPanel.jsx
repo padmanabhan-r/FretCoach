@@ -2,7 +2,7 @@ import React from 'react';
 
 const StatusPanel = ({ isRunning, currentNote, targetScale }) => {
   return (
-    <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-6">
+    <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl px-6 pt-6 pb-[34px]">
       <h2 className="text-xl font-semibold mb-4 text-foreground">Status</h2>
 
       <div className="space-y-4">

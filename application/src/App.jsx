@@ -10,10 +10,12 @@ import DebugPanel from './components/DebugPanel';
 import ModeToggle from './components/ModeToggle';
 import AIRecommendation from './components/AIRecommendation';
 import LiveCoachFeedback from './components/LiveCoachFeedback';
+import UserSwitcher from './components/UserSwitcher';
 import { api } from './api';
 
 function App() {
   const [setupStep, setSetupStep] = useState('launch'); // launch, checking, audio, scale, mode, ai-recommendation, ready
+  const [userId, setUserId] = useState('default_user'); // 'default_user' or 'test_user'
   const [practiceMode, setPracticeMode] = useState('manual'); // 'manual' or 'ai'
   const [aiRecommendation, setAiRecommendation] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
@@ -35,12 +37,49 @@ function App() {
     totalNotesPlayed: 0,
     correctNotes: 0,
     wrongNotes: 0,
+    userId: 'default_user',
   });
   const [showDebug, setShowDebug] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
   const [ws, setWs] = useState(null);
   const [sessionSummary, setSessionSummary] = useState(null); // Session end summary
   const [sessionStartTime, setSessionStartTime] = useState(null);
+  const [enabledMetrics, setEnabledMetrics] = useState({
+    pitch_accuracy: true,
+    scale_conformity: true,
+    timing_stability: true
+  });
+
+  // Load user's enabled metrics when userId changes
+  useEffect(() => {
+    const loadUserMetrics = async () => {
+      try {
+        const config = await api.getSessionConfig(userId);
+        if (config.enabled_metrics) {
+          setEnabledMetrics(config.enabled_metrics);
+        }
+      } catch (error) {
+        console.error('Failed to load user metrics:', error);
+      }
+    };
+    loadUserMetrics();
+  }, [userId]);
+
+  // Sync userId with state when it changes
+  useEffect(() => {
+    setState(prev => ({ ...prev, userId }));
+  }, [userId]);
+
+  // Cleanup WebSocket on unmount or when session stops
+  useEffect(() => {
+    return () => {
+      if (ws) {
+        console.log('[CLEANUP] Closing WebSocket on unmount');
+        ws.close();
+      }
+    };
+  }, [ws]);
+
   const [sessionElapsedTime, setSessionElapsedTime] = useState(0); // Track elapsed time in seconds
   const [isPaused, setIsPaused] = useState(false); // Pause state
   const [pausedTime, setPausedTime] = useState(0); // Track total paused time
@@ -144,8 +183,11 @@ function App() {
     }
 
     try {
-      // Always call startAISession - the backend generates fresh recommendations
-      const result = await api.startAISession();
+      // Get current user from state
+      const userId = state.userId || 'default_user';
+
+      // Call startAISession with request_new parameter
+      const result = await api.startAISession(userId, forceNew);
 
       if (result.success) {
         // If forcing new and got the exact same recommendation, try once more
@@ -154,7 +196,7 @@ function App() {
             result.config?.scale_type === lastAiRecommendation.config?.scale_type &&
             result.focus_area === lastAiRecommendation.focus_area) {
           // Try one more time for a different recommendation
-          const retryResult = await api.startAISession();
+          const retryResult = await api.startAISession(userId, true);
           if (retryResult.success) {
             setAiRecommendation(retryResult);
             setCurrentPracticeId(retryResult.practice_id);
@@ -198,12 +240,20 @@ function App() {
         strictness: aiRecommendation.config.strictness,
         sensitivity: aiRecommendation.config.sensitivity,
         ambient_lighting: ambientLighting,
+        user_id: userId,  // Include current user_id
       };
 
       console.log('Applying AI recommendation config:', config);
 
       const result = await api.saveConfig(config);
       console.log('Config saved successfully:', result);
+
+      // Reload enabled metrics after accepting recommendation
+      const sessionConfig = await api.getSessionConfig(userId);
+      if (sessionConfig.enabled_metrics) {
+        setEnabledMetrics(sessionConfig.enabled_metrics);
+      }
+
       setState(prev => ({
         ...prev,
         targetScale: `${config.scale_name} ${config.scale_type}`
@@ -233,12 +283,29 @@ function App() {
     setSetupStep('mode');
   };
 
-  const handleScaleSelectionComplete = (scaleName) => {
+  const handleScaleSelectionComplete = async (scaleName) => {
+    // Reload enabled metrics after completing scale selection
+    const sessionConfig = await api.getSessionConfig(userId);
+    if (sessionConfig.enabled_metrics) {
+      setEnabledMetrics(sessionConfig.enabled_metrics);
+    }
+
     setState(prev => ({ ...prev, targetScale: scaleName }));
     setSetupStep('ready');
   };
 
   const handleStart = async () => {
+    // Reload enabled metrics before starting session to ensure they're current
+    try {
+      const sessionConfig = await api.getSessionConfig(userId);
+      if (sessionConfig.enabled_metrics) {
+        setEnabledMetrics(sessionConfig.enabled_metrics);
+        console.log('Loaded enabled metrics for session:', sessionConfig.enabled_metrics);
+      }
+    } catch (error) {
+      console.error('Failed to load enabled metrics:', error);
+    }
+
     // Backend is already started by Electron main process
     // Just verify it's still running
     const isHealthy = await api.healthCheck();
@@ -274,14 +341,15 @@ function App() {
         }
 
         // Connect WebSocket for real-time metrics
+        console.log('[START] Connecting WebSocket for session:', result.session_id);
         const websocket = api.connectWebSocket((data) => {
           const debugInfo = data.debug_info || {};
           setState(prev => ({
             ...prev,
             currentNote: data.current_note || '-',
-            pitchAccuracy: Math.round(data.pitch_accuracy * 100),
-            scaleConformity: Math.round(data.scale_conformity * 100),
-            timingStability: Math.round(data.timing_stability * 100),
+            pitchAccuracy: data.pitch_accuracy !== null && data.pitch_accuracy !== undefined ? Math.round(data.pitch_accuracy * 100) : null,
+            scaleConformity: data.scale_conformity !== null && data.scale_conformity !== undefined ? Math.round(data.scale_conformity * 100) : null,
+            timingStability: data.timing_stability !== null && data.timing_stability !== undefined ? Math.round(data.timing_stability * 100) : null,
             debugInfo: debugInfo,
             totalNotesPlayed: debugInfo.notes_played_count || 0,
             correctNotes: debugInfo.correct_notes || 0,
@@ -289,6 +357,7 @@ function App() {
           }));
         });
         setWs(websocket);
+        console.log('[START] WebSocket connected');
       } else {
         // Check for audio-related errors
         const errorMsg = result.error?.toLowerCase() || '';
@@ -326,6 +395,7 @@ function App() {
   };
 
   const handleStop = async () => {
+    console.log('[STOP] Stopping session, closing WebSocket');
     if (ws) {
       ws.close();
       setWs(null);
@@ -452,7 +522,10 @@ function App() {
           )}
 
           {setupStep === 'mode' && (
-            <div className="min-h-[calc(100vh-120px)] flex flex-col items-center justify-center">
+            <div className="min-h-[calc(100vh-120px)] flex flex-col items-center justify-center relative">
+              {/* User Switcher - Top Right */}
+              <UserSwitcher userId={userId} onUserChange={setUserId} />
+
               <div className="w-full max-w-2xl mx-auto px-4">
                 {/* Welcome Message */}
                 <div className="text-center mb-8">
@@ -516,6 +589,7 @@ function App() {
                 onTryAnother={handleTryAnotherAI}
                 loading={aiLoading}
                 error={aiError}
+                userId={userId}
               />
             </div>
           )}
@@ -525,6 +599,7 @@ function App() {
               <ScaleSelection
                 onComplete={handleScaleSelectionComplete}
                 onBack={() => setSetupStep('mode')}
+                userId={userId}
               />
             </div>
           )}
@@ -576,36 +651,64 @@ function App() {
               </div>
 
               {practiceMode === 'ai' && aiRecommendation && (
-                <div className="mb-8 max-w-5xl mx-auto flex-shrink-0">
-                  <div className="bg-accent/20 border border-accent/50 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
+                <div className="mb-6 max-w-6xl mx-auto flex-shrink-0">
+                  <div className="grid grid-cols-1 lg:grid-cols-[1.5fr,1fr] gap-4">
+                    {/* AI Coach Mode Box */}
+                    <div className="bg-accent/20 border border-accent/50 rounded-lg p-4">
+                      <div className="flex items-start space-x-3">
                         <span className="text-2xl">🤖</span>
-                        <div>
+                        <div className="flex-1">
                           <h3 className="text-accent font-semibold">AI Coach Mode Active</h3>
-                          <p className="text-muted-foreground text-sm">
+                          <p className="text-muted-foreground text-sm mt-1">
                             Focus: {aiRecommendation.focus_area} | {aiRecommendation.reasoning}
                           </p>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Practice Tips */}
+                    <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
+                      <h3 className="text-foreground font-semibold flex items-center gap-2 mb-2">
+                        <span>💡</span>
+                        <span>Practice Tips</span>
+                      </h3>
+                      <ul className="text-sm text-foreground/80 space-y-1">
+                        <li>• Rest fingers lightly to control noise</li>
+                        <li>• Press firmly behind fret for clarity</li>
+                        <li>• Focus on clean notes over speed</li>
+                      </ul>
                     </div>
                   </div>
                 </div>
               )}
 
               {practiceMode === 'manual' && (
-                <div className="mb-8 max-w-5xl mx-auto flex-shrink-0">
-                  <div className="bg-primary/20 border border-primary/50 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
+                <div className="mb-6 max-w-6xl mx-auto flex-shrink-0">
+                  <div className="grid grid-cols-1 lg:grid-cols-[1.5fr,1fr] gap-4">
+                    {/* Manual Mode Box */}
+                    <div className="bg-primary/20 border border-primary/50 rounded-lg p-4">
+                      <div className="flex items-start space-x-3">
                         <span className="text-2xl">🎯</span>
-                        <div>
+                        <div className="flex-1">
                           <h3 className="text-primary font-semibold">Manual Practice Mode</h3>
-                          <p className="text-muted-foreground text-sm">
+                          <p className="text-muted-foreground text-sm mt-1">
                             Practice at your own pace | Live AI Coach available for real-time feedback
                           </p>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Practice Tips */}
+                    <div className="bg-primary/10 border border-primary/30 rounded-lg p-4">
+                      <h3 className="text-foreground font-semibold flex items-center gap-2 mb-2">
+                        <span>💡</span>
+                        <span>Practice Tips</span>
+                      </h3>
+                      <ul className="text-sm text-foreground/80 space-y-1">
+                        <li>• Rest fingers lightly to control noise</li>
+                        <li>• Press firmly behind fret for clarity</li>
+                        <li>• Focus on clean notes over speed</li>
+                      </ul>
                     </div>
                   </div>
                 </div>
@@ -714,6 +817,7 @@ function App() {
                       timingStability={state.timingStability}
                       isRunning={state.isRunning}
                       isPaused={isPaused}
+                      enabledMetrics={enabledMetrics}
                     />
 
                     <LiveCoachFeedback
@@ -727,6 +831,8 @@ function App() {
                       totalNotesPlayed={state.totalNotesPlayed}
                       correctNotes={state.correctNotes}
                       wrongNotes={state.wrongNotes}
+                      enabledMetrics={enabledMetrics}
+                      userId={userId}
                     />
                   </div>
 
@@ -739,6 +845,7 @@ function App() {
                     totalNotesPlayed={state.totalNotesPlayed}
                     correctNotes={state.correctNotes}
                     wrongNotes={state.wrongNotes}
+                    enabledMetrics={enabledMetrics}
                   />
                 </div>
               </div>

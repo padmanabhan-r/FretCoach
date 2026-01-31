@@ -38,7 +38,7 @@ async def get_ai_recommendation(user_id: str = "default_user", request_new: bool
 
 
 @router.post("/ai/session/start")
-async def start_ai_session(user_id: str = "default_user") -> Dict[str, Any]:
+async def start_ai_session(user_id: str = "default_user", request_new: bool = False) -> Dict[str, Any]:
     """
     Start an AI-recommended practice session.
     LLM call is traced via OpikTracer in ai_agent_service.
@@ -49,13 +49,14 @@ async def start_ai_session(user_id: str = "default_user") -> Dict[str, Any]:
 
     Args:
         user_id: The user identifier
+        request_new: If True, generate a new recommendation even if pending plan exists
 
     Returns:
         Session configuration and start status
     """
     try:
-        # Get AI recommendation (checks for pending plan first)
-        recommendation_result = await get_ai_practice_session(user_id)
+        # Get AI recommendation (checks for pending plan first, unless request_new=True)
+        recommendation_result = await get_ai_practice_session(user_id, request_new=request_new)
 
         recommendation = recommendation_result["recommendation"]
 

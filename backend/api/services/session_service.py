@@ -37,6 +37,16 @@ def start_session_impl(session_state: SessionState, audio_state: AudioState, aud
 
     try:
         config = session_state.config
+        user_id = config.get("user_id", "default_user")
+
+        # Load user-specific session config for enabled metrics
+        from ..services.config_service import load_user_session_config
+        session_config = load_user_session_config(user_id)
+        enabled_metrics = session_config.get("enabled_metrics", {
+            "pitch_accuracy": True,
+            "scale_conformity": True,
+            "timing_stability": True
+        })
 
         # Initialize session logger
         logger = get_session_logger()
@@ -44,6 +54,7 @@ def start_session_impl(session_state: SessionState, audio_state: AudioState, aud
         audio_state.strictness = config.get("strictness", 0.5)
         audio_state.sensitivity = config.get("sensitivity", 0.5)
         audio_state.ambient_lighting = config.get("ambient_lighting", True)
+        audio_state.enabled_metrics = enabled_metrics
 
         # Start session logging
         session_id = logger.start_session(
@@ -51,7 +62,9 @@ def start_session_impl(session_state: SessionState, audio_state: AudioState, aud
             strictness=audio_state.strictness,
             sensitivity=audio_state.sensitivity,
             ambient_lighting=audio_state.ambient_lighting,
-            scale_type=config.get("scale_type", "natural")
+            scale_type=config.get("scale_type", "natural"),
+            enabled_metrics=enabled_metrics,
+            user_id=user_id
         )
         audio_state.session_id = session_id
 

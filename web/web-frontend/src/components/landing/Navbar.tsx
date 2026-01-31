@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Menu, X, Guitar, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
+import UserSwitcher from "@/components/UserSwitcher";
 
 const navLinks = [
   { href: "#features", label: "Features" },
@@ -13,6 +14,14 @@ const navLinks = [
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [userId, setUserId] = useState<string>(() => {
+    return localStorage.getItem('fretcoach-user-id') || 'default_user';
+  });
+
+  // Update localStorage when userId changes
+  useEffect(() => {
+    localStorage.setItem('fretcoach-user-id', userId);
+  }, [userId]);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
@@ -58,17 +67,8 @@ const Navbar = () => {
                 Dashboard
               </Button>
             </Link>
-            <div className="flex items-center gap-3 pl-3 border-l border-border">
-              <div className="text-right hidden lg:block">
-                <p className="text-sm font-medium">Default User</p>
-                <p className="text-xs text-muted-foreground">FretCoach Premium</p>
-              </div>
-              <Avatar className="h-9 w-9 border-2 border-primary/20">
-                <AvatarImage src="" alt="FretCoach User" />
-                <AvatarFallback className="bg-primary/10 text-primary">
-                  <Guitar className="h-4 w-4" />
-                </AvatarFallback>
-              </Avatar>
+            <div className="pl-3 border-l border-border">
+              <UserSwitcher userId={userId} onUserChange={setUserId} variant="navbar" />
             </div>
           </div>
 
@@ -99,24 +99,15 @@ const Navbar = () => {
                 {link.label}
               </a>
             ))}
-            <div className="pt-4 space-y-2">
+            <div className="pt-4 space-y-3">
               <Link to="/dashboard" className="block">
                 <Button variant="default" className="w-full gap-2">
                   <BarChart3 className="h-4 w-4" />
                   Dashboard
                 </Button>
               </Link>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border">
-                <Avatar className="h-10 w-10 border-2 border-primary/20">
-                  <AvatarImage src="" alt="FretCoach User" />
-                  <AvatarFallback className="bg-primary/10 text-primary">
-                    <Guitar className="h-5 w-5" />
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-sm font-medium">Default User</p>
-                  <p className="text-xs text-muted-foreground">FretCoach Premium</p>
-                </div>
+              <div className="flex justify-center p-2 rounded-lg bg-card/50 border border-border">
+                <UserSwitcher userId={userId} onUserChange={setUserId} variant="header" />
               </div>
             </div>
           </div>

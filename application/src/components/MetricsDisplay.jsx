@@ -1,15 +1,22 @@
 import React from 'react';
 
-const MetricsDisplay = ({ pitchAccuracy, scaleConformity, timingStability, isRunning, debugInfo, totalNotesPlayed = 0, correctNotes = 0, wrongNotes = 0 }) => {
-  // Calculate info text for each metric
-  const totalNotes = correctNotes + wrongNotes;
-  const timingNotesCount = debugInfo?.notes_for_timing_analysis || 0;
-
-  const metrics = [
+const MetricsDisplay = ({
+  pitchAccuracy,
+  scaleConformity,
+  timingStability,
+  isRunning,
+  debugInfo,
+  totalNotesPlayed = 0,
+  correctNotes = 0,
+  wrongNotes = 0,
+  enabledMetrics = { pitch_accuracy: true, scale_conformity: true, timing_stability: true }
+}) => {
+  const allMetrics = [
     {
+      key: 'pitch_accuracy',
       name: 'Pitch Accuracy',
       value: pitchAccuracy,
-      info: totalNotes > 0 ? `${correctNotes}/${totalNotes} correct notes` : 'Overall accuracy',
+      info: 'Note intonation quality',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
@@ -18,6 +25,7 @@ const MetricsDisplay = ({ pitchAccuracy, scaleConformity, timingStability, isRun
       colorClass: 'primary',
     },
     {
+      key: 'scale_conformity',
       name: 'Scale Conformity',
       value: scaleConformity,
       info: 'Coverage across scale positions',
@@ -29,9 +37,10 @@ const MetricsDisplay = ({ pitchAccuracy, scaleConformity, timingStability, isRun
       colorClass: 'secondary',
     },
     {
+      key: 'timing_stability',
       name: 'Timing Stability',
       value: timingStability,
-      info: timingNotesCount > 0 ? `Based on ${timingNotesCount} notes` : 'Rhythm consistency',
+      info: 'Rhythm consistency',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -40,6 +49,9 @@ const MetricsDisplay = ({ pitchAccuracy, scaleConformity, timingStability, isRun
       colorClass: 'accent',
     },
   ];
+
+  // Filter to only show enabled metrics
+  const metrics = allMetrics.filter(m => enabledMetrics[m.key] !== false);
 
   // Get HSL color based on metric type
   const getMetricColor = (colorClass) => {
@@ -65,18 +77,21 @@ const MetricsDisplay = ({ pitchAccuracy, scaleConformity, timingStability, isRun
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {metrics.map((metric) => {
           const color = getMetricColor(metric.colorClass);
-          const displayValue = isRunning ? metric.value : '--';
+          const isDisabled = metric.value === null || metric.value === undefined;
+          const displayValue = !isRunning ? '--' : isDisabled ? 'Disabled' : metric.value;
+          const showPercentage = isRunning && !isDisabled;
+
           return (
             <div
               key={metric.name}
               className="bg-card border border-border rounded-lg p-4 hover:border-primary/50 transition-all"
             >
               <div className="flex items-center justify-between mb-3">
-                <div style={{ color: isRunning ? color : 'hsl(0, 0%, 40%)' }}>
+                <div style={{ color: isRunning && !isDisabled ? color : 'hsl(0, 0%, 40%)' }}>
                   {metric.icon}
                 </div>
-                <div className={`text-2xl font-bold ${isRunning ? 'text-foreground' : 'text-muted-foreground'}`}>
-                  {displayValue}{isRunning ? '%' : ''}
+                <div className={`text-2xl font-bold ${isRunning && !isDisabled ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  {displayValue}{showPercentage ? '%' : ''}
                 </div>
               </div>
 
@@ -89,9 +104,9 @@ const MetricsDisplay = ({ pitchAccuracy, scaleConformity, timingStability, isRun
                   <div
                     className="h-2 rounded-full transition-all duration-500"
                     style={{
-                      width: isRunning ? `${metric.value}%` : '0%',
+                      width: isRunning && !isDisabled ? `${metric.value}%` : '0%',
                       backgroundColor: color,
-                      boxShadow: isRunning ? `0 0 8px ${color}60` : 'none'
+                      boxShadow: isRunning && !isDisabled ? `0 0 8px ${color}60` : 'none'
                     }}
                   />
                 </div>

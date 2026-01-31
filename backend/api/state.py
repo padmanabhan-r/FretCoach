@@ -103,6 +103,11 @@ class AudioState:
     strictness: float = 0.5
     sensitivity: float = 0.5
     ambient_lighting: bool = True
+    enabled_metrics: Dict[str, bool] = field(default_factory=lambda: {
+        "pitch_accuracy": True,
+        "scale_conformity": True,
+        "timing_stability": True
+    })
 
     def reset(self):
         """Reset state for a new session."""

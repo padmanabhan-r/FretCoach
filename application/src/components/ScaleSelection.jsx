@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api';
 
-const ScaleSelection = ({ onComplete, onBack }) => {
+const ScaleSelection = ({ onComplete, onBack, userId = 'default_user' }) => {
   const [scales, setScales] = useState({ major: [], minor: [] });
   const [selectedScale, setSelectedScale] = useState('');
   const [scaleType, setScaleType] = useState('natural');
@@ -10,10 +10,27 @@ const ScaleSelection = ({ onComplete, onBack }) => {
   const [sensitivity, setSensitivity] = useState(0.5);
   const [step, setStep] = useState(1); // 1: scale, 2: type, 3: settings
   const [filter, setFilter] = useState('');
+  const [enabledMetrics, setEnabledMetrics] = useState({
+    pitch_accuracy: true,
+    scale_conformity: true,
+    timing_stability: true
+  });
 
   useEffect(() => {
     loadScales();
-  }, []);
+    loadUserMetrics();
+  }, [userId]);
+
+  const loadUserMetrics = async () => {
+    try {
+      const config = await api.getSessionConfig(userId);
+      if (config.enabled_metrics) {
+        setEnabledMetrics(config.enabled_metrics);
+      }
+    } catch (error) {
+      console.error('Failed to load user metrics:', error);
+    }
+  };
 
   const loadScales = async () => {
     try {
@@ -41,7 +58,12 @@ const ScaleSelection = ({ onComplete, onBack }) => {
     config.ambient_lighting = ambientLighting;
     config.strictness = strictness;
     config.sensitivity = sensitivity;
+    config.user_id = userId;
     await api.saveConfig(config);
+
+    // Save session config with enabled metrics for the current user
+    await api.saveSessionConfig({ enabled_metrics: enabledMetrics }, userId);
+
     onComplete(`${selectedScale} (${scaleType === 'natural' ? 'Natural' : 'Pentatonic'})`);
   };
 
@@ -179,6 +201,43 @@ const ScaleSelection = ({ onComplete, onBack }) => {
             className="w-6 h-6 text-primary bg-card border-border rounded focus:ring-primary focus:ring-2"
           />
         </label>
+      </div>
+
+      {/* Metric Toggles */}
+      <div className="mb-6">
+        <h3 className="text-foreground font-semibold mb-3">Metrics to Track</h3>
+        <div className="flex flex-wrap gap-4">
+          <label className="flex items-center gap-2 cursor-pointer text-foreground">
+            <input
+              type="checkbox"
+              checked={enabledMetrics.pitch_accuracy}
+              onChange={(e) => setEnabledMetrics({ ...enabledMetrics, pitch_accuracy: e.target.checked })}
+              className="w-5 h-5 text-primary bg-card border-border rounded focus:ring-primary focus:ring-2"
+            />
+            <span>Pitch Accuracy</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer text-foreground">
+            <input
+              type="checkbox"
+              checked={enabledMetrics.scale_conformity}
+              onChange={(e) => setEnabledMetrics({ ...enabledMetrics, scale_conformity: e.target.checked })}
+              className="w-5 h-5 text-primary bg-card border-border rounded focus:ring-primary focus:ring-2"
+            />
+            <span>Scale Conformity</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer text-foreground">
+            <input
+              type="checkbox"
+              checked={enabledMetrics.timing_stability}
+              onChange={(e) => setEnabledMetrics({ ...enabledMetrics, timing_stability: e.target.checked })}
+              className="w-5 h-5 text-primary bg-card border-border rounded focus:ring-primary focus:ring-2"
+            />
+            <span>Timing Stability</span>
+          </label>
+        </div>
+        <p className="text-muted text-sm mt-2">
+          Note: Noise control is always enabled. Disabled metrics will not be tracked or shown.
+        </p>
       </div>
 
       {/* Strictness */}

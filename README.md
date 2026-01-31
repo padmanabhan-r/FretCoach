@@ -91,12 +91,27 @@ Hybrid architecture: local speed + AI intelligence = intervention before habits 
 
 FretCoach's audio analysis engine evaluates your playing across four metrics:
 
-| Metric | What It Measures |
-|--------|------------------|
-| **Pitch Accuracy** | Note accuracy against the target scale |
-| **Scale Conformity** | Scale coverage and adherence |
-| **Timing Stability** | Rhythmic consistency |
-| **Noise Control** | String noise and unwanted artifacts |
+| Metric | What It Measures | User Configurable |
+|--------|------------------|-------------------|
+| **Pitch Accuracy** | Note accuracy against the target scale | ✅ Toggle per user |
+| **Scale Conformity** | Scale coverage and adherence | ✅ Toggle per user |
+| **Timing Stability** | Rhythmic consistency | ✅ Toggle per user |
+| **Noise Control** | String noise and unwanted artifacts | 🔒 Always enabled |
+
+**User-Specific Metric Toggling (NEW):**
+- Each user can enable/disable metrics independently
+- Configure in both AI Mode and Manual Mode
+- Disabled metrics show "Disabled" in UI (not 0%)
+- Overall Performance excludes disabled metrics
+- Live AI Coach respects your preferences
+
+**Metric Toggling:**
+Users can selectively enable/disable metrics (pitch, scale, timing) based on their practice focus:
+- Disabled metrics are **not calculated**, **not stored** (NULL in database), and **not shown** in UI
+- AI coach feedback adapts to only mention enabled metrics
+- Overall score is calculated from enabled metrics only
+- Weights are dynamically redistributed based on active metrics
+- Preferences persist globally across all sessions via `session_config.json`
 
 Three feedback channels:
 - **On-screen metrics** — Live scores and note detection
@@ -120,10 +135,13 @@ Powered by **librosa**, **NumPy**, and **SciPy**:
 - **Purpose:** Ensure practice stays within chosen scale
 
 ### Quality Scoring System
-- **Formula:** quality = 0.55 × pitch + 0.15 × scale + 0.15 × timing + 0.15 × noise
+- **Dynamic Weight Distribution:**
+  - When **pitch enabled**: 40-55% weight (strictness-based), remainder split among enabled metrics
+  - When **pitch disabled**: equal split among enabled metrics (scale, timing, noise)
+  - Noise control always included as mandatory baseline
 - **Smoothing:** Exponential Moving Average (EMA) with α = 0.10–0.40
 - **Window:** 0.8 seconds phrase grouping
-- **Purpose:** Aggregate real-time performance score
+- **Purpose:** Aggregate real-time performance score from enabled metrics
 
 ### Feedback Mechanisms
 - **Visual:** WebSocket broadcast to React UI (6.67 Hz updates)
@@ -374,12 +392,36 @@ Smart bulb integration for visual performance feedback.
 
 ## Database Schema
 
-FretCoach uses PostgreSQL hosted on Supabase with two core tables:
+FretCoach uses PostgreSQL hosted on Supabase with three core tables:
 
 | Table | Purpose |
 |-------|---------|
 | `sessions` | Practice session data: metrics, scale config, note statistics, timestamps |
 | `ai_practice_plans` | AI-generated recommendations linked to sessions |
+| `user_configs` | **NEW:** User-specific metric preferences (pitch_accuracy, scale_conformity, timing_stability) |
+
+### User-Specific Configuration
+
+Each user can independently configure which metrics to track:
+
+```sql
+CREATE TABLE fretcoach.user_configs (
+    user_id VARCHAR(255) PRIMARY KEY,
+    enabled_metrics JSONB NOT NULL DEFAULT '{
+        "pitch_accuracy": true,
+        "scale_conformity": true,
+        "timing_stability": true
+    }',
+    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**Features:**
+- Toggle metrics on/off per user (default_user, test_user, etc.)
+- Disabled metrics show as "Disabled" in UI instead of 0%
+- Overall Performance calculation excludes disabled metrics
+- Live AI Coach only comments on enabled metrics
+- Session database stores NULL for disabled metrics
 
 ---
 ## Feature Matrix

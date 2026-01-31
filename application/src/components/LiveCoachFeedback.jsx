@@ -19,7 +19,9 @@ const LiveCoachFeedback = ({
   totalNotesPlayed = 0,
   correctNotes = 0,
   wrongNotes = 0,
-  onEnabledChange
+  onEnabledChange,
+  enabledMetrics = { pitch_accuracy: true, scale_conformity: true, timing_stability: true },
+  userId = 'default_user'
 }) => {
   const [enabled, setEnabled] = useState(true); // Default ON
   const [feedbackInterval, setFeedbackInterval] = useState(60); // Default 1 minute
@@ -59,17 +61,30 @@ const LiveCoachFeedback = ({
 
     try {
       const metrics = metricsRef.current;
-      const result = await api.getLiveCoachFeedback({
-        pitch_accuracy: metrics.pitchAccuracy,
-        scale_conformity: metrics.scaleConformity,
-        timing_stability: metrics.timingStability,
+
+      // Build feedback payload with only enabled metrics that have non-null values
+      const feedbackPayload = {
         scale_name: scaleName || 'Unknown Scale',
         elapsed_seconds: elapsed,
         session_id: sessionId,
         total_notes_played: metrics.totalNotesPlayed || 0,
         correct_notes: metrics.correctNotes || 0,
-        wrong_notes: metrics.wrongNotes || 0
-      });
+        wrong_notes: metrics.wrongNotes || 0,
+        user_id: userId
+      };
+
+      // Only include enabled metrics with non-null values
+      if (enabledMetrics.pitch_accuracy && metrics.pitchAccuracy !== null && metrics.pitchAccuracy !== undefined) {
+        feedbackPayload.pitch_accuracy = metrics.pitchAccuracy;
+      }
+      if (enabledMetrics.scale_conformity && metrics.scaleConformity !== null && metrics.scaleConformity !== undefined) {
+        feedbackPayload.scale_conformity = metrics.scaleConformity;
+      }
+      if (enabledMetrics.timing_stability && metrics.timingStability !== null && metrics.timingStability !== undefined) {
+        feedbackPayload.timing_stability = metrics.timingStability;
+      }
+
+      const result = await api.getLiveCoachFeedback(feedbackPayload);
 
       if (result.success) {
         setFeedback(result);
