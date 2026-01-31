@@ -91,12 +91,19 @@ Hybrid architecture: local speed + AI intelligence = intervention before habits 
 
 FretCoach's audio analysis engine evaluates your playing across four metrics:
 
-| Metric | What It Measures | Configurable |
-|--------|------------------|--------------|
-| **Pitch Accuracy** | Note accuracy against the target scale | ✅ Optional |
-| **Scale Conformity** | Scale coverage and adherence | ✅ Optional |
-| **Timing Stability** | Rhythmic consistency | ✅ Optional |
+| Metric | What It Measures | User Configurable |
+|--------|------------------|-------------------|
+| **Pitch Accuracy** | Note accuracy against the target scale | ✅ Toggle per user |
+| **Scale Conformity** | Scale coverage and adherence | ✅ Toggle per user |
+| **Timing Stability** | Rhythmic consistency | ✅ Toggle per user |
 | **Noise Control** | String noise and unwanted artifacts | 🔒 Always enabled |
+
+**User-Specific Metric Toggling (NEW):**
+- Each user can enable/disable metrics independently
+- Configure in both AI Mode and Manual Mode
+- Disabled metrics show "Disabled" in UI (not 0%)
+- Overall Performance excludes disabled metrics
+- Live AI Coach respects your preferences
 
 **Metric Toggling:**
 Users can selectively enable/disable metrics (pitch, scale, timing) based on their practice focus:
@@ -385,12 +392,36 @@ Smart bulb integration for visual performance feedback.
 
 ## Database Schema
 
-FretCoach uses PostgreSQL hosted on Supabase with two core tables:
+FretCoach uses PostgreSQL hosted on Supabase with three core tables:
 
 | Table | Purpose |
 |-------|---------|
 | `sessions` | Practice session data: metrics, scale config, note statistics, timestamps |
 | `ai_practice_plans` | AI-generated recommendations linked to sessions |
+| `user_configs` | **NEW:** User-specific metric preferences (pitch_accuracy, scale_conformity, timing_stability) |
+
+### User-Specific Configuration
+
+Each user can independently configure which metrics to track:
+
+```sql
+CREATE TABLE fretcoach.user_configs (
+    user_id VARCHAR(255) PRIMARY KEY,
+    enabled_metrics JSONB NOT NULL DEFAULT '{
+        "pitch_accuracy": true,
+        "scale_conformity": true,
+        "timing_stability": true
+    }',
+    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**Features:**
+- Toggle metrics on/off per user (default_user, test_user, etc.)
+- Disabled metrics show as "Disabled" in UI instead of 0%
+- Overall Performance calculation excludes disabled metrics
+- Live AI Coach only comments on enabled metrics
+- Session database stores NULL for disabled metrics
 
 ---
 ## Feature Matrix
