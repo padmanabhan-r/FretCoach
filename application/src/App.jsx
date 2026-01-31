@@ -10,12 +10,10 @@ import DebugPanel from './components/DebugPanel';
 import ModeToggle from './components/ModeToggle';
 import AIRecommendation from './components/AIRecommendation';
 import LiveCoachFeedback from './components/LiveCoachFeedback';
-import UserSwitcher from './components/UserSwitcher';
 import { api } from './api';
 
 function App() {
   const [setupStep, setSetupStep] = useState('launch'); // launch, checking, audio, scale, mode, ai-recommendation, ready
-  const [userId, setUserId] = useState('default_user'); // 'default_user' or 'test_user'
   const [practiceMode, setPracticeMode] = useState('manual'); // 'manual' or 'ai'
   const [aiRecommendation, setAiRecommendation] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
@@ -25,11 +23,6 @@ function App() {
   const [sessionId, setSessionId] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [audioConfig, setAudioConfig] = useState(null);
-  const [enabledMetrics, setEnabledMetrics] = useState({
-    pitch_accuracy: true,
-    scale_conformity: true,
-    timing_stability: true
-  });
   const [state, setState] = useState({
     isRunning: false,
     pitchAccuracy: 0,
@@ -113,13 +106,6 @@ function App() {
   const checkConfig = async () => {
     try {
       const config = await api.getConfig();
-
-      // Load session config for enabled metrics
-      const sessionConfig = await api.getSessionConfig();
-      if (sessionConfig && sessionConfig.enabled_metrics) {
-        setEnabledMetrics(sessionConfig.enabled_metrics);
-      }
-
       if (config && config.scale_name) {
         setState(prev => ({ ...prev, targetScale: config.scale_name }));
         setAudioConfig(config); // Store config for settings panel
@@ -158,13 +144,32 @@ function App() {
     }
 
     try {
-      // Pass request_new flag to backend to generate fresh recommendations
-      const result = await api.startAISession(userId, forceNew);
+      // Always call startAISession - the backend generates fresh recommendations
+      const result = await api.startAISession();
 
       if (result.success) {
-        setAiRecommendation(result);
-        setCurrentPracticeId(result.practice_id);
-        setLastAiRecommendation(result);
+        // If forcing new and got the exact same recommendation, try once more
+        if (forceNew && lastAiRecommendation &&
+            result.config?.scale_name === lastAiRecommendation.config?.scale_name &&
+            result.config?.scale_type === lastAiRecommendation.config?.scale_type &&
+            result.focus_area === lastAiRecommendation.focus_area) {
+          // Try one more time for a different recommendation
+          const retryResult = await api.startAISession();
+          if (retryResult.success) {
+            setAiRecommendation(retryResult);
+            setCurrentPracticeId(retryResult.practice_id);
+            setLastAiRecommendation(retryResult);
+          } else {
+            // Fall back to original if retry fails
+            setAiRecommendation(result);
+            setCurrentPracticeId(result.practice_id);
+            setLastAiRecommendation(result);
+          }
+        } else {
+          setAiRecommendation(result);
+          setCurrentPracticeId(result.practice_id);
+          setLastAiRecommendation(result);
+        }
       } else {
         setAiError('AI practice suggestions are temporarily unavailable. You can still continue in Manual Mode.');
       }
@@ -193,7 +198,6 @@ function App() {
         strictness: aiRecommendation.config.strictness,
         sensitivity: aiRecommendation.config.sensitivity,
         ambient_lighting: ambientLighting,
-        user_id: userId,
       };
 
       console.log('Applying AI recommendation config:', config);
@@ -448,10 +452,7 @@ function App() {
           )}
 
           {setupStep === 'mode' && (
-            <div className="min-h-[calc(100vh-120px)] flex flex-col items-center justify-center relative">
-              {/* User Switcher - Top Right */}
-              <UserSwitcher userId={userId} onUserChange={setUserId} />
-
+            <div className="min-h-[calc(100vh-120px)] flex flex-col items-center justify-center">
               <div className="w-full max-w-2xl mx-auto px-4">
                 {/* Welcome Message */}
                 <div className="text-center mb-8">
@@ -515,8 +516,6 @@ function App() {
                 onTryAnother={handleTryAnotherAI}
                 loading={aiLoading}
                 error={aiError}
-                enabledMetrics={enabledMetrics}
-                onMetricsChange={setEnabledMetrics}
               />
             </div>
           )}
@@ -526,9 +525,6 @@ function App() {
               <ScaleSelection
                 onComplete={handleScaleSelectionComplete}
                 onBack={() => setSetupStep('mode')}
-                enabledMetrics={enabledMetrics}
-                onMetricsChange={setEnabledMetrics}
-                userId={userId}
               />
             </div>
           )}
@@ -718,7 +714,6 @@ function App() {
                       timingStability={state.timingStability}
                       isRunning={state.isRunning}
                       isPaused={isPaused}
-                      enabledMetrics={enabledMetrics}
                     />
 
                     <LiveCoachFeedback
@@ -744,7 +739,6 @@ function App() {
                     totalNotesPlayed={state.totalNotesPlayed}
                     correctNotes={state.correctNotes}
                     wrongNotes={state.wrongNotes}
-                    enabledMetrics={enabledMetrics}
                   />
                 </div>
               </div>

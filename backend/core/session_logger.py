@@ -232,8 +232,7 @@ class SessionLogger:
         sensitivity: float,
         user_id: Optional[str] = None,
         ambient_lighting: bool = True,
-        scale_type: str = "natural",
-        enabled_metrics: Optional[dict] = None
+        scale_type: str = "natural"
     ) -> str:
         """
         Create a new session record in memory (not in database yet).
@@ -252,14 +251,6 @@ class SessionLogger:
         session_id = str(uuid.uuid4())
         now = datetime.now()
 
-        # Default enabled metrics
-        if enabled_metrics is None:
-            enabled_metrics = {
-                "pitch_accuracy": True,
-                "scale_conformity": True,
-                "timing_stability": True
-            }
-
         # Initialize session data in memory
         self.session_data[session_id] = {
             "session_id": session_id,
@@ -270,15 +261,11 @@ class SessionLogger:
             "strictness": strictness,
             "sensitivity": sensitivity,
             "ambient_light_option": ambient_lighting,
-            "enabled_metrics": enabled_metrics,
             # Accumulated metrics (will be averaged at end)
             "pitch_accuracy_sum": 0.0,
             "scale_conformity_sum": 0.0,
             "timing_stability_sum": 0.0,
-            "pitch_accuracy_count": 0,
-            "scale_conformity_count": 0,
-            "timing_stability_count": 0,
-            "metric_count": 0,  # Keep for backwards compatibility
+            "metric_count": 0,
             # Note counters
             "total_notes_played": 0,
             "correct_notes_played": 0,
@@ -292,9 +279,9 @@ class SessionLogger:
     def log_metric(
         self,
         session_id: str,
-        pitch_accuracy: Optional[float],
-        scale_conformity: Optional[float],
-        timing_stability: Optional[float],
+        pitch_accuracy: float,
+        scale_conformity: float,
+        timing_stability: float,
         debug_info: Optional[Dict[str, Any]] = None
     ) -> None:
         """
@@ -312,27 +299,17 @@ class SessionLogger:
             print(f"[WARN] Session {session_id} not found in memory")
             return
 
-        # Accumulate metrics (only if not None)
+        # Convert numpy types to Python native types
+        pitch_accuracy = self._convert_numpy_types(pitch_accuracy)
+        scale_conformity = self._convert_numpy_types(scale_conformity)
+        timing_stability = self._convert_numpy_types(timing_stability)
+
+        # Accumulate metrics
         session = self.session_data[session_id]
-
-        if pitch_accuracy is not None:
-            pitch_accuracy = self._convert_numpy_types(pitch_accuracy)
-            session["pitch_accuracy_sum"] += pitch_accuracy
-            session["pitch_accuracy_count"] += 1
-
-        if scale_conformity is not None:
-            scale_conformity = self._convert_numpy_types(scale_conformity)
-            session["scale_conformity_sum"] += scale_conformity
-            session["scale_conformity_count"] += 1
-
-        if timing_stability is not None:
-            timing_stability = self._convert_numpy_types(timing_stability)
-            session["timing_stability_sum"] += timing_stability
-            session["timing_stability_count"] += 1
-
-        # Keep metric_count for backwards compatibility (count any non-None metric)
-        if pitch_accuracy is not None or scale_conformity is not None or timing_stability is not None:
-            session["metric_count"] += 1
+        session["pitch_accuracy_sum"] += pitch_accuracy
+        session["scale_conformity_sum"] += scale_conformity
+        session["timing_stability_sum"] += timing_stability
+        session["metric_count"] += 1
 
         # Track notes if debug info provided
         if debug_info and debug_info.get("note_detected"):
@@ -364,21 +341,16 @@ class SessionLogger:
             session = self.session_data[session_id]
             now = datetime.now()
 
-            # Calculate averages (only for metrics with count > 0, otherwise set to None for NULL in DB)
-            if session["pitch_accuracy_count"] > 0:
-                avg_pitch_accuracy = session["pitch_accuracy_sum"] / session["pitch_accuracy_count"]
+            # Calculate averages
+            metric_count = session["metric_count"]
+            if metric_count > 0:
+                avg_pitch_accuracy = session["pitch_accuracy_sum"] / metric_count
+                avg_scale_conformity = session["scale_conformity_sum"] / metric_count
+                avg_timing_stability = session["timing_stability_sum"] / metric_count
             else:
-                avg_pitch_accuracy = None
-
-            if session["scale_conformity_count"] > 0:
-                avg_scale_conformity = session["scale_conformity_sum"] / session["scale_conformity_count"]
-            else:
-                avg_scale_conformity = None
-
-            if session["timing_stability_count"] > 0:
-                avg_timing_stability = session["timing_stability_sum"] / session["timing_stability_count"]
-            else:
-                avg_timing_stability = None
+                avg_pitch_accuracy = 0.0
+                avg_scale_conformity = 0.0
+                avg_timing_stability = 0.0
 
             # Calculate duration
             start_time = session["start_timestamp"]

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { api } from '../api';
 
-function AIRecommendation({ recommendation, onAccept, onReject, onTryAnother, loading, error, enabledMetrics, onMetricsChange }) {
+function AIRecommendation({ recommendation, onAccept, onReject, onTryAnother, loading, error }) {
   const [ambientLighting, setAmbientLighting] = useState(true);
 
   if (loading) {
@@ -42,9 +41,7 @@ function AIRecommendation({ recommendation, onAccept, onReject, onTryAnother, lo
   const { config = {}, focus_area, reasoning, is_pending_plan, analysis } = recommendation;
   const { scale_name, scale_type, strictness = 0, sensitivity = 0 } = config;
 
-  const handleAccept = async () => {
-    // Save session config with enabled metrics
-    await api.saveSessionConfig({ enabled_metrics: enabledMetrics });
+  const handleAccept = () => {
     onAccept(ambientLighting);
   };
 
@@ -150,56 +147,6 @@ function AIRecommendation({ recommendation, onAccept, onReject, onTryAnother, lo
                 className="w-5 h-5 text-accent bg-card border-border rounded focus:ring-accent focus:ring-2"
               />
             </label>
-
-            {/* Metric Toggles */}
-            <div className="bg-card/30 p-4 rounded-lg">
-              <h3 className="text-foreground font-semibold mb-3 text-sm">Metrics to Track</h3>
-              <div className="flex flex-wrap gap-3">
-                <label className="flex items-center gap-2 cursor-pointer text-foreground text-sm">
-                  <input
-                    type="checkbox"
-                    checked={enabledMetrics?.pitch_accuracy !== false}
-                    onChange={(e) => onMetricsChange?.({ ...enabledMetrics, pitch_accuracy: e.target.checked })}
-                    className="w-4 h-4 text-accent bg-card border-border rounded focus:ring-accent focus:ring-2"
-                  />
-                  <span>Pitch Accuracy</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer text-foreground text-sm">
-                  <input
-                    type="checkbox"
-                    checked={enabledMetrics?.scale_conformity !== false}
-                    onChange={(e) => onMetricsChange?.({ ...enabledMetrics, scale_conformity: e.target.checked })}
-                    className="w-4 h-4 text-accent bg-card border-border rounded focus:ring-accent focus:ring-2"
-                  />
-                  <span>Scale Conformity</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer text-foreground text-sm">
-                  <input
-                    type="checkbox"
-                    checked={enabledMetrics?.timing_stability !== false}
-                    onChange={(e) => onMetricsChange?.({ ...enabledMetrics, timing_stability: e.target.checked })}
-                    className="w-4 h-4 text-accent bg-card border-border rounded focus:ring-accent focus:ring-2"
-                  />
-                  <span>Timing Stability</span>
-                </label>
-              </div>
-              <p className="text-muted-foreground text-xs mt-2">
-                Note: Noise control is always enabled
-              </p>
-            </div>
-
-            {/* Practice Tips */}
-            <div className="mt-3 bg-accent/10 border border-accent/30 rounded-lg p-3">
-              <h3 className="text-foreground font-semibold mb-2 flex items-center gap-2 text-sm">
-                <span>💡</span>
-                <span>Practice Tips</span>
-              </h3>
-              <ul className="text-xs text-foreground/80 space-y-1">
-                <li>• Rest your fingers lightly on the strings to control unwanted noise</li>
-                <li>• Press down firmly just behind the fret for clear, accurate notes</li>
-                <li>• Focus on playing clean notes rather than speed</li>
-              </ul>
-            </div>
           </div>
         </div>
 
