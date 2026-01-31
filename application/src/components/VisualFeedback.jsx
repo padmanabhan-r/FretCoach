@@ -26,11 +26,17 @@ const VisualFeedback = ({
     };
   }, [isRunning, isPaused]);
 
-  // Calculate overall score from enabled metrics only
+  // Calculate overall score from enabled metrics only (excluding null/disabled values)
   const enabledValues = [];
-  if (enabledMetrics.pitch_accuracy) enabledValues.push(pitchAccuracy);
-  if (enabledMetrics.scale_conformity) enabledValues.push(scaleConformity);
-  if (enabledMetrics.timing_stability) enabledValues.push(timingStability);
+  if (enabledMetrics.pitch_accuracy && pitchAccuracy !== null && pitchAccuracy !== undefined) {
+    enabledValues.push(pitchAccuracy);
+  }
+  if (enabledMetrics.scale_conformity && scaleConformity !== null && scaleConformity !== undefined) {
+    enabledValues.push(scaleConformity);
+  }
+  if (enabledMetrics.timing_stability && timingStability !== null && timingStability !== undefined) {
+    enabledValues.push(timingStability);
+  }
   const overallScore = enabledValues.length > 0
     ? Math.round(enabledValues.reduce((a, b) => a + b, 0) / enabledValues.length)
     : 0;

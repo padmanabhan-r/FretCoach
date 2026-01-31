@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api';
 
-const ScaleSelection = ({ onComplete, onBack, enabledMetrics, onMetricsChange, userId = 'default_user' }) => {
+const ScaleSelection = ({ onComplete, onBack, userId = 'default_user' }) => {
   const [scales, setScales] = useState({ major: [], minor: [] });
   const [selectedScale, setSelectedScale] = useState('');
   const [scaleType, setScaleType] = useState('natural');
@@ -10,10 +10,27 @@ const ScaleSelection = ({ onComplete, onBack, enabledMetrics, onMetricsChange, u
   const [sensitivity, setSensitivity] = useState(0.5);
   const [step, setStep] = useState(1); // 1: scale, 2: type, 3: settings
   const [filter, setFilter] = useState('');
+  const [enabledMetrics, setEnabledMetrics] = useState({
+    pitch_accuracy: true,
+    scale_conformity: true,
+    timing_stability: true
+  });
 
   useEffect(() => {
     loadScales();
-  }, []);
+    loadUserMetrics();
+  }, [userId]);
+
+  const loadUserMetrics = async () => {
+    try {
+      const config = await api.getSessionConfig(userId);
+      if (config.enabled_metrics) {
+        setEnabledMetrics(config.enabled_metrics);
+      }
+    } catch (error) {
+      console.error('Failed to load user metrics:', error);
+    }
+  };
 
   const loadScales = async () => {
     try {
@@ -44,8 +61,8 @@ const ScaleSelection = ({ onComplete, onBack, enabledMetrics, onMetricsChange, u
     config.user_id = userId;
     await api.saveConfig(config);
 
-    // Save session config with enabled metrics
-    await api.saveSessionConfig({ enabled_metrics: enabledMetrics });
+    // Save session config with enabled metrics for the current user
+    await api.saveSessionConfig({ enabled_metrics: enabledMetrics }, userId);
 
     onComplete(`${selectedScale} (${scaleType === 'natural' ? 'Natural' : 'Pentatonic'})`);
   };
@@ -193,8 +210,8 @@ const ScaleSelection = ({ onComplete, onBack, enabledMetrics, onMetricsChange, u
           <label className="flex items-center gap-2 cursor-pointer text-foreground">
             <input
               type="checkbox"
-              checked={enabledMetrics?.pitch_accuracy !== false}
-              onChange={(e) => onMetricsChange?.({ ...enabledMetrics, pitch_accuracy: e.target.checked })}
+              checked={enabledMetrics.pitch_accuracy}
+              onChange={(e) => setEnabledMetrics({ ...enabledMetrics, pitch_accuracy: e.target.checked })}
               className="w-5 h-5 text-primary bg-card border-border rounded focus:ring-primary focus:ring-2"
             />
             <span>Pitch Accuracy</span>
@@ -202,8 +219,8 @@ const ScaleSelection = ({ onComplete, onBack, enabledMetrics, onMetricsChange, u
           <label className="flex items-center gap-2 cursor-pointer text-foreground">
             <input
               type="checkbox"
-              checked={enabledMetrics?.scale_conformity !== false}
-              onChange={(e) => onMetricsChange?.({ ...enabledMetrics, scale_conformity: e.target.checked })}
+              checked={enabledMetrics.scale_conformity}
+              onChange={(e) => setEnabledMetrics({ ...enabledMetrics, scale_conformity: e.target.checked })}
               className="w-5 h-5 text-primary bg-card border-border rounded focus:ring-primary focus:ring-2"
             />
             <span>Scale Conformity</span>
@@ -211,8 +228,8 @@ const ScaleSelection = ({ onComplete, onBack, enabledMetrics, onMetricsChange, u
           <label className="flex items-center gap-2 cursor-pointer text-foreground">
             <input
               type="checkbox"
-              checked={enabledMetrics?.timing_stability !== false}
-              onChange={(e) => onMetricsChange?.({ ...enabledMetrics, timing_stability: e.target.checked })}
+              checked={enabledMetrics.timing_stability}
+              onChange={(e) => setEnabledMetrics({ ...enabledMetrics, timing_stability: e.target.checked })}
               className="w-5 h-5 text-primary bg-card border-border rounded focus:ring-primary focus:ring-2"
             />
             <span>Timing Stability</span>
@@ -221,19 +238,6 @@ const ScaleSelection = ({ onComplete, onBack, enabledMetrics, onMetricsChange, u
         <p className="text-muted text-sm mt-2">
           Note: Noise control is always enabled. Disabled metrics will not be tracked or shown.
         </p>
-      </div>
-
-      {/* Practice Tips */}
-      <div className="mb-6 bg-accent/10 border border-accent/30 rounded-lg p-4">
-        <h3 className="text-foreground font-semibold mb-2 flex items-center gap-2">
-          <span>💡</span>
-          <span>Practice Tips</span>
-        </h3>
-        <ul className="text-sm text-foreground/80 space-y-1.5">
-          <li>• Rest your fingers lightly on the strings to control unwanted noise</li>
-          <li>• Press down firmly just behind the fret for clear, accurate notes</li>
-          <li>• Focus on playing clean notes rather than speed</li>
-        </ul>
       </div>
 
       {/* Strictness */}

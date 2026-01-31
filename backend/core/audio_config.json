@@ -5,8 +5,8 @@
   "channels": 2,
   "scale_name": "A Minor",
   "scale_type": "pentatonic",
-  "ambient_lighting": false,
+  "ambient_lighting": true,
   "strictness": 0.5,
   "sensitivity": 0.5,
-  "user_id": "test_user"
+  "user_id": "default_user"
 }

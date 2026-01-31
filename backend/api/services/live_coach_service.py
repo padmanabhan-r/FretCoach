@@ -220,9 +220,9 @@ async def stop_audio_playback() -> Dict[str, Any]:
 
 
 async def generate_coaching_feedback(
-    pitch_accuracy: float,
-    scale_conformity: float,
-    timing_stability: float,
+    pitch_accuracy: Optional[float],
+    scale_conformity: Optional[float],
+    timing_stability: Optional[float],
     scale_name: str,
     elapsed_seconds: int,
     session_id: Optional[str] = None,
@@ -260,13 +260,13 @@ async def generate_coaching_feedback(
             "timing_stability": True
         }
 
-    # Filter metrics to only include enabled ones
+    # Filter metrics to only include enabled ones with non-null values
     metrics = {}
-    if enabled_metrics.get("pitch_accuracy", True):
+    if enabled_metrics.get("pitch_accuracy", True) and pitch_accuracy is not None:
         metrics["Pitch Accuracy"] = pitch_accuracy
-    if enabled_metrics.get("scale_conformity", True):
+    if enabled_metrics.get("scale_conformity", True) and scale_conformity is not None:
         metrics["Scale Conformity"] = scale_conformity
-    if enabled_metrics.get("timing_stability", True):
+    if enabled_metrics.get("timing_stability", True) and timing_stability is not None:
         metrics["Timing Stability"] = timing_stability
 
     # Calculate overall performance from enabled metrics only
@@ -281,21 +281,27 @@ async def generate_coaching_feedback(
     elapsed_time = format_elapsed_time(elapsed_seconds)
 
     # Identify the strongest and weakest areas from enabled metrics
-    weakest_area_name = min(metrics, key=metrics.get)
-    weakest_score = metrics[weakest_area_name]
-    strongest_area_name = max(metrics, key=metrics.get)
-    strongest_score = metrics[strongest_area_name]
+    if metrics:
+        weakest_area_name = min(metrics, key=metrics.get)
+        weakest_score = metrics[weakest_area_name]
+        strongest_area_name = max(metrics, key=metrics.get)
+        strongest_score = metrics[strongest_area_name]
+    else:
+        weakest_area_name = "Unknown"
+        weakest_score = 0
+        strongest_area_name = "Unknown"
+        strongest_score = 0
 
-    # Build dynamic metric values string for enabled metrics only
+    # Build dynamic metric values string for enabled metrics only with non-null values
     metric_values = []
-    if enabled_metrics.get("pitch_accuracy", True):
+    if enabled_metrics.get("pitch_accuracy", True) and pitch_accuracy is not None:
         metric_values.append(f"Pitch {round(pitch_accuracy)}%")
-    if enabled_metrics.get("scale_conformity", True):
+    if enabled_metrics.get("scale_conformity", True) and scale_conformity is not None:
         metric_values.append(f"Scale {round(scale_conformity)}%")
-    if enabled_metrics.get("timing_stability", True):
+    if enabled_metrics.get("timing_stability", True) and timing_stability is not None:
         metric_values.append(f"Timing {round(timing_stability)}%")
 
-    metric_values_str = ", ".join(metric_values)
+    metric_values_str = ", ".join(metric_values) if metric_values else "No metrics available"
     enabled_metric_names = ", ".join([k.replace("_", " ").title() for k, v in enabled_metrics.items() if v])
 
     # Get Opik config tied to session_id for tracing

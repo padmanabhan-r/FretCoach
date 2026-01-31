@@ -77,18 +77,21 @@ const MetricsDisplay = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {metrics.map((metric) => {
           const color = getMetricColor(metric.colorClass);
-          const displayValue = isRunning ? metric.value : '--';
+          const isDisabled = metric.value === null || metric.value === undefined;
+          const displayValue = !isRunning ? '--' : isDisabled ? 'Disabled' : metric.value;
+          const showPercentage = isRunning && !isDisabled;
+
           return (
             <div
               key={metric.name}
               className="bg-card border border-border rounded-lg p-4 hover:border-primary/50 transition-all"
             >
               <div className="flex items-center justify-between mb-3">
-                <div style={{ color: isRunning ? color : 'hsl(0, 0%, 40%)' }}>
+                <div style={{ color: isRunning && !isDisabled ? color : 'hsl(0, 0%, 40%)' }}>
                   {metric.icon}
                 </div>
-                <div className={`text-2xl font-bold ${isRunning ? 'text-foreground' : 'text-muted-foreground'}`}>
-                  {displayValue}{isRunning ? '%' : ''}
+                <div className={`text-2xl font-bold ${isRunning && !isDisabled ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  {displayValue}{showPercentage ? '%' : ''}
                 </div>
               </div>
 
@@ -101,9 +104,9 @@ const MetricsDisplay = ({
                   <div
                     className="h-2 rounded-full transition-all duration-500"
                     style={{
-                      width: isRunning ? `${metric.value}%` : '0%',
+                      width: isRunning && !isDisabled ? `${metric.value}%` : '0%',
                       backgroundColor: color,
-                      boxShadow: isRunning ? `0 0 8px ${color}60` : 'none'
+                      boxShadow: isRunning && !isDisabled ? `0 0 8px ${color}60` : 'none'
                     }}
                   />
                 </div>

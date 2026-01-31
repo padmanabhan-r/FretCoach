@@ -50,8 +50,8 @@ export const api = {
     return response.json();
   },
 
-  async saveSessionConfig(config) {
-    const response = await fetch(`${API_BASE_URL}/config/session`, {
+  async saveSessionConfig(config, userId = 'default_user') {
+    const response = await fetch(`${API_BASE_URL}/config/session?user_id=${userId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -61,8 +61,8 @@ export const api = {
     return response.json();
   },
 
-  async getSessionConfig() {
-    const response = await fetch(`${API_BASE_URL}/config/session`);
+  async getSessionConfig(userId = 'default_user') {
+    const response = await fetch(`${API_BASE_URL}/config/session?user_id=${userId}`);
     return response.json();
   },
 

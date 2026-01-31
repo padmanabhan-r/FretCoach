@@ -13,7 +13,7 @@ from ..services.live_coach_service import (
     generate_and_play_tts,
     stop_audio_playback
 )
-from ..services.config_service import load_session_config_from_file
+from ..services.config_service import load_user_session_config
 
 router = APIRouter(prefix="/live-coach", tags=["live-coach"])
 
@@ -26,9 +26,9 @@ class PlayAudioRequest(BaseModel):
 
 class CoachingRequest(BaseModel):
     """Request model for coaching feedback."""
-    pitch_accuracy: float = Field(..., ge=0, le=100, description="Pitch accuracy percentage")
-    scale_conformity: float = Field(..., ge=0, le=100, description="Scale conformity percentage")
-    timing_stability: float = Field(..., ge=0, le=100, description="Timing stability percentage")
+    pitch_accuracy: Optional[float] = Field(None, ge=0, le=100, description="Pitch accuracy percentage (null if disabled)")
+    scale_conformity: Optional[float] = Field(None, ge=0, le=100, description="Scale conformity percentage (null if disabled)")
+    timing_stability: Optional[float] = Field(None, ge=0, le=100, description="Timing stability percentage (null if disabled)")
     scale_name: str = Field(..., description="Name of the current scale")
     elapsed_seconds: int = Field(..., ge=0, description="Seconds elapsed in session")
     session_id: Optional[str] = Field(None, description="Optional session ID")
@@ -36,6 +36,7 @@ class CoachingRequest(BaseModel):
     correct_notes: int = Field(0, ge=0, description="Number of notes in scale")
     wrong_notes: int = Field(0, ge=0, description="Number of notes outside scale")
     mode: str = Field("manual-mode", description="Practice mode: 'ai-mode' or 'manual-mode'")
+    user_id: str = Field("default_user", description="User identifier for loading user-specific config")
 
 
 class SummaryRequest(BaseModel):
@@ -57,8 +58,8 @@ async def get_coaching_feedback(request: CoachingRequest):
     Returns specific, actionable feedback to help the guitarist improve.
     """
     try:
-        # Load session config for enabled metrics
-        session_config = load_session_config_from_file()
+        # Load user-specific session config for enabled metrics
+        session_config = load_user_session_config(request.user_id)
         enabled_metrics = session_config.get("enabled_metrics", {
             "pitch_accuracy": True,
             "scale_conformity": True,
