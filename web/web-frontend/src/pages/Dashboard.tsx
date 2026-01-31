@@ -37,6 +37,7 @@ import { format, subDays } from "date-fns";
 import { useSessions, type DateRangeFilter } from "@/hooks/useSessions";
 import { sendChatMessage, savePracticePlan, formatDuration, formatDate, type ChatMessage, type ChartData } from "@/lib/api";
 import { PerformanceChart } from "@/components/charts/PerformanceChart";
+import UserSwitcher from "@/components/UserSwitcher";
 import type { DateRange } from "react-day-picker";
 
 // Initial welcome message for the AI Coach
@@ -84,6 +85,7 @@ const Dashboard = () => {
   const [threadId, setThreadId] = useState<string | null>(null);
   const [isChatActive, setIsChatActive] = useState(false);
   const [lastActivityTime, setLastActivityTime] = useState<number>(0);
+  const [isManualRefetching, setIsManualRefetching] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const sessions = data?.sessions || [];
@@ -208,6 +210,12 @@ const Dashboard = () => {
     }
   };
 
+  const handleManualRefresh = async () => {
+    setIsManualRefetching(true);
+    await refetch();
+    setIsManualRefetching(false);
+  };
+
   // Calculate trend indicators
   const calculateTrend = (metric: 'pitch_accuracy' | 'scale_conformity' | 'timing_stability') => {
     if (sessions.length < 2) return { value: 0, isUp: true };
@@ -232,8 +240,8 @@ const Dashboard = () => {
             <p className="text-muted-foreground mb-4">
               Please check your connection and try again.
             </p>
-            <Button onClick={() => refetch()}>
-              <RefreshCw className="h-4 w-4 mr-2" />
+            <Button onClick={handleManualRefresh} disabled={isManualRefetching}>
+              <RefreshCw className={`h-4 w-4 mr-2 ${isManualRefetching ? 'animate-spin' : ''}`} />
               Retry
             </Button>
           </CardContent>
@@ -262,40 +270,13 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <Button variant="outline" onClick={() => refetch()}>
-                <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+              <Button variant="outline" onClick={handleManualRefresh} disabled={isManualRefetching}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${isManualRefetching ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
               {/* User Switcher */}
-              <div className="flex items-center gap-2 pl-4 border-l border-border">
-                <div className="inline-flex items-center gap-1 bg-card border border-border rounded-lg p-1">
-                  <button
-                    onClick={() => setUserId('default_user')}
-                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                      userId === 'default_user'
-                        ? 'bg-primary text-primary-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                    }`}
-                  >
-                    Default User
-                  </button>
-                  <button
-                    onClick={() => setUserId('test_user')}
-                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                      userId === 'test_user'
-                        ? 'bg-primary text-primary-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                    }`}
-                  >
-                    Test User
-                  </button>
-                </div>
-                <Avatar className="h-10 w-10 border-2 border-primary/20">
-                  <AvatarImage src="" alt="FretCoach User" />
-                  <AvatarFallback className="bg-primary/10 text-primary">
-                    <Guitar className="h-5 w-5" />
-                  </AvatarFallback>
-                </Avatar>
+              <div className="pl-4 border-l border-border">
+                <UserSwitcher userId={userId} onUserChange={setUserId} variant="header" />
               </div>
             </div>
           </div>
@@ -488,7 +469,7 @@ const Dashboard = () => {
         {/* Main Content: Session info on left, AI Coach on right (wider) */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
           {/* Left: Sessions & Details (narrower - 2 cols) */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 flex flex-col gap-4">
             {/* Session List */}
             <Card className="bg-card border-border/50">
               <CardHeader className="pb-2 py-3">
@@ -537,7 +518,7 @@ const Dashboard = () => {
             </Card>
 
             {/* Session Details */}
-            <Card className="bg-card border-border/50">
+            <Card className="bg-card border-border/50 flex-1 flex flex-col">
               <CardHeader className="pb-2 py-3">
                 <CardTitle className="text-sm">Session Details</CardTitle>
                   <CardDescription className="text-xs">
@@ -546,7 +527,7 @@ const Dashboard = () => {
                   ) : "Select a session"}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-0 pb-3">
+              <CardContent className="pt-0 pb-3 flex-1 flex flex-col justify-center">
                 {isLoading ? (
                   <Skeleton className="h-32 w-full" />
                 ) : !selectedSession ? (
@@ -555,7 +536,7 @@ const Dashboard = () => {
                     <p className="text-xs">Select a session</p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {/* Performance Metrics */}
                     <div className="grid grid-cols-4 gap-2">
                       <div className="p-2 rounded-lg bg-card border border-border text-center">
@@ -573,21 +554,6 @@ const Dashboard = () => {
                       <div className="p-2 rounded-lg bg-primary/10 border border-primary text-center">
                         <p className="text-lg font-bold text-primary">{Math.round((((selectedSession.pitch_accuracy || 0) + (selectedSession.scale_conformity || 0) + (selectedSession.timing_stability || 0)) / 3) * 100)}%</p>
                         <p className="text-[10px] text-muted-foreground">Overall</p>
-                      </div>
-                    </div>
-                    {/* Note Counts */}
-                    <div className="grid grid-cols-3 gap-2 text-center">
-                      <div className="p-2 rounded bg-green-500/10 border border-green-500/30">
-                        <p className="text-sm font-bold text-green-500">{selectedSession.correct_notes_played}</p>
-                        <p className="text-[10px] text-muted-foreground">Correct</p>
-                      </div>
-                      <div className="p-2 rounded bg-red-500/10 border border-red-500/30">
-                        <p className="text-sm font-bold text-red-500">{selectedSession.bad_notes_played}</p>
-                        <p className="text-[10px] text-muted-foreground">Wrong</p>
-                      </div>
-                      <div className="p-2 rounded bg-accent/50">
-                        <p className="text-sm font-bold">{selectedSession.total_notes_played}</p>
-                        <p className="text-[10px] text-muted-foreground">Total</p>
                       </div>
                     </div>
                     {/* Practice Parameters */}

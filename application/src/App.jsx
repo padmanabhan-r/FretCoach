@@ -10,6 +10,7 @@ import DebugPanel from './components/DebugPanel';
 import ModeToggle from './components/ModeToggle';
 import AIRecommendation from './components/AIRecommendation';
 import LiveCoachFeedback from './components/LiveCoachFeedback';
+import UserSwitcher from './components/UserSwitcher';
 import { api } from './api';
 
 function App() {
@@ -447,39 +448,15 @@ function App() {
           )}
 
           {setupStep === 'mode' && (
-            <div className="min-h-[calc(100vh-120px)] flex flex-col items-center justify-center">
+            <div className="min-h-[calc(100vh-120px)] flex flex-col items-center justify-center relative">
+              {/* User Switcher - Top Right */}
+              <UserSwitcher userId={userId} onUserChange={setUserId} />
+
               <div className="w-full max-w-2xl mx-auto px-4">
                 {/* Welcome Message */}
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold text-foreground mb-2">Welcome to FretCoach</h2>
                   <p className="text-muted-foreground">Choose how you want to practice today.</p>
-                </div>
-
-                {/* User Selector */}
-                <div className="mb-6 flex justify-center">
-                  <div className="inline-flex items-center gap-3 bg-card/50 backdrop-blur-sm border border-border rounded-lg p-2">
-                    <span className="text-sm text-muted-foreground px-2">User:</span>
-                    <button
-                      onClick={() => setUserId('default_user')}
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                        userId === 'default_user'
-                          ? 'bg-primary text-primary-foreground shadow-lg'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-card'
-                      }`}
-                    >
-                      Default User
-                    </button>
-                    <button
-                      onClick={() => setUserId('test_user')}
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                        userId === 'test_user'
-                          ? 'bg-primary text-primary-foreground shadow-lg'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-card'
-                      }`}
-                    >
-                      Test User
-                    </button>
-                  </div>
                 </div>
 
                 {/* Mode Toggle with improved layout */}
