@@ -67,7 +67,7 @@ We would like to call this a **dual-brain architecture** combining fast determin
 
 **Audio Analysis Agent (Fast Loop) - Left Brain**
 - Real-time processing (<300ms latency)
-- On-device local processing, no cloud dependency
+- On-device Local processing, no cloud dependency
 - Continuous pitch, scale, timing, noise evaluation using *Digital Signal Processing*
 - Controls on screen performance metrics and ambient lighting system
 
@@ -75,27 +75,99 @@ We would like to call this a **dual-brain architecture** combining fast determin
 - LLM-powered preventive coaching: Provide consistent vocal textual feedback at constant intervals during live playing to improve instantly.
 - Post session pattern analysis and curating personlized practice plans based on weak areas
 - On-demand (not real-time critical)
-- Powered by LLM models like Gemini 2.5 Flash, OpenAI gpt-4o-mini, gpt-4o-mini-tts etc.
+- Powered by LLM models like Gemini 2.5 Flash, OpenAI gpt-4o-mini, etc.
 
->**Hybrid architecture: local speed + AI intelligence = intervention before habits solidify.**
+Hybrid architecture: local speed + AI intelligence = intervention before habits solidify.
 
 ### Performance Metrics
 
-Fretcoach currently targets the scales in music ( think like vegetables of the music world! You gotta eat them.)
-
 FretCoach's audio analysis engine evaluates your playing across four metrics:
 
-| Metric | What It Measures  |
-|--------|------------------|
-| **Pitch Accuracy** | Note accuracy and intonation against the target scale 
-| **Scale Conformity** | Scale coverage and adherence |
-| **Timing Stability** | Rhythmic and timing consistency |
-| **Noise Control** | String noise and unwanted artifacts |
+| Metric | What It Measures | User Configurable |
+|--------|------------------|-------------------|
+| **Pitch Accuracy** | Note accuracy against the target scale | ✅ Toggle per user |
+| **Scale Conformity** | Scale coverage and adherence | ✅ Toggle per user |
+| **Timing Stability** | Rhythmic consistency | ✅ Toggle per user |
+| **Noise Control** | String noise and unwanted artifacts | 🔒 Always enabled |
+
+**User-Specific Metric Toggling (NEW):**
+- Each user can enable/disable metrics independently
+- Configure in both AI Mode and Manual Mode
+- Disabled metrics show "Disabled" in UI (not 0%)
+- Overall Performance excludes disabled metrics
+- Live AI Coach respects your preferences
+
+**Metric Toggling:**
+Users can selectively enable/disable metrics (pitch, scale, timing) based on their practice focus:
+- Disabled metrics are **not calculated**, **not stored** (NULL in database), and **not shown** in UI
+- AI coach feedback adapts to only mention enabled metrics
+- Overall score is calculated from enabled metrics only
+- Weights are dynamically redistributed based on active metrics
+- Preferences persist globally across all sessions via `session_config.json`
 
 Three feedback channels:
 - **On-screen metrics** — Live scores and note detection
-- **AI Voice Coach** — Textual and spoken guidance via GPT-4o-mini and GPT-4o-mini-TTS models
+- **AI Voice Coach** — Spoken guidance via GPT-4o-mini and GPT-4o-mini-TTS models
 - **Ambient lighting** — Smart bulb feedback (green = good, red = needs work)
+
+## Audio Analysis Agent Features
+
+Powered by **librosa**, **NumPy**, and **SciPy**:
+
+### Real-Time Pitch Detection
+- **Algorithm:** librosa piptrack() (autocorrelation-based)
+- **Frequency:** Every 300ms
+- **Processing:** Hz → MIDI note → Pitch class (0-11)
+- **Purpose:** Instant note accuracy and intonation tracking
+
+### Scale Validation Engine
+- **Library:** 24 scales (12 Major + 12 Minor, Natural + Pentatonic)
+- **Method:** Pitch class validation against target scale
+- **Tracking:** Note histogram, scale coverage, conformity percentage
+- **Purpose:** Ensure practice stays within chosen scale
+
+### Quality Scoring System
+- **Dynamic Weight Distribution:**
+  - When **pitch enabled**: 40-55% weight (strictness-based), remainder split among enabled metrics
+  - When **pitch disabled**: equal split among enabled metrics (scale, timing, noise)
+  - Noise control always included as mandatory baseline
+- **Smoothing:** Exponential Moving Average (EMA) with α = 0.10–0.40
+- **Window:** 0.8 seconds phrase grouping
+- **Purpose:** Aggregate real-time performance score from enabled metrics
+
+### Feedback Mechanisms
+- **Visual:** WebSocket broadcast to React UI (6.67 Hz updates)
+- **Ambient:** Smart bulb HSV color control (Green → Yellow → Orange → Red)
+- **Database:** Session logging to PostgreSQL/Supabase
+- **Purpose:** Multi-channel real-time feedback
+
+**Processing:** All audio analysis runs **locally** with no cloud dependency.
+
+## AI Coaching Features
+
+Powered by **LangChain**, **OpenAI**, and **Google Gemini**:
+
+### Live Coaching (During Session)
+- **Model:** GPT-4o-mini + GPT-4o-mini-TTS
+- **Frequency:** Every 30 seconds
+- **Output:** 1-sentence corrective feedback + spoken audio
+- **Purpose:** Real-time guidance on weakest metric
+
+### AI Practice Mode (Pre-Session)
+- **Model:** Gemini 2.5 Flash
+- **Input:** Recent session history from database
+- **Output:** Personalized practice plan (scale, strictness, focus area)
+- **Purpose:** Targeted practice based on weaknesses
+
+### Web AI Coach (Post-Session)
+- **Model:** Gemini 2.5 Flash + LangGraph
+- **Interface:** Conversational chat with text-to-SQL capabilities
+- **Tools:** Database queries, trend analysis, plan generation
+- **Purpose:** Performance review and long-term strategy
+
+**Observability:** All LLM calls traced via **Comet Opik** with token counting and latency tracking
+
+Audio analysis runs **locally**. AI features use cloud APIs.
 
 ---
 
@@ -167,16 +239,17 @@ Three feedback channels:
 Desktop application for focused practice sessions.
 
 <p align="center">
-  <img src="docs/assets/images/studio/2. Studio - Mode Selection.png" alt="FretCoach Studio Mode Selection" width="400"/>
-  <img src="docs/assets/images/studio/9. Studio - Live Session.png" alt="FretCoach Studio Live Session" width="400"/>
+  <img src="docs/assets/images/studio/1. Studio - Home Page.png" alt="FretCoach Studio Home" width="320"/>
+  <img src="docs/assets/images/studio/2. Studio - Mode Selection.png" alt="FretCoach Studio Mode Selection" width="320"/>
+  <img src="docs/assets/images/studio/9. Studio - Live Session.png" alt="FretCoach Studio Live Session" width="320"/>
 </p>
 
 ### Features
 - Real-time audio analysis (USB interface or built-in mic)
 - Live visual metrics and performance scoring
-- Manual (choose scale/settings) and AI practice modes (recommended plans)
+- Manual Mode (choose scale/settings) or AI Mode (recommended plans)
 - Live vocal AI coaching during sessions
-- Ambient lighting feedback
+- Ambient lighting integration
 - Automatic session logging and summaries
 
 ### Getting Started
@@ -204,8 +277,7 @@ Raspberry Pi 5-based portable practice device. Same analysis engine as Studio.
 **Status:** Prototyping phase - but showing the possibility here!
 
 ### Features
-- Same core engine as the FretCoach Studio
-- Real-time edge device processing
+- Real-time edge processing
 - Ambient lighting feedback
 - Manual and AI practice modes
 - Database sync
@@ -232,9 +304,9 @@ Raspberry Pi 5-based portable practice device. Same analysis engine as Studio.
 Web platform for analytics and practice planning.
 
 <p align="center">
-  <img src="docs/assets/images/hub/1. Hub - Home.png" alt="FretCoach Hub Home" width="400"/>
-  <img src="docs/assets/images/hub/3. Hub - Dashboard.png" alt="FretCoach Hub Dashboard" width="400"/>
-  <img src="docs/assets/images/hub/4. Hub - AI Coach.png" alt="FretCoach Hub AI Coach" width="400"/>
+  <img src="docs/assets/images/hub/1. Hub - Home.png" alt="FretCoach Hub Home" width="320"/>
+  <img src="docs/assets/images/hub/3. Hub - Dashboard.png" alt="FretCoach Hub Dashboard" width="320"/>
+  <img src="docs/assets/images/hub/4. Hub - AI Coach.png" alt="FretCoach Hub AI Coach" width="320"/>
 </p>
 
 ### Features
@@ -270,10 +342,10 @@ npm run dev  # http://localhost:5173
 Smart bulb integration for visual performance feedback.
 
 ### Color Coding
-- 🟢 Green — Good playing (70%+)
-- 🟡 Yellow-Green — Could be better (50-70%)
+- 🟢 Green — Excellent (70%+)
+- 🟡 Yellow-Green — Good (50-70%)
 - 🟠 Yellow — Average (30-50%)
-- 🔴 Red — Below average (<30%)
+- 🔴 Red — Needs Work (<30%)
 
 > **Configuration:** See [docs/environment-setup.md](docs/environment-setup.md#smart-bulb-setup-tuya)
 
@@ -318,7 +390,30 @@ FretCoach uses PostgreSQL hosted on Supabase with three core tables:
 |-------|---------|
 | `sessions` | Practice session data: metrics, scale config, note statistics, timestamps |
 | `ai_practice_plans` | AI-generated recommendations linked to sessions |
-| `user_configs` | User-specific metric preferences (pitch_accuracy, scale_conformity, timing_stability) |
+| `user_configs` | **NEW:** User-specific metric preferences (pitch_accuracy, scale_conformity, timing_stability) |
+
+### User-Specific Configuration
+
+Each user can independently configure which metrics to track:
+
+```sql
+CREATE TABLE fretcoach.user_configs (
+    user_id VARCHAR(255) PRIMARY KEY,
+    enabled_metrics JSONB NOT NULL DEFAULT '{
+        "pitch_accuracy": true,
+        "scale_conformity": true,
+        "timing_stability": true
+    }',
+    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**Features:**
+- Toggle metrics on/off per user (default_user, test_user, etc.)
+- Disabled metrics show as "Disabled" in UI instead of 0%
+- Overall Performance calculation excludes disabled metrics
+- Live AI Coach only comments on enabled metrics
+- Session database stores NULL for disabled metrics
 
 ---
 ## Feature Matrix
@@ -343,8 +438,6 @@ FretCoach uses PostgreSQL hosted on Supabase with three core tables:
 ---
 
 ## Documentation
-
-For detailed documention visit - https://padmanabhan-r.github.io/FretCoach/
 
 - [Architecture Overview](docs/architecture.md) — Comprehensive technical documentation
 - [Environment Setup](docs/environment-setup.md) — Configuration guide
