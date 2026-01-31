@@ -136,6 +136,7 @@ def create_practice_display(
     quality_state: QualityState,
     result: Any,
     target_pitch_classes: set,
+    enabled_metrics: dict,
 ) -> Panel:
     """Create the main practice display panel."""
 
@@ -164,10 +165,25 @@ def create_practice_display(
     lines.append(f"[bold cyan]Session Time[/] : [white]{session_time}[/]")
     lines.append("")
 
-    # Progress bars
-    lines.append(create_progress_line("Pitch Accuracy", pitch_pct, "green" if pitch_pct >= 90 else "yellow" if pitch_pct >= 70 else "red"))
-    lines.append(create_progress_line("Timing Stability", timing_pct, "green" if timing_pct >= 90 else "yellow" if timing_pct >= 70 else "red"))
-    lines.append(create_progress_line("Scale Conformity", scale_conformity_pct, "green" if scale_conformity_pct >= 90 else "yellow" if scale_conformity_pct >= 70 else "red"))
+    # Progress bars (show "Disabled" for disabled metrics)
+    lines.append(create_progress_line(
+        "Pitch Accuracy",
+        pitch_pct,
+        "green" if pitch_pct >= 90 else "yellow" if pitch_pct >= 70 else "red",
+        enabled_metrics.get("pitch_accuracy", True)
+    ))
+    lines.append(create_progress_line(
+        "Timing Stability",
+        timing_pct,
+        "green" if timing_pct >= 90 else "yellow" if timing_pct >= 70 else "red",
+        enabled_metrics.get("timing_stability", True)
+    ))
+    lines.append(create_progress_line(
+        "Scale Conformity",
+        scale_conformity_pct,
+        "green" if scale_conformity_pct >= 90 else "yellow" if scale_conformity_pct >= 70 else "red",
+        enabled_metrics.get("scale_conformity", True)
+    ))
     lines.append("")
 
     # Feedback
@@ -192,16 +208,20 @@ def create_practice_display(
     )
 
 
-def create_progress_line(label: str, value: int, color: str) -> str:
+def create_progress_line(label: str, value: int, color: str, enabled: bool = True) -> str:
     """Create a single progress bar line."""
+    # Pad label to 18 chars
+    padded_label = f"{label:<18}"
+
+    # Show "Disabled" for disabled metrics
+    if not enabled:
+        return f"{padded_label} [dim]Disabled[/]"
+
     # Create bar (10 chars wide)
     filled = value // 10
     empty = 10 - filled
 
     bar = f"[{color}]{'█' * filled}[/][dim]{'░' * empty}[/]"
-
-    # Pad label to 18 chars
-    padded_label = f"{label:<18}"
 
     return f"{padded_label} [{bar}] {value:>3}%"
 
@@ -341,8 +361,27 @@ class AudioProcessor:
 
 
 # =========================================================
-# MODE SELECTION
+# USER AND MODE SELECTION
 # =========================================================
+
+def select_user() -> str:
+    """Let user select between default_user and test_user."""
+    console.print("\n" + "═" * 50)
+    console.print("[bold cyan]SELECT USER[/]")
+    console.print("═" * 50)
+    console.print("\n  [bold]1.[/] default_user")
+    console.print("  [bold]2.[/] test_user")
+    console.print("\n" + "═" * 50)
+
+    while True:
+        choice = input("\nEnter choice (1 or 2): ").strip()
+        if choice == "1":
+            return "default_user"
+        elif choice == "2":
+            return "test_user"
+        else:
+            console.print("[red]Invalid choice. Please enter 1 or 2.[/]")
+
 
 def select_mode() -> str:
     """Let user select between Manual and AI mode."""
@@ -462,6 +501,56 @@ Generate a practice recommendation that:
         console.print(f"[red]AI recommendation failed: {e}[/]")
         console.print("[yellow]Falling back to manual mode...[/]")
         return None
+
+
+def configure_metrics(user_id: str) -> dict:
+    """
+    Interactive metric configuration.
+    Loads current config, allows user to toggle metrics, and saves to database.
+    """
+    # Import config service
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend', 'api', 'services'))
+    try:
+        from config_service import load_user_session_config, save_user_session_config
+
+        # Load current config
+        config = load_user_session_config(user_id)
+        enabled_metrics = config.get("enabled_metrics", {
+            "pitch_accuracy": True,
+            "scale_conformity": True,
+            "timing_stability": True
+        })
+
+        console.print("\n" + "═" * 50)
+        console.print(f"[bold cyan]CONFIGURE METRICS - {user_id}[/]")
+        console.print("═" * 50)
+
+        # Toggle each metric
+        for metric_name, metric_label in [
+            ("pitch_accuracy", "Pitch Accuracy"),
+            ("scale_conformity", "Scale Conformity"),
+            ("timing_stability", "Timing Stability")
+        ]:
+            current = "Enabled" if enabled_metrics.get(metric_name, True) else "Disabled"
+            console.print(f"\n[bold]{metric_label}[/] (currently {current})")
+
+            toggle = input(f"Enable {metric_label}? (Y/n): ").strip().lower()
+            enabled_metrics[metric_name] = (toggle != 'n')
+
+        # Save to database
+        save_user_session_config(user_id, {"enabled_metrics": enabled_metrics})
+        console.print("\n[green]Metric configuration saved![/]")
+
+        return enabled_metrics
+
+    except Exception as e:
+        console.print(f"[yellow]Could not load/save metric config: {e}[/]")
+        console.print("[yellow]Using default configuration (all metrics enabled)[/]")
+        return {
+            "pitch_accuracy": True,
+            "scale_conformity": True,
+            "timing_stability": True
+        }
 
 
 def get_target_pitch_classes(scale_name: str, scale_type: str) -> set:
@@ -743,10 +832,19 @@ def run_practice_session(
     sensitivity: float,
     ambient_lighting: bool,
     user_id: str = "default_user",
+    enabled_metrics: Optional[dict] = None,
 ):
     """Run the main practice session with live display."""
     global running
     running = True
+
+    # Default enabled metrics
+    if enabled_metrics is None:
+        enabled_metrics = {
+            "pitch_accuracy": True,
+            "scale_conformity": True,
+            "timing_stability": True
+        }
 
     # Initialize session logger
     session_logger: Optional[SessionLogger] = None
@@ -761,6 +859,7 @@ def run_practice_session(
             user_id=user_id,
             ambient_lighting=ambient_lighting,
             scale_type=scale_type,
+            enabled_metrics=enabled_metrics,
         )
     except Exception as e:
         console.print(f"[yellow]Session logging unavailable: {e}[/]")
@@ -793,7 +892,7 @@ def run_practice_session(
         with Live(
             create_practice_display(
                 scale_name, session_start,
-                processor.quality_state, None, target_pitch_classes
+                processor.quality_state, None, target_pitch_classes, enabled_metrics
             ),
             console=console,
             refresh_per_second=8,
@@ -808,11 +907,16 @@ def run_practice_session(
                 # Log metric to session if available
                 if session_logger and session_id and result:
                     try:
+                        # Pass None for disabled metrics
+                        pitch_acc = processor.quality_state.ema_pitch if enabled_metrics.get("pitch_accuracy", True) else None
+                        scale_conf = result.scale_coverage if enabled_metrics.get("scale_conformity", True) else None
+                        timing_stab = processor.quality_state.ema_timing if enabled_metrics.get("timing_stability", True) else None
+
                         session_logger.log_metric(
                             session_id=session_id,
-                            pitch_accuracy=processor.quality_state.ema_pitch,
-                            scale_conformity=result.scale_coverage,
-                            timing_stability=processor.quality_state.ema_timing,
+                            pitch_accuracy=pitch_acc,
+                            scale_conformity=scale_conf,
+                            timing_stability=timing_stab,
                             debug_info={
                                 "note_detected": result.note_detected,
                                 "in_scale": result.in_scale,
@@ -826,7 +930,7 @@ def run_practice_session(
                 live.update(
                     create_practice_display(
                         scale_name, session_start,
-                        processor.quality_state, result, target_pitch_classes
+                        processor.quality_state, result, target_pitch_classes, enabled_metrics
                     )
                 )
 
@@ -848,6 +952,7 @@ def run_practice_session(
             session_start,
             processor.quality_state,
             target_pitch_classes,
+            enabled_metrics,
         )
 
 
@@ -855,6 +960,7 @@ def show_session_summary(
     session_start: datetime,
     quality_state: QualityState,
     target_pitch_classes: set,
+    enabled_metrics: dict,
 ):
     """Display session summary after practice ends."""
     elapsed = datetime.now() - session_start
@@ -865,6 +971,13 @@ def show_session_summary(
     correct = quality_state.notes_in_scale(target_pitch_classes)
     wrong = quality_state.notes_out_of_scale(target_pitch_classes)
 
+    # Build metric lines
+    pitch_line = f"  Pitch Accuracy:    {quality_state.ema_pitch * 100:.1f}%" if enabled_metrics.get("pitch_accuracy", True) else "  Pitch Accuracy:    Disabled"
+    timing_line = f"  Timing Stability:  {quality_state.ema_timing * 100:.1f}%" if enabled_metrics.get("timing_stability", True) else "  Timing Stability:  Disabled"
+
+    # Overall quality excludes disabled metrics (simplified - just show if any metric enabled)
+    overall_line = f"  Overall Quality:   {quality_state.ema_quality * 100:.1f}%"
+
     console.print("\n")
     console.print(Panel(
         f"""[bold]Session Complete![/]
@@ -872,9 +985,9 @@ def show_session_summary(
 [cyan]Duration:[/] {minutes:02d}:{seconds:02d}
 
 [cyan]Final Scores:[/]
-  Pitch Accuracy:    {quality_state.ema_pitch * 100:.1f}%
-  Timing Stability:  {quality_state.ema_timing * 100:.1f}%
-  Overall Quality:   {quality_state.ema_quality * 100:.1f}%
+{pitch_line}
+{timing_line}
+{overall_line}
 
 [cyan]Notes Played:[/]
   Total:   {total}
@@ -903,21 +1016,47 @@ def main():
         box=box.DOUBLE,
     ))
 
-    # Step 1: Audio configuration
+    # Step 1: User selection
+    user_id = select_user()
+    console.print(f"\n[green]Selected user: {user_id}[/]")
+
+    # Step 2: Metric configuration (optional)
+    configure = input("\nConfigure metric settings? (y/N): ").strip().lower()
+    if configure == 'y':
+        enabled_metrics = configure_metrics(user_id)
+    else:
+        # Load existing config from database
+        try:
+            sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend', 'api', 'services'))
+            from config_service import load_user_session_config
+
+            config = load_user_session_config(user_id)
+            enabled_metrics = config.get("enabled_metrics", {
+                "pitch_accuracy": True,
+                "scale_conformity": True,
+                "timing_stability": True
+            })
+            console.print("[green]Loaded metric configuration from database[/]")
+        except Exception as e:
+            console.print(f"[yellow]Could not load metric config: {e}[/]")
+            console.print("[yellow]Using default configuration (all metrics enabled)[/]")
+            enabled_metrics = {
+                "pitch_accuracy": True,
+                "scale_conformity": True,
+                "timing_stability": True
+            }
+
+    # Step 3: Audio configuration
     audio_config = get_audio_config()
     if audio_config is None:
         console.print("[red]Audio configuration failed. Exiting.[/]")
         return
 
-    # Step 2: Mode selection
+    # Step 4: Mode selection
     mode = select_mode()
 
-    # Step 3: Get practice parameters based on mode
+    # Step 5: Get practice parameters based on mode
     if mode == "ai":
-        user_id = input("\nEnter your user ID (or press Enter for 'default_user'): ").strip()
-        if not user_id:
-            user_id = "default_user"
-
         recommendation = get_ai_recommendation(user_id)
 
         if recommendation:
@@ -942,9 +1081,6 @@ def main():
                 mode = "manual"
         else:
             mode = "manual"
-            user_id = "default_user"
-    else:
-        user_id = "default_user"
 
     if mode == "manual":
         # Manual scale selection (reuse from core)
@@ -959,7 +1095,7 @@ def main():
     # Get ambient lighting preference
     ambient_lighting = audio_config.get('ambient_lighting', True)
 
-    # Step 4: Run practice session
+    # Step 6: Run practice session
     run_practice_session(
         scale_name=scale_name,
         scale_type=scale_type,
@@ -969,6 +1105,7 @@ def main():
         sensitivity=sensitivity,
         ambient_lighting=ambient_lighting,
         user_id=user_id,
+        enabled_metrics=enabled_metrics,
     )
 
     console.print("\n[dim]Thanks for practicing with FretCoach![/]\n")

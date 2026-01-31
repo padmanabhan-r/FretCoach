@@ -315,11 +315,14 @@ class SessionLogger:
         scale_conformity = self._convert_numpy_types(scale_conformity)
         timing_stability = self._convert_numpy_types(timing_stability)
 
-        # Accumulate metrics
+        # Accumulate metrics (skip None values for disabled metrics)
         session = self.session_data[session_id]
-        session["pitch_accuracy_sum"] += pitch_accuracy
-        session["scale_conformity_sum"] += scale_conformity
-        session["timing_stability_sum"] += timing_stability
+        if pitch_accuracy is not None:
+            session["pitch_accuracy_sum"] += pitch_accuracy
+        if scale_conformity is not None:
+            session["scale_conformity_sum"] += scale_conformity
+        if timing_stability is not None:
+            session["timing_stability_sum"] += timing_stability
         session["metric_count"] += 1
 
         # Track notes if debug info provided
