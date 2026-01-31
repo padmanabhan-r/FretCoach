@@ -10,12 +10,11 @@
 
 ## Overview
 
-**FretCoach is a real-time AI guitar practice system.**  
-It listens as you play and delivers **instant feedback**, fixing mistakes **in the moment**—not days later.
+**FretCoach is a real-time AI guitar practice system** that listens as you play and delivers **instant feedback**, fixing mistakes **in the moment**—not days later.
 
 This helps you learn correct technique **before bad habits form**.
 
-**Most tools correct mistakes. FretCoach prevents them.**
+**Most tools correct mistakes. FretCoach prevents them from happening in the first place.**
 
 ---
 
@@ -25,12 +24,12 @@ This helps you learn correct technique **before bad habits form**.
 
 **Close the feedback loop from days to milliseconds:**
 
-- **Local Audio Analysis Agent Engine (<300ms):** A real-time audio analysis agent engine (fast loop) that listens to every note and computes live performance metrics.
-- **AI Practice Coach:** Provides strategic guidance and practice insights based on your playing patterns (slow loop).
-- **Multi-sensory feedback:** Visual on-screen cues, voice reinforcement—beyond text alone, ambient environmental feedback (*Yes! the environment around you is a feedback channel*)
-- **Gamification:** Scores, color signals, and progress tracking to reinforce consistency.
+- **Local Audio Analysis Agent Engine (<300ms):** A real-time audio analysis engine (fast loop) that listens to every note and computes live performance metrics
+- **AI Practice Coach:** Provides strategic guidance and practice insights based on your playing patterns (slow loop)
+- **Multi-sensory feedback:** Visual on-screen cues, voice reinforcement, and ambient environmental feedback (*Yes! Your environment becomes a feedback channel*)
+- **Gamification:** Scores, color signals, and progress tracking to reinforce consistency and motivation
 
-Every note you play is evaluated immediately.  Correct patterns are reinforced. Incorrect ones are flagged **before they turn into habits**.
+Every note you play is evaluated immediately. Correct patterns are reinforced. Incorrect ones are flagged **before they turn into habits**.
 
 **Result:** Neuroadaptive learning that shapes motor behavior in real time—not retroactively.
 
@@ -44,24 +43,27 @@ FretCoach is built as a three-part system, with all components connected through
 
 ![FretCoach Trifecta](images/FretCoach%20Trifecta.jpeg)
 
-- **FretCoach Studio** — Desktop application for real-time practice, live AI coaching, and ambient lighting feedback  
-- **FretCoach Portable** — Raspberry Pi–powered portable unit for on-the-go practice sessions  
+- **FretCoach Studio** — Desktop application for real-time practice, live AI coaching, and ambient lighting feedback
+- **FretCoach Portable** — Raspberry Pi–powered portable unit for practicing on-the-go
 - **FretCoach Hub** — Web-based dashboard for analytics, progress tracking, session review, and AI-driven practice planning
 
->**Like having a coach next to you, wherever you go!!**
+> **Like having a coach next to you, wherever you go!!**
+
 ---
 
 ## How It Works
 
 ### Preventive Neurofeedback Music Learning System
 
-FretCoach is a **Preventive Neurofeedback System** — it shapes motor behavior in real time before maladaptive patterns form. Instead of corrective feedback after mistakes solidify, FretCoach intervenes **during skill execution** inside the brain's plasticity window.
+FretCoach is a **Preventive Neurofeedback System** — it shapes motor behavior in real time before maladaptive patterns form. Instead of corrective feedback after mistakes solidify, FretCoach intervenes **during skill execution**, inside the brain's plasticity window.
 
 > **Prevention is neuroadaptive. Correction is retrofitting.**
 
-We would like to call this a **dual-brain architecture** combining fast deterministic processing with intelligent AI coaching.
+We call this a **dual-brain architecture**, combining fast deterministic processing with intelligent AI coaching.
 
 ![FretCoach Brain Architecture](images/FretCoach%20Brain.png)
+
+---
 
 ### The Two Systems
 
@@ -71,23 +73,25 @@ We would like to call this a **dual-brain architecture** combining fast determin
 - Continuous pitch, scale, timing, noise evaluation using *Digital Signal Processing*
 - Controls on screen performance metrics and ambient lighting system
 
-**LLM Powereed AI Coach (Slow Loop) - Right Brain**
-- LLM-powered preventive coaching: Provide consistent vocal textual feedback at constant intervals during live playing to improve instantly.
-- Post session pattern analysis and curating personlized practice plans based on weak areas
+**LLM Powered AI Coach (Slow Loop) - Right Brain**
+- LLM-powered preventive coaching: Provides consistent vocal and textual feedback at regular intervals during live playing for instant improvement
+- Post-session pattern analysis and personalized practice plan curation based on identified weak areas
 - On-demand (not real-time critical)
-- Powered by LLM models like Gemini 2.5 Flash, OpenAI gpt-4o-mini, gpt-4o-mini-tts etc.
+- Powered by LLM models: Gemini 2.5 Flash, OpenAI GPT-4o-mini, GPT-4o-mini-TTS
 
->**Hybrid architecture: local speed + AI intelligence = intervention before habits solidify.**
+> **Hybrid architecture: local speed + AI intelligence = intervention before habits solidify.**
+
+---
 
 ### Performance Metrics
 
-Fretcoach currently targets the scales in music ( think like vegetables of the music world! You gotta eat them.)
+FretCoach currently targets scales in music (think of them as the vegetables of the music world—you gotta eat them!).
 
-FretCoach's audio analysis engine evaluates your playing across four metrics:
+The audio analysis engine evaluates your playing across four core metrics:
 
-| Metric | What It Measures  |
+| Metric | What It Measures |
 |--------|------------------|
-| **Pitch Accuracy** | Note accuracy and intonation against the target scale 
+| **Pitch Accuracy** | Note accuracy and intonation against the target scale |
 | **Scale Conformity** | Scale coverage and adherence |
 | **Timing Stability** | Rhythmic and timing consistency |
 | **Noise Control** | String noise and unwanted artifacts |
@@ -175,7 +179,7 @@ Desktop application for focused practice sessions.
 - Real-time audio analysis (USB interface or built-in mic)
 - Live visual metrics and performance scoring
 - Manual (choose scale/settings) and AI practice modes (recommended plans)
-- Live vocal AI coaching during sessions
+- Live vocal AI coaching during sessions. (*Imagine a courtside basketball coach*)
 - Ambient lighting feedback
 - Automatic session logging and summaries
 
@@ -199,9 +203,9 @@ npm run dev  # Starts Electron + React frontend + Python FastAPI backend
 
 **Location:** `/portable/`
 
-Raspberry Pi 5-based portable practice device. Same analysis engine as Studio.
+Raspberry Pi 5-based portable practice device. Same analysis engine as Studio, but on-the-go.
 
-**Status:** Prototyping phase - but showing the possibility here!
+**Status:** Prototyping phase — showcasing what's possible!
 
 ### Features
 - Same core engine as the FretCoach Studio
@@ -219,15 +223,15 @@ Raspberry Pi 5-based portable practice device. Same analysis engine as Studio.
 - ✅ Hardware setup complete
 - ✅ Audio I/O testing successful
 - ✅ Software integration in progress
-- ✅ Database sync mechanism
-- 📋 Planned: Physical enclosure design using 3D printers, footswitch control, LCD touchscreen 
+- ✅ Database sync mechanism implemented
+- 📋 **Planned:** Physical enclosure design (3D printed), footswitch control, LCD touchscreen interface 
 
 ---
 
 ## 3. FretCoach Hub (Web Platform)
 
 **Website:** [fretcoach.online](https://www.fretcoach.online)
-**Anlytics and AI Coach Dashboard:** [fretcoach.online/dashboard](https://www.fretcoach.online/dashboard)
+**Analytics and AI Coach Dashboard:** [fretcoach.online/dashboard](https://www.fretcoach.online/dashboard)
 
 Web platform for analytics and practice planning.
 
@@ -344,16 +348,18 @@ FretCoach uses PostgreSQL hosted on Supabase with three core tables:
 
 ## Documentation
 
-For detailed documention visit - https://padmanabhan-r.github.io/FretCoach/
+📚 **For comprehensive documentation, visit: [FretCoach Docs](https://padmanabhan-r.github.io/FretCoach/)**
 
-- [Architecture Overview](docs/architecture.md) — Comprehensive technical documentation
-- [Environment Setup](docs/environment-setup.md) — Configuration guide
-- [Desktop Application](docs/desktop-app.md) — Studio setup and usage
-- [Audio Analysis Agent Engine](docs/audio-analysis-agent-engine.md) — Real-time audio processing (Fast Loop)
-- [AI Coach Agent Engine](docs/ai-coach-agent-engine.md) — LLM-powered coaching (Slow Loop)
-- [Portable Application](docs/portable-app.md) — Raspberry Pi device documentation
-- [Web Dashboard](docs/web-dashboard.md) — Analytics and AI coach platform
-- [Opik Integration](opik/README.md) — Use of Opik
+### Quick Links
+
+- [Architecture Overview](https://padmanabhan-r.github.io/FretCoach/architecture.html) — Comprehensive technical documentation
+- [Environment Setup](https://padmanabhan-r.github.io/FretCoach/environment-setup.html) — Configuration guide for all platforms
+- [Desktop Application](https://padmanabhan-r.github.io/FretCoach/desktop-app.html) — Studio setup and usage
+- [Audio Analysis Agent Engine](https://padmanabhan-r.github.io/FretCoach/audio-analysis-agent-engine.html) — Real-time audio processing (Fast Loop)
+- [AI Coach Agent Engine](https://padmanabhan-r.github.io/FretCoach/ai-coach-agent-engine.html) — LLM-powered coaching (Slow Loop)
+- [Portable Application](https://padmanabhan-r.github.io/FretCoach/portable-app.html) — Raspberry Pi device documentation
+- [Web Dashboard](https://padmanabhan-r.github.io/FretCoach/web-dashboard.html) — Analytics and AI coach platform
+- [Opik Integration](opik/README.md) — Observability and monitoring
 
 ---
 
@@ -361,8 +367,8 @@ For detailed documention visit - https://padmanabhan-r.github.io/FretCoach/
 
 FretCoach is under active development. Contributions, bug reports, and feature requests are welcome.
 
-**Built with:** Electron, React, Python, FastAPI, LangChain, OpenAI, Google Gemini, PostgreSQL, Supabase
-
 ---
 
 **FretCoach** — *Preventive AI for guitar mastery*
+
+*Building with love for music and guitar, by a guitarist* 🎸
