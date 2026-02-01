@@ -18,35 +18,7 @@ Personal practice studio with AI coach analyzing every note.
 
 ---
 
-## Architecture
-
-```
-┌─────────────────────────────────────────────────┐
-│           Electron Main Process                 │
-│  ─────────────────────────────────────────────  │
-│  • Spawns Python backend subprocess             │
-│  • Manages window lifecycle                     │
-│  • Handles IPC with renderer                    │
-└────────────────┬────────────────────────────────┘
-                 │
-    ┌────────────┴────────────┐
-    │                         │
-    ▼                         ▼
-┌──────────────────┐  ┌──────────────────────────┐
-│ React Frontend   │  │  Python Backend          │
-│ ────────────────│  │  ──────────────────────  │
-│ • UI components  │  │  • FastAPI server        │
-│ • State mgmt     │◄─┤  • Audio processing      │
-│ • WebSocket      │  │  • AI orchestration      │
-│   client         │  │  • Smart bulb control    │
-└──────────────────┘  └───────────┬──────────────┘
-                                  │
-                                  ▼
-                      ┌────────────────────────┐
-                      │   Audio Input Device   │
-                      │  USB Interface or Mic  │
-                      └────────────────────────┘
-```
+> **Architecture:** See [System Architecture](architecture.md) for detailed desktop app architecture and technical diagrams.
 
 ---
 
@@ -144,7 +116,7 @@ The AI uses OpenAI GPT-4o-mini or Google Gemini to analyze patterns and generate
 
 ### 3. Live AI Coach Feedback
 
-During active practice sessions, the AI coach provides real-time verbal feedback displayed on screen:
+During active practice sessions, the AI coach provides real-time feedback both visually and vocally:
 
 **Example feedback:**
 - *"Your timing is drifting—lock in with the beat."*
@@ -154,9 +126,14 @@ During active practice sessions, the AI coach provides real-time verbal feedback
 **How it works:**
 - Every 30 seconds (configurable), frontend sends current metrics to backend
 - Backend identifies the weakest metric
-- LLM generates specific, actionable coaching instruction
-- Frontend displays feedback in the "Live Coach" panel
+- LLM (GPT-4o-mini) generates specific, actionable coaching instruction
+- Text-to-speech (GPT-4o-mini-TTS) converts feedback to spoken audio
+- Feedback is both **spoken aloud** and **displayed** in the "Live Coach" panel
 - All interactions traced in Opik
+
+**Feedback intervals:**
+- Configurable: 30 seconds, 1 minute, 2 minutes, or 5 minutes
+- Adapts commentary to only enabled metrics
 
 **System prompt** (excerpt):
 ```
@@ -287,26 +264,7 @@ Every practice session is automatically saved to the PostgreSQL database:
 - Unique notes used (coverage metric)
 - User ID for cross-device sync
 
-**Session summary (shown at end):**
-```
-┌─────────────────────────────────────────┐
-│         Session Summary                 │
-├─────────────────────────────────────────┤
-│ Duration: 8m 42s                        │
-│ Scale: A Minor Pentatonic               │
-│                                         │
-│ Performance: Good (61%)                 │
-│                                         │
-│ Pitch Accuracy:      78% (Excellent)    │
-│ Scale Conformity:    82% (Excellent)    │
-│ Timing Stability:    45% (Average)      │
-│ Noise Control:       71% (Excellent)    │
-│                                         │
-│ Notes: 247 played (241 correct, 6 wrong)│
-│                                         │
-│ 💡 Focus on timing in your next session│
-└─────────────────────────────────────────┘
-```
+At the end of each session, a summary screen displays the performance metrics and provides actionable feedback.
 
 **Database table:** `fretcoach.sessions`
 
@@ -350,7 +308,8 @@ Every practice session is automatically saved to the PostgreSQL database:
 - "Generate New" button
 
 ### Live Coach Feedback
-- Real-time AI feedback messages
+- Real-time AI feedback messages (spoken and displayed)
+- Audio playback of TTS-generated coaching
 - Timestamp for each message
 - Scrollable history of feedback during session
 
@@ -642,7 +601,7 @@ Output: `application/release/`
 1. **Switch to AI Mode** for adaptive challenges
 2. **Increase strictness** (0.5-0.7) to enforce precision
 3. **Practice multiple scales** to improve coverage
-4. **Pay attention to live feedback** during sessions
+4. **Listen to live vocal coaching** during sessions for real-time corrections
 5. **Track progress** in the web dashboard
 
 ### For Advanced Players
