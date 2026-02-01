@@ -14,7 +14,8 @@ from audio_features import (
     calculate_note_timing_stability,
     noise_control,
     calculate_scale_coverage,
-    detect_note_onset
+    detect_note_onset,
+    DEBUG_AUDIO,
 )
 
 
@@ -225,10 +226,11 @@ def process_audio_frame(
             state.note_onset_times_ms.append(current_time_ms)
             state.last_pitch_class = pitch_class
 
-            # Debug: Log onset detection
-            import random
-            if random.random() < 0.15:  # 15% of the time
-                print(f"[ONSET DEBUG] Onset #{len(state.note_onset_times_ms)}: {last_pitch}→{pitch_class}, gap={time_since_last:.0f}ms")
+            # Debug: Log onset detection (only if DEBUG_AUDIO is enabled)
+            if DEBUG_AUDIO:
+                import random
+                if random.random() < 0.15:  # 15% of the time
+                    print(f"[ONSET DEBUG] Onset #{len(state.note_onset_times_ms)}: {last_pitch}→{pitch_class}, gap={time_since_last:.0f}ms")
     else:
         # No note detected = silence
         # Reset last_pitch so next note (even if same pitch class) triggers onset
