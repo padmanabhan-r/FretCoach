@@ -128,7 +128,7 @@ OPIK_WORKSPACE=your_workspace_name
 - **Custom Metrics:** Practice-specific evaluation metrics
 - **Dashboards:** Real-time monitoring of AI coach performance
 
-**For detailed Opik implementation:** See [use-of-opik/opik-usage.md](../use-of-opik/opik-usage.md)
+**For detailed Opik implementation:** See [Opik Observability](opik-observability.md)
 
 **Note:** If not configured, AI features work without observability, but you won't have visibility into LLM performance and costs.
 
@@ -355,10 +355,9 @@ git check-ignore backend/.env  # Should output: backend/.env
 - Use separate keys for development/production
 - Monitor usage in provider dashboards
 
-## Next Steps
+---
 
-After environment setup:
-
-- [Quickstart Guide](quickstart.md) - Run your first session
-- [Desktop App Guide](desktop-app.md) - Studio features and usage
-- [Architecture Overview](architecture.md) - System design
+**Navigation:**
+- [← Architecture](architecture.md)
+- [Troubleshooting →](troubleshooting.md)
+- [Back to Index](index.md)

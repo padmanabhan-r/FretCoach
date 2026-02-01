@@ -274,5 +274,5 @@ All calculations happen locally on your computer, running every 150ms for real-t
 ---
 
 **Navigation:**
-- [← Desktop Application](desktop-app.md)
+- [← Troubleshooting Guide](troubleshooting.md)
 - [Back to Index](index.md)

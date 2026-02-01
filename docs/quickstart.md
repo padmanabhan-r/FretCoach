@@ -329,17 +329,6 @@ Having issues? Here are the most common quick fixes:
 
 ---
 
-## Next Steps
-
-Now that you have FretCoach running:
-
-→ **[Desktop Application Guide](desktop-app.md)** — Deep dive into all features
-→ **[AI Coach Agent Engine](ai-coach-agent-engine.md)** — Learn how AI recommendations work
-→ **[Audio Analysis Agent Engine](audio-analysis-agent-engine.md)** — Learn how real-time audio analysis works
-→ **[Environment Setup](environment-setup.md)** — Complete configuration guide
-
----
-
 ## Common Workflows
 
 ### Daily Practice Routine

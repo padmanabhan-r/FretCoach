@@ -599,5 +599,4 @@ FretCoach Portable demonstrates that **edge computing enables neuroplasticity tr
 **Navigation:**
 - [← Desktop Application](desktop-app.md)
 - [Web Dashboard →](web-dashboard.md)
-- [Architecture Overview](architecture.md)
 - [Back to Index](index.md)

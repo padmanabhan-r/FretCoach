@@ -737,5 +737,6 @@ Include:
 ---
 
 **Navigation:**
-- [← Quickstart Guide](quickstart.md)
-- [Environment Setup →](environment-setup.md)
+- [← Environment Setup](environment-setup.md)
+- [Appendix: Audio Math →](appendix-audio-math.md)
+- [Back to Index](index.md)
