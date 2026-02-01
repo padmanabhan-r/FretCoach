@@ -383,4 +383,4 @@ FretCoach is under active development. Contributions, bug reports, and feature r
 
 **FretCoach** — *Preventive AI for guitar mastery*
 
-*Building with love for music and guitar, by a guitarist* 🎸
+*Built with love for the music and the guitar* 🎸
