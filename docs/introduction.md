@@ -117,12 +117,14 @@ FretCoach consists of three connected components that work together seamlessly t
 ### FretCoach Studio (Desktop Application)
 Desktop app for focused practice. Connects via USB audio interface, analyzes in real-time, displays metrics, and provides AI coaching.
 
-![Studio Home](assets/images/studio/1.%20Studio%20-%20Home%20Page.png)
+![Studio Home](assets/images/studio/9.%20Studio%20-%20Live%20Session.png)
 
 **When to use:** Dedicated practice sessions
 
 ### FretCoach Portable (Raspberry Pi Device)
 Raspberry Pi 5 device with the same analysis engine. Supports Manual and AI modes, syncs automatically.
+
+![Porable Terminal](assets/images/portable/FretCoach%20Portable.png)
 
 **When to use:** Practice anywhere without a laptop
 

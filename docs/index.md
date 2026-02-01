@@ -141,9 +141,9 @@ Powered by Digital Signal Processing using packages - **librosa**, **NumPy**, an
 *For the nerds who want to deep dive into the math and DSP, see [Audio Processing Mathematics](appendix-audio-math.md).*
 
 ### Feedback Mechanisms
-- **Visual:** WebSocket broadcast to React UI (6.67 Hz updates)
+- **Visual:** WebSocket broadcast to React UI
 - **Ambient:** Smart bulb HSV color control (Green → Yellow → Orange → Red)
-- **Database:** Session logging to PostgreSQL/Supabase
+- **Spoken:** Session logging to PostgreSQL/Supabase
 - **Purpose:** Multi-channel real-time feedback
 
 **Processing:** All audio analysis runs **locally** with no cloud dependency.
