@@ -71,7 +71,7 @@ Metrics stream to the frontend via WebSocket at ~300ms intervals for live displa
 - Frequency detection: librosa `piptrack` (YIN algorithm)
 - Onset detection: Coefficient of variation on recent intervals
 
-**See:** [Audio Processing Engine](audio-engine.md) for deep dive.
+**See:** [Audio Analysis Agent Engine](audio-analysis-agent-engine.md) for deep dive.
 
 ### 2. Dual Practice Modes
 
@@ -310,7 +310,7 @@ Every practice session is automatically saved to the PostgreSQL database:
 
 **Database table:** `fretcoach.sessions`
 
-**See:** [Database Schema](database.md) for table structure.
+**See:** [Database Schema](index.md#database-schema) for table structure.
 
 ---
 
@@ -440,7 +440,7 @@ ws.onmessage = (event) => {
 - `scales.py` — Scale definitions
 - `smart_bulb.py` — Tuya API integration
 
-**See:** [Audio Processing Engine](audio-engine.md) for implementation details.
+**See:** [Audio Analysis Agent Engine](audio-analysis-agent-engine.md) for implementation details.
 
 ### Electron Integration
 
@@ -670,5 +670,5 @@ Planned features for future releases:
 
 **Navigation:**
 - [← Quickstart Guide](quickstart.md)
-- [Web Dashboard →](web-dashboard.md)
-- [Audio Processing Engine →](audio-engine.md)
+- [Portable Application →](portable-app.md)
+- [Back to Index](index.md)

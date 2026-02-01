@@ -879,6 +879,6 @@ except ImportError:
 ---
 
 **Navigation:**
-- [← Architecture](architecture.md)
-- [Appendix: Audio Math →](appendix-audio-math.md)
+- [← Audio Analysis Agent Engine](audio-analysis-agent-engine.md)
+- [Architecture →](architecture.md)
 - [Back to Index](index.md)

@@ -730,6 +730,6 @@ app.add_middleware(
 ---
 
 **Navigation:**
-- [← Judges Start Here](judges-start-here.md)
-- [Desktop Application →](desktop-app.md)
-- [Audio Processing Engine →](audio-engine.md)
+- [← AI Coach Agent Engine](ai-coach-agent-engine.md)
+- [Environment Setup →](environment-setup.md)
+- [Back to Index](index.md)

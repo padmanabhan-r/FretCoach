@@ -954,6 +954,5 @@ USER_ID=paddy  # Default user ID for testing
 
 **Navigation:**
 - [← Portable Application](portable-app.md)
-- [AI Coach Agent Engine →](ai-coach-agent-engine.md)
-- [Architecture Overview](architecture.md)
+- [Audio Analysis Agent Engine →](audio-analysis-agent-engine.md)
 - [Back to Index](index.md)

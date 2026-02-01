@@ -297,7 +297,4 @@ Use this to quickly assess FretCoach:
 
 **Navigation:**
 - [← Back to Index](index.md)
-- [Full Documentation →](index.md)
-- [Architecture Details →](architecture.md)
-- [AI Coach Agent Engine →](ai-coach-agent-engine.md)
-- [Audio Analysis Agent Engine →](audio-analysis-agent-engine.md)
+- [Full Documentation →](introduction.md)
