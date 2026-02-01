@@ -47,8 +47,7 @@ Requires local setup but shows all features:
 
 ```bash
 # Backend
-cd backend && source .venv/bin/activate
-uvicorn backend.api.server:app --reload --host 127.0.0.1 --port 8000
+cd backend && uv run uvicorn backend.api.server:app --reload --host 127.0.0.1 --port 8000
 
 # Frontend
 cd application && npm run dev

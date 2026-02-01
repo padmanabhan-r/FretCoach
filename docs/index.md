@@ -223,6 +223,8 @@ Desktop application for focused practice sessions.
 
 ### 2. FretCoach Portable (Raspberry Pi Device)
 
+![Portable Terminal](assets/images/portable/Fretcoach%20Portable.png)
+
 Raspberry Pi 5-based portable practice device. Same analysis engine as Studio, but on-the-go.
 
 **Status:** Prototyping phase — showcasing what's possible!

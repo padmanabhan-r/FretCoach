@@ -8,13 +8,14 @@ Get FretCoach up and running in 5 minutes.
 
 Before starting, ensure you have:
 
-- **Python 3.10+** installed
+- **Python 3.12+** installed
 - **Node.js 18+** and npm installed
 - A **guitar and audio input** (USB interface like Focusrite Scarlett, or built-in microphone)
 - **PostgreSQL database** (Supabase recommended for cloud sync)
 - **API keys:**
-  - OpenAI API key (for AI coaching)
-  - Google Gemini API key (optional, alternative to OpenAI)
+  - OpenAI API key (for AI coaching and TTS)
+  - Google Gemini API key (for practice plans and web AI coach)
+  - Opik API key (optional, for LLM observability)
   - Tuya smart bulb credentials (optional, for ambient lighting)
 
 ---
@@ -26,7 +27,7 @@ The desktop app is your primary practice interface. Get it running locally:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/FretCoach.git
+git clone https://github.com/padmanabhan-r/FretCoach.git
 cd FretCoach
 ```
 
@@ -35,13 +36,11 @@ cd FretCoach
 ```bash
 cd backend
 
-# Create virtual environment
-python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
+# Install dependencies with uv
+uv sync
 ```
+
+> **Note:** If you don't have `uv` installed, get it from [uv installation guide](https://docs.astral.sh/uv/getting-started/installation/)
 
 ### 3. Configure Environment Variables
 
@@ -49,7 +48,7 @@ Create `backend/.env` with database, AI keys, and optional services.
 
 > **Complete setup guide:** [environment-setup.md](environment-setup.md)
 
-**Quick template:**
+**Sample template:**
 ```bash
 DB_HOST=your_supabase_host.supabase.co
 DB_USER=postgres
@@ -73,8 +72,8 @@ Or if using Supabase, copy the contents of `sql/fretcoach_supabase_schema.sql` a
 ### 5. Start Backend Server
 
 ```bash
-# From backend directory, with venv activated
-uvicorn backend.api.server:app --reload --host 127.0.0.1 --port 8000
+# From project root directory
+uv run uvicorn backend.api.server:app --reload --host 127.0.0.1 --port 8000
 ```
 
 You should see:
@@ -183,10 +182,10 @@ The web dashboard lets you review sessions, chat with the AI coach, and generate
 ### 1. Set Up Backend
 
 ```bash
-cd web/server
+cd web/web-backend
 
 # Install dependencies
-pip install -r requirements.txt
+uv sync
 
 # Create .env (same credentials as desktop backend)
 cp ../../backend/.env .env
@@ -195,7 +194,7 @@ cp ../../backend/.env .env
 ### 2. Start Backend
 
 ```bash
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ### 3. Set Up Frontend
@@ -203,11 +202,11 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 Open a new terminal:
 
 ```bash
-cd web
+cd web/web-frontend
 npm install
 
 # Create .env for frontend
-echo "VITE_API_URL=http://localhost:8000" > .env
+echo "VITE_API_BASE_URL=http://localhost:8000" > .env
 ```
 
 ### 4. Start Frontend
@@ -291,10 +290,16 @@ Preferences persist across sessions.
 
 ### AI Feedback
 
-Three modes:
-- **Real-time:** Analyzes metrics during execution
-- **Corrective:** Specific techniques to apply immediately
-- **Post-session:** Performance summary
+**Live Coaching During Session:**
+- Provides vocal and textual feedback at regular intervals
+- Intervals: 30 seconds, 1 minute, 2 minutes, or 5 minutes (configurable)
+- Adapts feedback to enabled metrics only
+- Uses GPT-4o-mini + GPT-4o-mini-TTS
+
+**Post-Session Analysis:**
+- Performance summary with specific improvement suggestions
+- Personalized practice plan generation
+- All LLM calls traced via Opik for observability
 
 Focus one metric at a time. Timing weakness? Prioritize timing before other metrics.
 
@@ -312,47 +317,15 @@ As you improve:
 
 ## Troubleshooting
 
-### Backend Won't Start
+Having issues? Here are the most common quick fixes:
 
-**Error:** `ModuleNotFoundError: No module named 'fastapi'`  
-**Fix:** Activate virtual environment and reinstall dependencies:
-```bash
-source backend/.venv/bin/activate
-pip install -r backend/requirements.txt
-```
+**Backend won't start:** Ensure dependencies installed with `uv sync`
+**No audio detected:** Check device connection and microphone permissions
+**Database connection failed:** Verify Supabase credentials in `.env`
+**AI coach not responding:** Check API keys and account credits
+**Smart bulb not working:** Verify Tuya credentials (optional feature)
 
-### No Audio Input Detected
-
-**Error:** "No audio devices found"  
-**Fix:** 
-- Ensure audio interface is connected
-- Check system sound settings
-- On macOS: Grant microphone permissions to Terminal/Electron
-
-### Database Connection Failed
-
-**Error:** `Connection refused` or `could not connect to server`  
-**Fix:** 
-- Verify database credentials in `.env`
-- Check database is running and accessible
-- Test connection: `psql -h your_host -U postgres -d postgres`
-
-### AI Coach Not Responding
-
-**Error:** No AI feedback appearing  
-**Fix:** 
-- Verify OpenAI or Gemini API key in `.env`
-- Check API key has sufficient credits
-- Review backend logs for API errors
-
-### Smart Bulb Not Working
-
-**Error:** Bulb doesn't change color  
-**Fix:** 
-- Verify Tuya credentials in `.env`
-- Check bulb is online and reachable
-- Test Tuya API connection separately
-- Ambient lighting is optional—FretCoach works without it
+**For detailed troubleshooting:** See [Troubleshooting Guide](troubleshooting.md) for comprehensive solutions to common issues
 
 ---
 

@@ -6,6 +6,8 @@
 
 **A real-time practice coach that guides you while you play**
 
+> **Already know about FretCoach?** Jump to the [Quickstart Guide](docs/quickstart.md) to get started. **New here?** Read on to understand what makes this different.
+
 ---
 
 ## Overview
@@ -48,6 +50,16 @@ FretCoach is built as a three-part system, with all components connected through
 - **FretCoach Hub** — Web-based dashboard for analytics, progress tracking, session review, and AI-driven practice planning
 
 > **Like having a coach next to you, wherever you go!!**
+
+---
+
+## For Commit To Change Hackathon Judges 🏆
+
+**Want to understand FretCoach super fast?** Check out the [quick deck](#) and [explainer video](#) for a rapid overview. But I would also suggest you read on—at least this README.md fully—to get a proper idea of this product.
+
+**For judges of the "Best Use of Opik" category:** Please see [use-of-opik/opik-usage.md](use-of-opik/opik-usage.md) for detailed documentation on all the Opik features I've explored and implemented.
+
+**Personal note:** Wow, what a tool! Why have I not been using Opik for my LLM projects before? I'm genuinely impressed—from advanced tracing capabilities, agent graphs for LangGraph visualization, custom eval metrics, and dashboards, to AI Assist. Right after this hackathon, I'm certain I'll be integrating Opik into my work projects. This isn't just hackathon enthusiasm—I've found a tool that solves real problems I face daily with LLM observability and optimization.
 
 ---
 
@@ -201,7 +213,15 @@ npm run dev  # Starts Electron + React frontend + Python FastAPI backend
 
 ## 2. FretCoach Portable (Raspberry Pi Device)
 
+> **Like a portable guitar pedal**
+> In prototyping — evolving into a physical unit with enclosure, LCD display, and footswitch for On/Off control.
+
+
 **Location:** `/portable/`
+
+<p align="center">
+  <img src="images/FretCoach Portable.png" alt="FretCoach Portable Home" width="600"/>
+</p>
 
 Raspberry Pi 5-based portable practice device. Same analysis engine as Studio, but on-the-go.
 
@@ -224,7 +244,7 @@ Raspberry Pi 5-based portable practice device. Same analysis engine as Studio, b
 - ✅ Audio I/O testing successful
 - ✅ Software integration in progress
 - ✅ Database sync mechanism implemented
-- 📋 **Planned:** Physical enclosure design (3D printed), footswitch control, LCD touchscreen interface 
+- 📋 **Planned:** Physical enclosure design, footswitch control, LCD touchscreen interface 
 
 ---
 
@@ -365,10 +385,12 @@ FretCoach uses PostgreSQL hosted on Supabase with three core tables:
 
 ## Contributing
 
-FretCoach is under active development. Contributions, bug reports, and feature requests are welcome.
+FretCoach is under active development. Contributions, ideas, suggestions, bug reports, and feature requests are welcome.
+
+Extra hands are always welcome to help build the product and scale it across multiple instruments.
 
 ---
 
-**FretCoach** — *Preventive AI for guitar mastery*
+**FretCoach** — *Built with love for the music and the guitar* 🎸
 
-*Building with love for music and guitar, by a guitarist* 🎸
+

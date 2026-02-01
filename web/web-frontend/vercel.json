@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/documentation",
+      "destination": "https://padmanabhan-r.github.io/FretCoach"
+    },
+    {
+      "source": "/documentation/(.*)",
+      "destination": "https://padmanabhan-r.github.io/FretCoach/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

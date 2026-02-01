@@ -282,7 +282,6 @@ sudo apt update && sudo apt upgrade -y
 # Install system dependencies
 sudo apt install -y \
     python3.11 \
-    python3.11-venv \
     python3-pip \
     portaudio19-dev \
     libsndfile1 \
@@ -301,12 +300,13 @@ git clone https://github.com/yourusername/FretCoach.git
 cd FretCoach
 ```
 
-**3. Backend setup:**
+**3. Install uv and backend dependencies:**
 ```bash
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
 cd backend
-python3.11 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+uv sync
 
 # Create .env file
 cp .env.example .env
@@ -332,8 +332,7 @@ python3 -c "import sounddevice as sd; print(sd.query_devices())"
 **6. Test backend:**
 ```bash
 cd ~/FretCoach/backend
-source .venv/bin/activate
-uvicorn backend.api.server:app --host 0.0.0.0 --port 8000
+uv run uvicorn backend.api.server:app --host 0.0.0.0 --port 8000
 
 # Open browser: http://<pi-ip>:8000/docs
 ```
@@ -355,8 +354,7 @@ After=network.target
 Type=simple
 User=pi
 WorkingDirectory=/home/pi/FretCoach/backend
-Environment="PATH=/home/pi/FretCoach/backend/.venv/bin"
-ExecStart=/home/pi/FretCoach/backend/.venv/bin/uvicorn backend.api.server:app --host 0.0.0.0 --port 8000
+ExecStart=/home/pi/.cargo/bin/uv run uvicorn backend.api.server:app --host 0.0.0.0 --port 8000
 Restart=on-failure
 RestartSec=10
 

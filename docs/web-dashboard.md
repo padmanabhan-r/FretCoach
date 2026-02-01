@@ -721,9 +721,7 @@ VITE_WS_URL=ws://localhost:8000
 
 ```bash
 cd web/web-backend
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+uv sync
 
 # Configure .env
 cp .env.example .env
