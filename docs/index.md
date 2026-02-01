@@ -39,7 +39,6 @@
 
 ### Observability and Evaluation
 - **[Opik Observability](opik-observability.md)** — LLM tracing and evaluation with Comet Opik
-- **[Pitch Deck Ideas](pitch-deck-ideas.md)** — Project overview and presentation materials
 
 ---
 

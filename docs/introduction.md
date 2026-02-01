@@ -175,11 +175,7 @@ Current focus: preventive neurofeedback for guitar practice.
 
 ---
 
-## Ready to Start?
-
-→ **[Quickstart Guide](quickstart.md)** — Get FretCoach running in 5 minutes
-→ **[Desktop Application](desktop-app.md)** — Deep dive into the primary practice interface
-→ **[System Architecture](architecture.md)** — Understand how the components work together
+**Next:** [Quickstart Guide](quickstart.md) — Get FretCoach running in 5 minutes
 
 ---
 
