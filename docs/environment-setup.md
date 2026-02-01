@@ -2,6 +2,12 @@
 
 Complete environment configuration guide for all FretCoach components.
 
+## Prerequisites
+
+- **Python 3.12+** (required for all backend components)
+- **Node.js 18+** and npm (required for frontend applications)
+- **PostgreSQL** access (Supabase recommended)
+
 ## Quick Start
 
 Each component requires a `.env` file with specific credentials. Follow the sections below to configure your setup.
@@ -25,7 +31,7 @@ DB_PASSWORD=your_supabase_password
 **Testing connection:**
 ```bash
 # From any backend directory
-python -c "from backend.core.session_logger import SessionLogger; print('Connected!')"
+uv run python -c "from backend.core.session_logger import SessionLogger; print('Connected!')"
 ```
 
 **Note:** Session logging is optional. If database is unavailable, practice sessions continue without persistence.
@@ -90,24 +96,41 @@ TUYA_REGION=us  # or eu, cn, in
 
 ## Observability (Opik)
 
-LLM tracing and monitoring for AI coaching calls.
+LLM tracing and monitoring for AI coaching calls. FretCoach uses **Comet Opik** for comprehensive LLM observability.
 
-**Required for:** Production monitoring (optional for development)
+**Required for:** Production monitoring and optimization (optional for development)
 
-Get API key: [comet.com/opik](https://www.comet.com/opik)
+### Setup Steps
+
+1. **Create account:** Sign up at [comet.com/opik](https://www.comet.com/opik)
+2. **Create workspace:** Set up a new workspace for FretCoach
+3. **Generate API key:** Navigate to Settings → API Keys
+4. **Add to .env:**
 
 ```env
 OPIK_API_KEY=your_opik_key
 OPIK_WORKSPACE=your_workspace_name
 ```
 
-**What it tracks:**
-- AI coach LLM calls
-- Practice plan generation
-- Token usage and latency
-- Error traces
+### What Opik Tracks
 
-**Note:** If not configured, AI features work without observability.
+- **Live AI Coaching:** GPT-4o-mini calls with context and responses
+- **Practice Plan Generation:** Gemini 2.5 Flash LangGraph traces
+- **Web AI Coach:** Text-to-SQL agent workflows and tool calls
+- **Token Usage:** Per-session and cumulative token consumption
+- **Latency Metrics:** Response times and performance bottlenecks
+- **Error Traces:** Failed LLM calls with full context
+
+### Features Used
+
+- **Tracing:** End-to-end LangChain/LangGraph execution traces
+- **Agent Graphs:** Visual representation of multi-step agent workflows
+- **Custom Metrics:** Practice-specific evaluation metrics
+- **Dashboards:** Real-time monitoring of AI coach performance
+
+**For detailed Opik implementation:** See [use-of-opik/opik-usage.md](../use-of-opik/opik-usage.md)
+
+**Note:** If not configured, AI features work without observability, but you won't have visibility into LLM performance and costs.
 
 ## User ID Configuration
 
@@ -118,6 +141,44 @@ USER_ID=your_unique_user_id
 ```
 
 **Default:** If not set, uses `default_user`
+
+## User Metric Preferences
+
+FretCoach allows users to enable/disable individual metrics based on practice focus. Preferences are stored in the `user_configs` database table and persist across sessions.
+
+### Available Metrics
+
+- **Pitch Accuracy** (optional) - Note accuracy and intonation
+- **Scale Conformity** (optional) - Adherence to target scale
+- **Timing Stability** (optional) - Rhythmic consistency
+- **Noise Control** (mandatory) - Always enabled as baseline quality metric
+
+### How It Works
+
+1. **Configuration:** Toggle metrics in Manual/AI Mode settings
+2. **Storage:** Preferences saved to `user_configs` table per USER_ID
+3. **Persistence:** Settings automatically applied to future sessions
+4. **Adaptive Scoring:** Overall quality score recalculated from enabled metrics only
+5. **AI Adaptation:** Coach feedback focuses only on tracked metrics
+
+### Database Schema
+
+The `user_configs` table stores:
+```sql
+CREATE TABLE user_configs (
+    user_id TEXT PRIMARY KEY,
+    pitch_accuracy BOOLEAN DEFAULT TRUE,
+    scale_conformity BOOLEAN DEFAULT TRUE,
+    timing_stability BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+**Example Use Cases:**
+- **Slow practice:** Disable timing, focus on pitch + scale
+- **Rhythm training:** Enable only timing stability
+- **Default:** All metrics enabled for comprehensive evaluation
 
 ## Component-Specific .env Locations
 
@@ -149,7 +210,7 @@ OPIK_API_KEY=...
 
 ### FretCoach Hub (Web Platform)
 
-**Backend location:** `web/server/.env`
+**Backend location:** `web/web-backend/.env`
 
 **Required variables:**
 ```env
@@ -162,7 +223,7 @@ DB_PASSWORD=...
 GOOGLE_API_KEY=...
 ```
 
-**Frontend location:** `web/.env`
+**Frontend location:** `web/web-frontend/.env`
 
 ```env
 VITE_API_BASE_URL=http://localhost:8000
@@ -180,13 +241,14 @@ DB_HOST=...
 DB_PORT=5432
 DB_NAME=...
 
-# Optional
-HAVELLS_ACCESS_ID=...  # Tuya credentials
-HAVELLS_ACCESS_SECRET=...
-HAVELLS_DEVICE_ID=...
-HAVELLS_REGION=in
+# Optional - Smart Bulb (Tuya)
+TUYA_CLIENT_ID=...
+TUYA_CLIENT_SECRET=...
+TUYA_DEVICE_ID=...
+TUYA_REGION=us  # or eu, cn, in
 
 OPENAI_API_KEY=...  # For AI Mode
+GOOGLE_API_KEY=...  # For AI Practice Plans
 ```
 
 ## Full Template

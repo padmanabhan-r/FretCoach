@@ -516,15 +516,13 @@ Toggle smart bulb control on/off for each session.
 ```bash
 # Backend
 cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+uv sync
 
 # Create .env (see environment-setup.md)
 cp .env.example .env
 
 # Start backend
-uvicorn backend.api.server:app --reload --host 127.0.0.1 --port 8000
+uv run uvicorn backend.api.server:app --reload --host 127.0.0.1 --port 8000
 
 # Frontend (new terminal)
 cd application
@@ -543,8 +541,7 @@ npm run dev
 **Terminal 1 (Backend):**
 ```bash
 cd backend
-source .venv/bin/activate
-uvicorn backend.api.server:app --reload --host 127.0.0.1 --port 8000
+uv run uvicorn backend.api.server:app --reload --host 127.0.0.1 --port 8000
 ```
 
 **Terminal 2 (Frontend):**
@@ -594,9 +591,8 @@ Output: `application/release/`
 
 **Solutions:**
 1. Check backend logs in console output panel
-2. Verify virtual environment is activated
-3. Check port 8000 is not in use: `lsof -i :8000`
-4. Reinstall dependencies: `pip install -r requirements.txt`
+2. Check port 8000 is not in use: `lsof -i :8000`
+3. Reinstall dependencies: `cd backend && uv sync`
 
 ### WebSocket Connection Failed
 
