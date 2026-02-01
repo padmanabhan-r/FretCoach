@@ -2,11 +2,15 @@
 Audio Feature Extraction for FretCoach
 Contains AI-powered feature functions for analyzing guitar performance.
 """
+import os
 import numpy as np
 import librosa
 
 # NOTE: Opik tracking disabled for audio features - called on every frame, eats quota
 # These functions are called hundreds of times per second during live audio processing
+
+# Debug flag - set to False to suppress debug output (useful for TUI mode)
+DEBUG_AUDIO = os.environ.get("FRETCOACH_DEBUG_AUDIO", "0") == "1"
 
 
 def detect_note_onset(audio, sample_rate, threshold=0.15):
@@ -143,10 +147,11 @@ def calculate_note_timing_stability(onset_times_ms, window_size=15, consistency_
     if median_interval < 50.0:  # Less than 50ms = too fast to be intentional
         return 0.0, len(recent_onsets)
 
-    # Debug: Print timing info
-    import random
-    if random.random() < 0.1:  # Print 10% of the time
-        print(f"[TIMING DEBUG] {window} notes, median interval: {median_interval:.0f}ms, intervals: {intervals[:5]}")
+    # Debug: Print timing info (only if DEBUG_AUDIO is enabled)
+    if DEBUG_AUDIO:
+        import random
+        if random.random() < 0.1:  # Print 10% of the time
+            print(f"[TIMING DEBUG] {window} notes, median interval: {median_interval:.0f}ms, intervals: {intervals[:5]}")
 
     # SIMPLIFIED APPROACH: Count how many intervals are within 50% of the median
     # This is much more forgiving than CV

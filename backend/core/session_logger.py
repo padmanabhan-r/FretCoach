@@ -451,7 +451,6 @@ class SessionLogger:
             scale_display = f"{avg_scale_conformity*100:.1f}%" if avg_scale_conformity is not None else "N/A"
             timing_display = f"{avg_timing_stability*100:.1f}%" if avg_timing_stability is not None else "N/A"
             print(f"  Duration: {duration:.1f}s | Pitch: {pitch_display} | Scale: {scale_display} | Timing: {timing_display}")
-            print(f"  Notes: {session['total_notes_played']} total, {session['correct_notes_played']} correct, {session['bad_notes_played']} bad")
         except Exception as e:
             print(f"[ERR] Error ending session: {e}")
             self.conn.rollback()

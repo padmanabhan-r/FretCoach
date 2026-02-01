@@ -22,6 +22,8 @@ import sounddevice as sd
 from rich.console import Console
 from rich.live import Live
 from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
 from rich import box
 
 # Add backend/core to path for shared imports
@@ -44,9 +46,6 @@ from scales import (
     select_scale_interactive,
 )
 from session_logger import get_session_logger, SessionLogger
-
-# Opik tracing for AI mode
-from opik.integrations.langchain import OpikTracer
 
 # Console for rich output
 console = Console()
@@ -135,7 +134,6 @@ def create_practice_display(
     session_start: datetime,
     quality_state: QualityState,
     result: Any,
-    target_pitch_classes: set,
     enabled_metrics: dict,
 ) -> Panel:
     """Create the main practice display panel."""
@@ -188,14 +186,6 @@ def create_practice_display(
 
     # Feedback
     lines.append(f"[bold]Current Feedback[/]   {emoji}  [{color}]{message}[/]")
-
-    # Stats line
-    total = quality_state.total_notes
-    if total > 0:
-        correct = quality_state.notes_in_scale(target_pitch_classes)
-        wrong = quality_state.notes_out_of_scale(target_pitch_classes)
-        lines.append("")
-        lines.append(f"[dim]Notes: {total} total | {correct} in scale | {wrong} wrong[/]")
 
     content = "\n".join(lines)
 
@@ -402,105 +392,88 @@ def select_mode() -> str:
             console.print("[red]Invalid choice. Please enter 1 or 2.[/]")
 
 
-def get_ai_recommendation(user_id: str) -> Optional[Dict[str, Any]]:
+def get_ai_recommendation(user_id: str, request_new: bool = False) -> Optional[Dict[str, Any]]:
     """
     Get AI-powered practice recommendation.
-    Uses same logic as desktop app with Opik tracing.
+    Uses the SAME flow as desktop app - saves to DB, proper Opik tracing.
     """
     console.print("\n[cyan]Analyzing your practice history...[/]")
 
     try:
+        import asyncio
+
+        # Set deployment type BEFORE importing ai_agent_service
+        os.environ["DEPLOYMENT_TYPE"] = "fretcoach-portable"
+
         # Import AI service (lazy import to avoid loading if not needed)
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend', 'api', 'services'))
-        from ai_agent_service import (
-            analyze_practice_history_sync,
-            get_pending_practice_plan,
-            PracticeRecommendation,
-        )
-        from langchain_openai import ChatOpenAI
-        import json
+        from ai_agent_service import get_ai_practice_session
 
-        # Check for pending plan first
-        pending_plan = get_pending_practice_plan(user_id)
-        if pending_plan:
-            console.print(f"[yellow]Found pending practice plan from {pending_plan['generated_at']}[/]")
+        # Use the SAME function as desktop - handles everything:
+        # - Check pending plans
+        # - Analyze practice history
+        # - Generate recommendation with proper Opik tracing
+        # - Save to database
+        result = asyncio.run(get_ai_practice_session(user_id, request_new=request_new))
 
-        # Analyze practice history
-        analysis = analyze_practice_history_sync(user_id)
-
-        if pending_plan:
-            analysis['pending_plan'] = pending_plan
-
-        # Generate recommendation (single LLM call with Opik tracing)
-        model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-        structured_llm = model.with_structured_output(PracticeRecommendation)
-
-        # Build prompt (same as desktop)
-        pending_plan_context = ""
-        if analysis.get('pending_plan'):
-            pp = analysis['pending_plan']
-            pending_plan_context = f"""
-
-PENDING PRACTICE PLAN:
-There is an unexecuted practice plan from {pp['generated_at']}:
-- Scale: {pp['plan']['scale_name']} ({pp['plan']['scale_type']})
-- Focus: {pp['plan']['focus_area']}
-- Reasoning: {pp['plan']['reasoning']}
-
-DECISION REQUIRED:
-Review this pending plan. If still relevant, continue with it. Otherwise, generate a new recommendation.
-"""
-
-        prompt = f"""You are an AI guitar coach. Based on the practice history below, recommend a practice session.
-
-PRACTICE HISTORY:
-- Total sessions: {analysis['total_sessions']}
-- Average pitch accuracy: {analysis['aggregates']['avg_pitch_accuracy']:.1%}
-- Average scale conformity: {analysis['aggregates']['avg_scale_conformity']:.1%}
-- Average timing stability: {analysis['aggregates']['avg_timing_stability']:.1%}
-- Weakest area: {analysis['weakest_area']}
-
-RECENTLY PRACTICED SCALES:
-{json.dumps(analysis['practiced_scales'][:5], indent=2) if analysis['practiced_scales'] else 'No scales practiced yet'}
-
-RECENT SESSIONS:
-{json.dumps(analysis['recent_sessions'][:3], indent=2) if analysis['recent_sessions'] else 'No recent sessions'}{pending_plan_context}
-
-Generate a practice recommendation that:
-1. Focuses on the weakest metric area ({analysis['weakest_area']})
-2. Suggests a scale (preferably one not recently practiced, or one needing improvement)
-3. Sets appropriate strictness/sensitivity based on skill level
-"""
-
-        # Get Opik config for tracing
-        tracer = OpikTracer(
-            tags=["ai-mode", "portable-recommendation"],
-            metadata={"user_id": user_id, "device": "raspberry_pi"}
-        )
-        opik_config = {
-            "callbacks": [tracer],
-            "configurable": {"thread_id": f"portable-{user_id}"}
-        }
-
-        recommendation = structured_llm.invoke(
-            [{"role": "user", "content": prompt}],
-            config=opik_config
-        )
+        recommendation = result["recommendation"]
 
         return {
-            "scale_name": recommendation.scale_name,
-            "scale_type": recommendation.scale_type,
-            "focus_area": recommendation.focus_area,
-            "reasoning": recommendation.reasoning,
-            "strictness": recommendation.strictness,
-            "sensitivity": recommendation.sensitivity,
-            "analysis": analysis,
+            "practice_id": result["practice_id"],
+            "scale_name": recommendation["scale_name"],
+            "scale_type": recommendation["scale_type"],
+            "focus_area": recommendation["focus_area"],
+            "reasoning": recommendation["reasoning"],
+            "strictness": recommendation["strictness"],
+            "sensitivity": recommendation["sensitivity"],
+            "analysis": result["analysis"],
+            "is_pending_plan": result.get("is_pending_plan", False),
         }
 
     except Exception as e:
         console.print(f"[red]AI recommendation failed: {e}[/]")
         console.print("[yellow]Falling back to manual mode...[/]")
         return None
+
+
+def mark_practice_plan_executed(practice_id: str, session_id: str) -> bool:
+    """
+    Mark a practice plan as executed by linking it to a session.
+    Same as desktop API endpoint.
+    """
+    try:
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend', 'api', 'services'))
+        from sqlalchemy import create_engine, text
+
+        # Get DB credentials
+        from dotenv import load_dotenv, find_dotenv
+        load_dotenv(find_dotenv())
+
+        db_user = os.getenv("DB_USER")
+        db_password = os.getenv("DB_PASSWORD")
+        db_host = os.getenv("DB_HOST")
+        db_port = os.getenv("DB_PORT")
+        db_name = os.getenv("DB_NAME")
+
+        db_uri = f"postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+        engine = create_engine(db_uri, pool_pre_ping=True)
+
+        query = text("""
+            UPDATE fretcoach.ai_practice_plans
+            SET executed_session_id = :session_id
+            WHERE practice_id = :practice_id
+        """)
+
+        with engine.begin() as conn:
+            conn.execute(query, {
+                "practice_id": practice_id,
+                "session_id": session_id
+            })
+
+        return True
+    except Exception as e:
+        console.print(f"[yellow]Failed to mark plan as executed: {e}[/]")
+        return False
 
 
 def configure_metrics(user_id: str) -> dict:
@@ -833,6 +806,7 @@ def run_practice_session(
     ambient_lighting: bool,
     user_id: str = "default_user",
     enabled_metrics: Optional[dict] = None,
+    practice_id: Optional[str] = None,
 ):
     """Run the main practice session with live display."""
     global running
@@ -861,6 +835,11 @@ def run_practice_session(
             scale_type=scale_type,
             enabled_metrics=enabled_metrics,
         )
+
+        # If this is an AI mode session, mark the practice plan as executed
+        if practice_id and session_id:
+            if mark_practice_plan_executed(practice_id, session_id):
+                console.print(f"[dim]Linked session to AI practice plan[/]")
     except Exception as e:
         console.print(f"[yellow]Session logging unavailable: {e}[/]")
 
@@ -892,7 +871,7 @@ def run_practice_session(
         with Live(
             create_practice_display(
                 scale_name, session_start,
-                processor.quality_state, None, target_pitch_classes, enabled_metrics
+                processor.quality_state, None, enabled_metrics
             ),
             console=console,
             refresh_per_second=8,
@@ -930,7 +909,7 @@ def run_practice_session(
                 live.update(
                     create_practice_display(
                         scale_name, session_start,
-                        processor.quality_state, result, target_pitch_classes, enabled_metrics
+                        processor.quality_state, result, enabled_metrics
                     )
                 )
 
@@ -951,7 +930,6 @@ def run_practice_session(
         show_session_summary(
             session_start,
             processor.quality_state,
-            target_pitch_classes,
             enabled_metrics,
         )
 
@@ -959,17 +937,12 @@ def run_practice_session(
 def show_session_summary(
     session_start: datetime,
     quality_state: QualityState,
-    target_pitch_classes: set,
     enabled_metrics: dict,
 ):
     """Display session summary after practice ends."""
     elapsed = datetime.now() - session_start
     minutes = int(elapsed.total_seconds() // 60)
     seconds = int(elapsed.total_seconds() % 60)
-
-    total = quality_state.total_notes
-    correct = quality_state.notes_in_scale(target_pitch_classes)
-    wrong = quality_state.notes_out_of_scale(target_pitch_classes)
 
     # Build metric lines
     pitch_line = f"  Pitch Accuracy:    {quality_state.ema_pitch * 100:.1f}%" if enabled_metrics.get("pitch_accuracy", True) else "  Pitch Accuracy:    Disabled"
@@ -988,12 +961,6 @@ def show_session_summary(
 {pitch_line}
 {timing_line}
 {overall_line}
-
-[cyan]Notes Played:[/]
-  Total:   {total}
-  Correct: {correct}
-  Wrong:   {wrong}
-  Accuracy: {(correct / total * 100) if total > 0 else 0:.1f}%
 """,
         title="[bold white]SESSION SUMMARY[/]",
         border_style="green",
@@ -1002,19 +969,76 @@ def show_session_summary(
 
 
 # =========================================================
+# WELCOME SCREEN
+# =========================================================
+
+def show_welcome_screen():
+    """Display a beautiful ASCII art welcome screen."""
+    # ASCII art guitar logo (braille art)
+    logo = """
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⢶⠲⠐
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡤⠊⠊⢀⠐⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣶⣀⠄⠚⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣼⣿⠟⠁⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣶⢻⠟⠁⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣤⣀⠀⠀⠀⢀⣴⣿⡽⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⢠⣼⣿⡟⠀⠀⣠⣼⣿⡾⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⢀⣿⣿⣿⣷⣀⣾⣿⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⢀⣤⣾⣿⡿⠃⣼⣿⡿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⢀⣴⣾⣿⣿⠟⠋⠋⠀⠙⠝⠻⡂⠀⢀⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⢰⣿⣿⣿⣿⡇⠀⡀⠙⢆⡀⠀⠀⠉⠉⣡⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⢿⣿⣿⣿⣿⣿⣦⡀⢀⠀⠠⢀⡤⠚⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠘⢻⣿⣿⣿⣿⣿⣿⡌⠀⠀⡜⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠩⢿⣿⣿⣿⣻⣿⠀⣼⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠙⠿⢿⣾⡿⠛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+"""
+
+    # Create a table for the welcome screen layout
+    table = Table.grid(padding=(0, 2))
+    table.add_column(justify="center", width=48)
+    table.add_column(justify="left", width=42)
+
+    # Left side: Logo and title
+    left_content = Text()
+    left_content.append(logo, style="orange1")
+    left_content.append("\n        FretCoach", style="bold orange1")
+    left_content.append(" Portable\n", style="bold white")
+
+    # Right side: Tips and info
+    right_content = Text()
+    right_content.append("Getting Started\n", style="bold white")
+    right_content.append("Select a user profile and practice mode.\n", style="dim")
+    right_content.append("AI mode analyzes your history for suggestions.\n\n", style="dim")
+    right_content.append("─" * 40 + "\n", style="dim")
+    right_content.append("\nFeatures\n", style="bold white")
+    right_content.append("  Real-time pitch detection\n", style="dim")
+    right_content.append("  Scale conformity tracking\n", style="dim")
+    right_content.append("  Smart bulb ambient lighting\n", style="dim")
+    right_content.append("  Session history & metrics\n", style="dim")
+
+    table.add_row(left_content, right_content)
+
+    # Print the welcome panel
+    console.print()
+    console.print(Panel(
+        table,
+        title="[bold white]FretCoach[/] [dim]v1.0.0[/]",
+        subtitle="[dim]Press Ctrl+C anytime to exit[/]",
+        border_style="orange1",
+        box=box.DOUBLE,
+        padding=(1, 2),
+    ))
+    console.print()
+
+
+# =========================================================
 # MAIN ENTRY POINT
 # =========================================================
 
 def main():
     """Main entry point for FretCoach Portable."""
-    console.print(Panel(
-        "[bold]FretCoach Portable[/]\n\n"
-        "Terminal-based guitar practice tool\n"
-        "Designed for Raspberry Pi",
-        title="🎸",
-        border_style="cyan",
-        box=box.DOUBLE,
-    ))
+    # Show welcome screen
+    show_welcome_screen()
 
     # Step 1: User selection
     user_id = select_user()
@@ -1056,13 +1080,17 @@ def main():
     mode = select_mode()
 
     # Step 5: Get practice parameters based on mode
+    practice_id = None  # Track AI practice plan ID
+
     if mode == "ai":
         recommendation = get_ai_recommendation(user_id)
 
-        if recommendation:
+        while recommendation:
             console.print("\n" + "═" * 50)
             console.print("[bold cyan]AI RECOMMENDATION[/]")
             console.print("═" * 50)
+            if recommendation.get('is_pending_plan'):
+                console.print("[yellow](Continuing pending practice plan)[/]")
             console.print(f"\n[bold]Scale:[/] {recommendation['scale_name']} ({recommendation['scale_type']})")
             console.print(f"[bold]Focus:[/] {recommendation['focus_area']}")
             console.print(f"[bold]Reasoning:[/] {recommendation['reasoning']}")
@@ -1070,16 +1098,32 @@ def main():
             console.print(f"[bold]Sensitivity:[/] {recommendation['sensitivity']:.2f}")
             console.print("\n" + "═" * 50)
 
-            accept = input("\nAccept this recommendation? (Y/n): ").strip().lower()
-            if accept != 'n':
+            console.print("\n  [bold]1.[/] Accept this recommendation")
+            console.print("  [bold]2.[/] Try another suggestion")
+            console.print("  [bold]3.[/] Switch to Manual mode")
+
+            choice = input("\nEnter choice (1/2/3): ").strip()
+
+            if choice == "1":
+                # Accept recommendation
                 scale_name = recommendation['scale_name']
                 scale_type = recommendation['scale_type']
                 strictness = recommendation['strictness']
                 sensitivity = recommendation['sensitivity']
+                practice_id = recommendation['practice_id']
                 target_pitch_classes = get_target_pitch_classes(scale_name, scale_type)
+                break
+            elif choice == "2":
+                # Try another - force new recommendation
+                console.print("\n[cyan]Generating new recommendation...[/]")
+                recommendation = get_ai_recommendation(user_id, request_new=True)
+                # Loop continues with new recommendation
             else:
+                # Switch to manual
                 mode = "manual"
-        else:
+                break
+
+        if recommendation is None:
             mode = "manual"
 
     if mode == "manual":
@@ -1106,6 +1150,7 @@ def main():
         ambient_lighting=ambient_lighting,
         user_id=user_id,
         enabled_metrics=enabled_metrics,
+        practice_id=practice_id,  # Link to AI practice plan if in AI mode
     )
 
     console.print("\n[dim]Thanks for practicing with FretCoach![/]\n")
