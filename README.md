@@ -53,6 +53,16 @@ FretCoach is built as a three-part system, with all components connected through
 
 ---
 
+## For Commit To Change Hackathon Judges 🏆
+
+**Want to understand FretCoach super fast?** Check out the [quick deck](#) and [explainer video](#) for a rapid overview. But I would also suggest you read on—at least this README.md fully—to get a proper idea of this product.
+
+**For judges of the "Best Use of Opik" category:** Please see [use-of-opik/opik-usage.md](use-of-opik/opik-usage.md) for detailed documentation on all the Opik features I've explored and implemented.
+
+**Personal note:** Wow, what a tool! Why have I not been using Opik for my LLM projects before? I'm genuinely impressed—from advanced tracing capabilities, agent graphs for LangGraph visualization, custom eval metrics, and dashboards, to AI Assist. Right after this hackathon, I'm certain I'll be integrating Opik into my work projects. This isn't just hackathon enthusiasm—I've found a tool that solves real problems I face daily with LLM observability and optimization.
+
+---
+
 ## How It Works
 
 ### Preventive Neurofeedback Music Learning System
@@ -102,16 +112,6 @@ Three feedback channels:
 - **On-screen metrics** — Live scores and note detection
 - **AI Voice Coach** — Textual and spoken guidance via GPT-4o-mini and GPT-4o-mini-TTS models
 - **Ambient lighting** — Smart bulb feedback (green = good, red = needs work)
-
----
-
-## For Comet V2 Hackathon Judges 🏆
-
-**Want to understand FretCoach super fast?** Check out the [quick deck](#) and [explainer video](#) for a rapid overview. But I would also suggest you read on—at least this README.md fully—to get a proper idea of this product.
-
-**For judges of the "Best Use of Opik" category:** Please see [use-of-opik/opik-usage.md](use-of-opik/opik-usage.md) for detailed documentation on all the Opik features I've explored and implemented.
-
-**Personal note:** Wow, what a tool! Why have I not been using Opik for my LLM projects before? I'm genuinely impressed—from advanced tracing capabilities, agent graphs for LangGraph visualization, custom eval metrics, and dashboards, to AI Assist. Right after this hackathon, I'm certain I'll be integrating Opik into my work projects. This isn't just hackathon enthusiasm—I've found a tool that solves real problems I face daily with LLM observability and optimization.
 
 ---
 
@@ -213,7 +213,15 @@ npm run dev  # Starts Electron + React frontend + Python FastAPI backend
 
 ## 2. FretCoach Portable (Raspberry Pi Device)
 
+> **Like a portable guitar pedal**
+> In prototyping — evolving into a physical unit with enclosure, LCD display, and footswitch for On/Off control.
+
+
 **Location:** `/portable/`
+
+<p align="center">
+  <img src="images/FretCoach Portable.png" alt="FretCoach Portable Home" width="600"/>
+</p>
 
 Raspberry Pi 5-based portable practice device. Same analysis engine as Studio, but on-the-go.
 
@@ -236,7 +244,7 @@ Raspberry Pi 5-based portable practice device. Same analysis engine as Studio, b
 - ✅ Audio I/O testing successful
 - ✅ Software integration in progress
 - ✅ Database sync mechanism implemented
-- 📋 **Planned:** Physical enclosure design (3D printed), footswitch control, LCD touchscreen interface 
+- 📋 **Planned:** Physical enclosure design, footswitch control, LCD touchscreen interface 
 
 ---
 
@@ -377,7 +385,9 @@ FretCoach uses PostgreSQL hosted on Supabase with three core tables:
 
 ## Contributing
 
-FretCoach is under active development. Contributions, bug reports, and feature requests are welcome.
+FretCoach is under active development. Contributions, ideas, suggestions, bug reports, and feature requests are welcome.
+
+Extra hands are always welcome to help build the product and scale it across multiple instruments.
 
 ---
 
