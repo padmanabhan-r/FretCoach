@@ -1,5 +1,5 @@
 /**
- * API client for FretCoach Dashboard
+ * API client for FretCoach Hub
  * Handles communication with the serverless API routes
  */
 

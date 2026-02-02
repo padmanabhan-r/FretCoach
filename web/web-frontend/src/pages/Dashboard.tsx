@@ -44,8 +44,15 @@ import type { DateRange } from "react-day-picker";
 const welcomeMessage: ChatMessage = {
   id: "1",
   role: "assistant",
-  content: "Hi! I'm your AI practice coach. I can help you analyze your performance, suggest exercises, and answer questions about your practice sessions. Try asking me:\n\n• \"Show me my progress\"\n• \"What should I practice today?\"\n• \"How am I doing compared to average?\"\n\nHow can I help you today?",
+  content: "Hi! I'm your AI practice coach. I can help you analyze your performance, suggest exercises, and answer questions about your practice sessions. How can I help you today?",
 };
+
+// Conversation starter suggestions
+const conversationStarters = [
+  "Show me my progress",
+  "What should I practice today?",
+  "How am I doing compared to average?",
+];
 
 const CHAT_INACTIVITY_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
 
@@ -141,6 +148,13 @@ const Dashboard = () => {
       setLastActivityTime(Date.now());
     }
   }, [messages.length, isChatActive]);
+
+  // End chat session when user switches
+  useEffect(() => {
+    if (isChatActive) {
+      endChatSession();
+    }
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Format date range display
   const dateRangeLabel = useMemo(() => {
@@ -266,16 +280,16 @@ const Dashboard = () => {
                 <div className="p-2 rounded-lg bg-primary/10">
                   <Guitar className="h-6 w-6 text-primary" />
                 </div>
-                <h1 className="text-xl font-bold">FretCoach Dashboard</h1>
+                <h1 className="text-xl font-bold">FretCoach Hub</h1>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <Button variant="outline" onClick={handleManualRefresh} disabled={isManualRefetching}>
-                <RefreshCw className={`h-4 w-4 mr-2 ${isManualRefetching ? 'animate-spin' : ''}`} />
-                Refresh
+            <div className="flex items-center gap-2 md:gap-4">
+              <Button variant="outline" size="sm" onClick={handleManualRefresh} disabled={isManualRefetching} className="text-xs md:text-sm">
+                <RefreshCw className={`h-3 w-3 md:h-4 md:w-4 ${isManualRefetching ? 'animate-spin' : ''} md:mr-2`} />
+                <span className="hidden sm:inline">Refresh</span>
               </Button>
               {/* User Switcher */}
-              <div className="pl-4 border-l border-border">
+              <div className="pl-2 md:pl-4 border-l border-border">
                 <UserSwitcher userId={userId} onUserChange={setUserId} variant="header" />
               </div>
             </div>
@@ -287,7 +301,12 @@ const Dashboard = () => {
         {/* Performance Summary Header */}
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h2 className="text-lg font-semibold">Your Performance</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold">Your Performance</h2>
+              <span className="px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded-full border border-primary/20">
+                {userId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              </span>
+            </div>
             <p className="text-xs text-muted-foreground">Average metrics for selected period</p>
           </div>
           <Popover>
@@ -614,7 +633,7 @@ const Dashboard = () => {
                           Start Chat
                         </Button>
                       </div>
-                    ) : messages.map((message) => (
+                    ) : messages.map((message, index) => (
                       <div key={message.id}>
                         <div
                           className={`flex gap-3 ${
@@ -654,6 +673,25 @@ const Dashboard = () => {
                               chartData={message.chartData}
                               onSavePlan={handleSavePlan}
                             />
+                          </div>
+                        )}
+                        {/* Render conversation starters after welcome message */}
+                        {index === 0 && message.id === "1" && messages.length === 1 && (
+                          <div className="ml-11 mt-3">
+                            <p className="text-xs text-muted-foreground mb-2">Try asking me:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {conversationStarters.map((starter, i) => (
+                                <Button
+                                  key={i}
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs"
+                                  onClick={() => setInputMessage(starter)}
+                                >
+                                  {starter}
+                                </Button>
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -768,7 +806,7 @@ const Dashboard = () => {
                             Start Chat
                           </Button>
                         </div>
-                      ) : messages.map((message) => (
+                      ) : messages.map((message, index) => (
                         <div key={message.id}>
                           <div
                             className={`flex gap-3 ${
@@ -812,6 +850,25 @@ const Dashboard = () => {
                               </Avatar>
                             )}
                           </div>
+                          {/* Render conversation starters after welcome message */}
+                          {index === 0 && message.id === "1" && messages.length === 1 && (
+                            <div className="ml-11 mt-3">
+                              <p className="text-xs text-muted-foreground mb-2">Try asking me:</p>
+                              <div className="flex flex-wrap gap-2">
+                                {conversationStarters.map((starter, i) => (
+                                  <Button
+                                    key={i}
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-xs"
+                                    onClick={() => setInputMessage(starter)}
+                                  >
+                                    {starter}
+                                  </Button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))}
 

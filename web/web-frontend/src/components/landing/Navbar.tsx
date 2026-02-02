@@ -60,14 +60,14 @@ const Navbar = () => {
           </div>
 
           {/* Desktop CTA */}
-          <div className="hidden md:flex items-center gap-3 flex-shrink-0">
+          <div className="hidden md:flex items-center gap-2 flex-shrink-0">
             <Link to="/dashboard">
-              <Button variant="default" className="gap-2" size="sm">
-                <BarChart3 className="h-4 w-4" />
+              <Button variant="default" className="gap-1 text-xs md:text-sm" size="sm">
+                <BarChart3 className="h-3 w-3 md:h-4 md:w-4" />
                 Dashboard
               </Button>
             </Link>
-            <div className="pl-3 border-l border-border">
+            <div className="pl-2 md:pl-3 border-l border-border">
               <UserSwitcher userId={userId} onUserChange={setUserId} variant="navbar" />
             </div>
           </div>

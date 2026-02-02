@@ -313,7 +313,7 @@ function PracticePlanCard({ data, planId, onSave, onDismiss }: PracticePlanCardP
           </span>
         </div>
         <div className="flex justify-between items-center p-2 rounded bg-background/50">
-          <span className="text-xs text-muted-foreground">Session Duration</span>
+          <span className="text-xs text-muted-foreground">Session Target</span>
           <span className="text-sm font-medium">{data.session_target}</span>
         </div>
         {data.exercises && (

@@ -1,10 +1,10 @@
-# FretCoach Dashboard
+# FretCoach Hub
 
-A web-based dashboard for FretCoach that displays real-time practice session metrics and includes an AI Practice Coach for personalized guidance.
+FretCoach Hub is the web-based analytics platform for FretCoach that displays real-time practice session metrics and includes an AI Practice Coach for personalized guidance.
 
 ## Features
 
-- **Real-time Dashboard**: View your practice session metrics including pitch accuracy, scale conformity, and timing stability
+- **Performance Analytics**: View your practice session metrics including pitch accuracy, scale conformity, and timing stability
 - **Session History**: Browse and analyze individual practice sessions
 - **AI Practice Coach**: Chat with an AI coach that can:
   - Analyze your performance trends
