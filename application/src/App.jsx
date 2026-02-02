@@ -491,7 +491,7 @@ function App() {
             <div className="relative">
               <div className="absolute inset-0 blur-3xl opacity-50 animate-pulse" style={{ background: 'radial-gradient(circle, hsl(14, 98%, 55%) 0%, transparent 70%)' }} />
               <h1 className="relative text-6xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent animate-scale-in">
-                FretCoach
+                FretCoach Studio
               </h1>
             </div>
             <p className="mt-4 text-muted-foreground text-lg animate-fade-in-delayed">
@@ -529,7 +529,7 @@ function App() {
               <div className="w-full max-w-2xl mx-auto px-4">
                 {/* Welcome Message */}
                 <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold text-foreground mb-2">Welcome to FretCoach</h2>
+                  <h2 className="text-3xl font-bold text-foreground mb-2">Welcome to FretCoach Studio</h2>
                   <p className="text-muted-foreground">Choose how you want to practice today.</p>
                 </div>
 
@@ -610,7 +610,7 @@ function App() {
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-border flex-shrink-0">
                 {/* Left: Logo and Version */}
                 <div className="flex items-center gap-3">
-                  <span className="text-lg font-bold text-foreground">FretCoach</span>
+                  <span className="text-lg font-bold text-foreground">FretCoach Studio</span>
                   <span className="text-xs text-muted-foreground font-mono">v0.1.0</span>
                   <span className="text-xs px-1.5 py-0.5 bg-secondary/20 text-secondary rounded">Early Beta</span>
                 </div>

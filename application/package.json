@@ -1,7 +1,7 @@
 {
   "name": "fretcoach",
   "version": "0.1.0",
-  "description": "FretCoach - AI-Powered Adaptive Guitar Training - Real-time Coaching, ANYWHERE",
+  "description": "FretCoach Studio - AI-Powered Adaptive Guitar Training - Real-time Coaching, ANYWHERE",
   "main": "electron/main.js",
   "author": "FretCoach Team",
   "license": "MIT",
@@ -35,7 +35,7 @@
   },
   "build": {
     "appId": "com.fretcoach.app",
-    "productName": "FretCoach",
+    "productName": "FretCoach Studio",
     "directories": {
       "output": "release",
       "buildResources": "build"

@@ -18,7 +18,7 @@ const Header = ({ minimal = false, onQuit }) => {
       <header className="pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-lg font-bold text-foreground">FretCoach</span>
+            <span className="text-lg font-bold text-foreground">FretCoach Studio</span>
             <span className="text-xs text-muted-foreground font-mono">v0.1.0</span>
             <span className="text-xs px-1.5 py-0.5 bg-secondary/20 text-secondary rounded">Early Beta</span>
           </div>
@@ -33,7 +33,7 @@ const Header = ({ minimal = false, onQuit }) => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-bold gradient-text mb-2">
-            FretCoach
+            FretCoach Studio
           </h1>
           <p className="text-muted-foreground text-sm">
             Adaptive Guitar Learning Agent
