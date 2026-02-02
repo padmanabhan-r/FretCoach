@@ -495,7 +495,7 @@ function App() {
               </h1>
             </div>
             <p className="mt-4 text-muted-foreground text-lg animate-fade-in-delayed">
-              Your AI-powered guitar practice companion
+              AI-Powered Adaptive Guitar Training
             </p>
             <div className="mt-8 flex justify-center">
               <div className="w-12 h-1 bg-gradient-to-r from-primary to-accent rounded-full animate-loading-bar" />

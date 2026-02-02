@@ -39,11 +39,6 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="#architecture" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Architecture
-                </a>
-              </li>
-              <li>
                 <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
                   Dashboard
                 </Link>
@@ -70,7 +65,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-12 pt-8 border-t border-border text-center text-muted-foreground text-sm">
-          <p>© {new Date().getFullYear()} FretCoach. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} FretCoach - Built with love for the music and the guitar. 🎸</p>
         </div>
       </div>
     </footer>

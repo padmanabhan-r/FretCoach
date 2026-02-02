@@ -1,4 +1,4 @@
-# FretCoach : AI-Powered Guitar Training
+# FretCoach : AI-Powered Adaptive Guitar Training
 
 > **Turn your 2026 guitar resolutions into reality.**
 

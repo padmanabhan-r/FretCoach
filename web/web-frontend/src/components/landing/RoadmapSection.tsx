@@ -5,14 +5,14 @@ import { Badge } from "@/components/ui/badge";
 const roadmapItems = [
   {
     phase: "Current",
-    title: "FretCoach MVP",
+    title: "FretCoach (Tech Preview)",
     subtitle: "Scales",
     description: "Master guitar scales with real-time audio analysis and ambient light feedback. Focus on building muscle memory through deliberate practice.",
     icon: Guitar,
     status: "active",
-    features: ["Desktop and portable", "Adaptive AI coaching", "Real-time analysis", "Ambient light feedback", "Web support and performance analytics"],
+    features: ["Desktop and portable modes", "Adaptive AI coaching", "Real-time analysis", "Ambient light feedback for instant correction", "Web dashboard with performance analytics"],
     hardware: {
-      title: "MVP Hardware",
+      title: "Current Hardware",
       icon: Cpu,
       items: ["Raspberry Pi 5", "USB Audio Interface", "Tablet/Phone Screen"],
     },
@@ -28,7 +28,7 @@ const roadmapItems = [
     hardware: {
       title: "Standalone Pedal",
       icon: Monitor,
-      items: ["IPS Display", "Physical Controls", "Built-in Unit"],
+      items: ["Standalone pedal form factor","IPS Display", "Physical Controls", "Built-in Unit"],
     },
   },
   {
@@ -51,7 +51,7 @@ const getStatusBadge = (status: string) => {
     case "active":
       return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Current Release</Badge>;
     case "planned":
-      return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Q3 2026</Badge>;
+      return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Q3/Q4 2026</Badge>;
     case "vision":
       return <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">Future Vision</Badge>;
     default:

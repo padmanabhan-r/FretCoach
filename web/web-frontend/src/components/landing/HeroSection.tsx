@@ -24,19 +24,19 @@ const HeroSection = () => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
             </span>
-            <span className="text-base sm:text-lg font-medium">AI-Powered Guitar Training</span>
+            <span className="text-base sm:text-lg font-medium">AI-Powered Adaptive Guitar Training</span>
           </div>
 
           {/* Main Heading */}
           <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight">
-            Practice Until You{" "}
-            <span className="text-primary">Can't Get It Wrong</span>
+            Real-time Coaching,{" "}
+            <span className="text-primary">ANYWHERE</span>
           </h1>
 
           {/* Description */}
           <p className="text-lg text-foreground/80 max-w-xl">
-            FretCoach prevents mistakes before they become habits, delivering real-time guidance through
-            screen, voice, and ambient lighting. Build correct technique from the start. Make every minute of practice count.
+            FretCoach stops mistakes before they stick. Live feedback via visuals, voice, and ambient cues.
+            Build the right technique from the start. Don't practice until you get it right - Practice until you can't get it wrong!
           </p>
 
           {/* CTA Buttons */}
