@@ -35,5 +35,6 @@ dependencies = [
     "pydantic>=2.0.0",
     "langchain-core>=0.1.0",
     "rich>=14.2.0",
+    "opik-optimizer>=3.0.1",
 ]
 
