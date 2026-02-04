@@ -20,6 +20,17 @@ This helps you learn correct technique **before bad habits form**.
 
 ---
 
+## Repository Structure
+
+> **Note:** This is a monorepo containing the core FretCoach systems (Studio and Portable applications). The **web platform components** (FretCoach Hub) are maintained in separate repositories:
+>
+> - **Web Backend:** [github.com/padmanabhan-r/FretCoach-Web-Backend](https://github.com/padmanabhan-r/FretCoach-Web-Backend)
+> - **Web Frontend:** [github.com/padmanabhan-r/FretCoach-Web-Frontend](https://github.com/padmanabhan-r/FretCoach-Web-Frontend)
+>
+> The `web/` directory in this repository contains reference implementations and development versions.
+
+---
+
 ## The FretCoach Approach
 
 ![FretCoach Approach](images/FretCoach%20Approach.png)
@@ -252,6 +263,10 @@ Raspberry Pi 5-based portable practice device. Same analysis engine as Studio, b
 
 **Website:** [fretcoach.online](https://www.fretcoach.online)
 **Analytics and AI Coach Dashboard:** [fretcoach.online/dashboard](https://www.fretcoach.online/dashboard)
+
+> **Production Repositories:**
+> - Backend: [github.com/padmanabhan-r/FretCoach-Web-Backend](https://github.com/padmanabhan-r/FretCoach-Web-Backend)
+> - Frontend: [github.com/padmanabhan-r/FretCoach-Web-Frontend](https://github.com/padmanabhan-r/FretCoach-Web-Frontend)
 
 Web platform for analytics and practice planning.
 
