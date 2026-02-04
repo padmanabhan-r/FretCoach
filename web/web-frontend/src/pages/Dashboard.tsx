@@ -99,6 +99,22 @@ const Dashboard = () => {
   const aggregates = data?.aggregates;
   const selectedSession = sessions[selectedSessionIndex];
 
+  // Helper function to safely extract numeric values
+  const getNumericMetric = (value: any): number => {
+    if (value === null || value === undefined) return 0;
+    if (typeof value === 'object' && value !== null) {
+      // Handle case where value is an object with nested properties
+      console.warn('Received object instead of number for metric:', value);
+      return 0;
+    }
+    const num = Number(value);
+    if (isNaN(num)) {
+      console.warn('Received non-numeric value for metric:', value);
+      return 0;
+    }
+    return num;
+  };
+
   // Chat session management
   const startChatSession = () => {
     const newThreadId = `hub-aicoach-chat-${Date.now()}`;
@@ -233,8 +249,8 @@ const Dashboard = () => {
   // Calculate trend indicators
   const calculateTrend = (metric: 'pitch_accuracy' | 'scale_conformity' | 'timing_stability') => {
     if (sessions.length < 2) return { value: 0, isUp: true };
-    const recent = sessions.slice(0, 3).reduce((sum, s) => sum + (s[metric] || 0), 0) / Math.min(3, sessions.length);
-    const older = sessions.slice(3, 6).reduce((sum, s) => sum + (s[metric] || 0), 0) / Math.min(3, sessions.slice(3, 6).length);
+    const recent = sessions.slice(0, 3).reduce((sum, s) => sum + getNumericMetric(s[metric]), 0) / Math.min(3, sessions.length);
+    const older = sessions.slice(3, 6).reduce((sum, s) => sum + getNumericMetric(s[metric]), 0) / Math.min(3, sessions.slice(3, 6).length);
     if (older === 0) return { value: 0, isUp: true };
     const change = Math.round((recent - older) * 100);
     return { value: Math.abs(change), isUp: change >= 0 };
@@ -375,7 +391,7 @@ const Dashboard = () => {
                 <Skeleton className="h-6 w-12" />
               ) : (
                 <CardTitle className="text-xl md:text-2xl font-bold">
-                  {Math.round((aggregates?.avg_pitch_accuracy || 0) * 100)}%
+                  {Math.round(getNumericMetric(aggregates?.avg_pitch_accuracy) * 100)}%
                 </CardTitle>
               )}
               <p className="text-xs text-muted-foreground">Pitch Accuracy</p>
@@ -401,7 +417,7 @@ const Dashboard = () => {
                 <Skeleton className="h-6 w-12" />
               ) : (
                 <CardTitle className="text-xl md:text-2xl font-bold">
-                  {Math.round((aggregates?.avg_timing_stability || 0) * 100)}%
+                  {Math.round(getNumericMetric(aggregates?.avg_timing_stability) * 100)}%
                 </CardTitle>
               )}
               <p className="text-xs text-muted-foreground">Timing Stability</p>
@@ -427,7 +443,7 @@ const Dashboard = () => {
                 <Skeleton className="h-6 w-12" />
               ) : (
                 <CardTitle className="text-xl md:text-2xl font-bold">
-                  {Math.round((aggregates?.avg_scale_conformity || 0) * 100)}%
+                  {Math.round(getNumericMetric(aggregates?.avg_scale_conformity) * 100)}%
                 </CardTitle>
               )}
               <p className="text-xs text-muted-foreground">Scale Conformity</p>
@@ -452,7 +468,7 @@ const Dashboard = () => {
                 <Skeleton className="h-6 w-12" />
               ) : (
                 <CardTitle className="text-xl md:text-2xl font-bold">
-                  {Math.round(((aggregates?.avg_pitch_accuracy || 0) + (aggregates?.avg_scale_conformity || 0) + (aggregates?.avg_timing_stability || 0)) / 3 * 100)}%
+                  {Math.round(((getNumericMetric(aggregates?.avg_pitch_accuracy) + getNumericMetric(aggregates?.avg_scale_conformity) + getNumericMetric(aggregates?.avg_timing_stability)) / 3) * 100)}%
                 </CardTitle>
               )}
               <p className="text-xs text-muted-foreground">Performance</p>
@@ -525,7 +541,7 @@ const Dashboard = () => {
                             <span className="text-[10px] text-muted-foreground">{session.scale_chosen} {session.scale_type}</span>
                             <span className="text-[10px] text-muted-foreground">{formatDuration(session.duration_seconds)}</span>
                             <span className="text-xs text-primary font-medium whitespace-nowrap">
-                              {Math.round((((session.pitch_accuracy || 0) + (session.scale_conformity || 0) + (session.timing_stability || 0)) / 3) * 100)}%
+                              {Math.round(((getNumericMetric(session.pitch_accuracy) + getNumericMetric(session.scale_conformity) + getNumericMetric(session.timing_stability)) / 3) * 100)}%
                             </span>
                           </div>
                         </button>
@@ -559,19 +575,19 @@ const Dashboard = () => {
                     {/* Performance Metrics */}
                     <div className="grid grid-cols-4 gap-2">
                       <div className="p-2 rounded-lg bg-card border border-border text-center">
-                        <p className="text-lg font-bold text-primary">{Math.round((selectedSession.pitch_accuracy || 0) * 100)}%</p>
+                        <p className="text-lg font-bold text-primary">{Math.round(getNumericMetric(selectedSession.pitch_accuracy) * 100)}%</p>
                         <p className="text-[10px] text-muted-foreground">Pitch</p>
                       </div>
                       <div className="p-2 rounded-lg bg-card border border-border text-center">
-                        <p className="text-lg font-bold text-primary">{Math.round((selectedSession.scale_conformity || 0) * 100)}%</p>
+                        <p className="text-lg font-bold text-primary">{Math.round(getNumericMetric(selectedSession.scale_conformity) * 100)}%</p>
                         <p className="text-[10px] text-muted-foreground">Scale</p>
                       </div>
                       <div className="p-2 rounded-lg bg-card border border-border text-center">
-                        <p className="text-lg font-bold text-primary">{Math.round((selectedSession.timing_stability || 0) * 100)}%</p>
+                        <p className="text-lg font-bold text-primary">{Math.round(getNumericMetric(selectedSession.timing_stability) * 100)}%</p>
                         <p className="text-[10px] text-muted-foreground">Timing</p>
                       </div>
                       <div className="p-2 rounded-lg bg-primary/10 border border-primary text-center">
-                        <p className="text-lg font-bold text-primary">{Math.round((((selectedSession.pitch_accuracy || 0) + (selectedSession.scale_conformity || 0) + (selectedSession.timing_stability || 0)) / 3) * 100)}%</p>
+                        <p className="text-lg font-bold text-primary">{Math.round(((getNumericMetric(selectedSession.pitch_accuracy) + getNumericMetric(selectedSession.scale_conformity) + getNumericMetric(selectedSession.timing_stability)) / 3) * 100)}%</p>
                         <p className="text-[10px] text-muted-foreground">Overall</p>
                       </div>
                     </div>

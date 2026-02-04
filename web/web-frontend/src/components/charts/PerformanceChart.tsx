@@ -58,6 +58,21 @@ export function PerformanceChart({ chartData, onSavePlan, onDismissPlan }: Perfo
 }
 
 function TrendChart({ data, metric }: { data: any; metric?: string }) {
+  // Helper to safely extract numeric values
+  const getNumericValue = (value: any): number => {
+    if (value === null || value === undefined) return 0;
+    if (typeof value === 'object' && value !== null) {
+      console.warn('[PerformanceChart] Received object instead of number:', value);
+      return 0;
+    }
+    const num = Number(value);
+    if (isNaN(num)) {
+      console.warn('[PerformanceChart] Received non-numeric value:', value);
+      return 0;
+    }
+    return num;
+  };
+
   // Backend sends {labels: [...], datasets: [...]} format
   // Transform to recharts array format
   let chartData: any[] = [];
@@ -65,7 +80,8 @@ function TrendChart({ data, metric }: { data: any; metric?: string }) {
     chartData = data.labels.map((label: string, index: number) => {
       const item: any = { date: label };
       data.datasets.forEach((dataset: any) => {
-        item[dataset.label.toLowerCase().replace(' ', '_')] = dataset.data[index];
+        const key = dataset.label.toLowerCase().replaceAll(' ', '_');
+        item[key] = getNumericValue(dataset.data?.[index]);
       });
       return item;
     });
@@ -149,6 +165,21 @@ function TrendChart({ data, metric }: { data: any; metric?: string }) {
 }
 
 function ComparisonChart({ data }: { data: any }) {
+  // Helper to safely extract numeric values
+  const getNumericValue = (value: any): number => {
+    if (value === null || value === undefined) return 0;
+    if (typeof value === 'object' && value !== null) {
+      console.warn('[ComparisonChart] Received object instead of number:', value);
+      return 0;
+    }
+    const num = Number(value);
+    if (isNaN(num)) {
+      console.warn('[ComparisonChart] Received non-numeric value:', value);
+      return 0;
+    }
+    return num;
+  };
+
   // Backend sends {labels: [...], datasets: [...]} format
   // Transform to recharts array format
   let chartData: any[] = [];
@@ -161,8 +192,8 @@ function ComparisonChart({ data }: { data: any }) {
 
     chartData = data.labels.map((label: string, index: number) => ({
       metric: label.replace(' Accuracy', '').replace(' Conformity', '').replace(' Stability', ''),
-      Latest: latestDataset?.data[index] || 0,
-      Average: averageDataset?.data[index] || 0,
+      Latest: getNumericValue(latestDataset?.data?.[index]),
+      Average: getNumericValue(averageDataset?.data?.[index]),
     }));
 
     radarData = chartData.map((item: any) => ({
@@ -175,25 +206,25 @@ function ComparisonChart({ data }: { data: any }) {
     chartData = [
       {
         metric: 'Pitch',
-        Latest: data.latest?.pitch || 0,
-        Average: data.average?.pitch || 0,
+        Latest: getNumericValue(data.latest?.pitch),
+        Average: getNumericValue(data.average?.pitch),
       },
       {
         metric: 'Scale',
-        Latest: data.latest?.scale || 0,
-        Average: data.average?.scale || 0,
+        Latest: getNumericValue(data.latest?.scale),
+        Average: getNumericValue(data.average?.scale),
       },
       {
         metric: 'Timing',
-        Latest: data.latest?.timing || 0,
-        Average: data.average?.timing || 0,
+        Latest: getNumericValue(data.latest?.timing),
+        Average: getNumericValue(data.average?.timing),
       },
     ];
 
     radarData = [
-      { subject: 'Pitch', Latest: data.latest?.pitch || 0, Average: data.average?.pitch || 0 },
-      { subject: 'Scale', Latest: data.latest?.scale || 0, Average: data.average?.scale || 0 },
-      { subject: 'Timing', Latest: data.latest?.timing || 0, Average: data.average?.timing || 0 },
+      { subject: 'Pitch', Latest: getNumericValue(data.latest?.pitch), Average: getNumericValue(data.average?.pitch) },
+      { subject: 'Scale', Latest: getNumericValue(data.latest?.scale), Average: getNumericValue(data.average?.scale) },
+      { subject: 'Timing', Latest: getNumericValue(data.latest?.timing), Average: getNumericValue(data.average?.timing) },
     ];
   }
 
