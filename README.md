@@ -57,7 +57,7 @@ FretCoach is built as a three-part system, with all components connected through
 
 **Want to understand FretCoach super fast?** Check out the [quick deck](#) and [explainer video](#) for a rapid overview. But I would also suggest you read on—at least this README.md fully—to get a proper idea of this product.
 
-**For judges of the "Best Use of Opik" category:** Please see [opik/opik-usage.md](use-of-opik/opik-usage.md) for detailed documentation on all the Opik features I've explored and implemented.
+**For judges of the "Best Use of Opik" category:** Please see [opik/opik-usage.md](opik/opik-usage.md) for detailed documentation on all the Opik features I've explored and implemented.
 
 **Personal note:** Wow, what a tool! Why have I not been using Opik for my LLM projects before? I'm genuinely impressed—from advanced tracing capabilities, agent graphs for LangGraph visualization, custom eval metrics, and dashboards, to AI Assist. Right after this hackathon, I'm certain I'll be integrating Opik into my work projects. This isn't just hackathon enthusiasm—I've found a tool that solves real problems I face daily with LLM observability and optimization.
 
