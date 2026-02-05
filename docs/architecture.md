@@ -1,731 +1,362 @@
-# System Architecture
+# FretCoach System Architecture
 
-Complete technical overview of FretCoach's multi-component architecture.
-
----
-
-## Overview: The FretCoach Trifecta
-
-Three-component ecosystem with central database for cross-device practice tracking.
-
-![FretCoach Trifecta](assets/images/FretCoach%20Trifecta.jpeg)
-
-**Components:**
-- **FretCoach Studio** — Desktop app for focused practice
-- **FretCoach Hub** — Web analytics and AI coaching
-- **FretCoach Portable** — Raspberry Pi portable device
-
-**Central Database:**
-- PostgreSQL (Supabase)
-- Sessions, metrics, AI plans
-- Cross-device sync and full history access
+Technical overview of FretCoach's architecture and implementation.
 
 ---
 
-## Dual-Brain Architecture
+## System Overview
 
-Two complementary systems: real-time deterministic + intelligent LLM.
+FretCoach is a guitar practice feedback system with three components sharing a central PostgreSQL database:
 
-![FretCoach Brain Architecture](assets/images/FretCoach%20Brain.png)
+1. **FretCoach Studio** - Electron desktop app for practice sessions with real-time audio analysis
+2. **FretCoach Hub** - Web dashboard for analytics and AI chat coaching
+3. **FretCoach Portable** - Raspberry Pi device (in development)
 
-### Fast Loop: Audio Analysis Agent (Deterministic)
-**Purpose:** Real-time monitoring (<300ms latency)
-
-**Functions:**
-- Continuous audio analysis (pitch, scale, timing, noise)
-- Immediate visual feedback
-- Ambient lighting control
-- Sliding window scoring
-
-**Why deterministic:**
-- Predictable latency (no LLM calls)
-- Offline operation
-- Consistent metrics
-
-### Slow Loop: AI Coach (LLM-Powered)
-**Purpose:** Intelligent pattern recognition and guidance
-
-**Functions:**
-- Session analysis and verbal coaching
-- Personalized practice plans from history
-- Conversational web chat
-- Text-to-speech feedback (GPT-4o-mini-TTS)
-
-**Why LLM:**
-- Cross-session pattern recognition
-- Natural language interaction
-- Adaptive recommendations
-- Flexible strategic reasoning
-
-**Non-real-time channel:** AI coaching can arrive 1-2 seconds after events. Cloud LLMs don't compromise real-time experience.
+**Database:** PostgreSQL (Supabase) for session storage and cross-device sync
 
 ---
 
-## High-Level Architecture
+## Core Architecture
 
-FretCoach consists of three main components sharing a central PostgreSQL database:
+### Two-Loop System
 
-```
-┌────────────────────────────────────────────────────────────────────┐
-│                     PostgreSQL Database (Supabase)                 │
-│                                                                    │
-│  ┌─────────────────────┐         ┌──────────────────────────┐   │
-│  │  fretcoach.sessions │         │ fretcoach.ai_practice_   │   │
-│  │  ─────────────────  │         │        plans             │   │
-│  │  • session_id (PK)  │         │  ──────────────────────  │   │
-│  │  • user_id          │◄────────┤  • practice_id (PK)      │   │
-│  │  • scale_chosen     │         │  • user_id               │   │
-│  │  • metrics          │         │  • practice_plan (JSON)  │   │
-│  │  • timestamps       │         │  • executed_session_id   │   │
-│  └─────────────────────┘         └──────────────────────────┘   │
-└───────────────────────┬───────────────────┬───────────────────────┘
-                        │                   │
-        ┌───────────────┼───────────────────┼───────────────┐
-        │               │                   │               │
-        ▼               ▼                   ▼               ▼
-┌────────────────┐  ┌──────────────┐  ┌──────────────┐  ┌─────────────┐
-│ Desktop App    │  │ Web Frontend │  │ Web Backend  │  │  Portable   │
-│ ─────────────  │  │ ───────────  │  │ ───────────  │  │   Device    │
-│ • Electron     │  │ • React      │  │ • FastAPI    │  │ ───────────│
-│ • React UI     │  │ • TypeScript │  │ • Python     │  │ • RPi 5     │
-│ • Python API   │  │ • Vite       │  │ • LangChain  │  │ • Python    │
-│ • Audio DSP    │  │ • Tailwind   │  │ • Supabase   │  │ • Audio I/O │
-│ • USB Audio    │  │              │  │   Client     │  │             │
-└────────────────┘  └──────────────┘  └──────────────┘  └─────────────┘
-        │                                     │                 │
-        └───────────────────┬─────────────────┘                 │
-                            │                                   │
-                            ▼                                   ▼
-                   ┌─────────────────┐               ┌─────────────────┐
-                   │  LLM Providers  │               │  Smart Bulb     │
-                   │  ─────────────  │               │  ─────────────  │
-                   │  • OpenAI       │               │  • Tuya API     │
-                   │  • Gemini       │               │  • WiFi Control │
-                   │  • Deepseek     │               └─────────────────┘
-                   │  • Minimax      │
-                   └─────────────────┘
-                            │
-                            ▼
-                   ┌─────────────────┐
-                   │   Comet Opik    │
-                   │  ─────────────  │
-                   │  • Trace Logs   │
-                   │  • Observability│
-                   └─────────────────┘
-```
+**Fast Loop (Deterministic):**
+- Real-time audio analysis (<300ms latency)
+- Pitch detection, scale conformity, timing analysis
+- Visual feedback and ambient lighting control
+- No LLM calls - predictable, offline-capable
+
+**Slow Loop (LLM-Powered):**
+- Practice recommendations based on session history
+- Live coaching feedback during sessions
+- Conversational AI chat on web dashboard
+- All LLM calls traced via Opik
 
 ---
 
-## Component 1: Desktop Application
+## Technology Stack
 
-### Purpose
-Primary training environment for focused practice with real-time audio analysis and live AI coaching.
+### Desktop Application (Studio)
 
-### Technology Stack
-
-| Layer | Technology |
-|-------|------------|
-| Frontend | React 18, Vite, JavaScript |
-| UI Framework | Tailwind CSS, Custom components |
+| Component | Technology |
+|-----------|------------|
+| Frontend | React 18, Vite, JavaScript, Tailwind CSS |
 | Desktop Runtime | Electron 27 |
-| Backend | Python 3.10+, FastAPI 0.104+ |
+| Backend | Python 3.10+, FastAPI |
 | Audio Processing | NumPy, librosa, sounddevice |
-| AI Orchestration | LangChain, OpenAI/Gemini SDKs |
-| Database Client | psycopg2 (PostgreSQL) |
+| AI Orchestration | LangChain, LangGraph |
+| Database | psycopg2 (PostgreSQL) |
 | Observability | Comet Opik SDK |
 
-### Architecture Diagram
+### Web Application (Hub)
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│                    Electron Main Process                     │
-│  ──────────────────────────────────────────────────────────  │
-│  • Window management                                         │
-│  • Python subprocess spawning                                │
-│  • IPC bridge                                                │
-└────────────────────────────┬─────────────────────────────────┘
-                             │
-          ┌──────────────────┴──────────────────┐
-          │                                     │
-          ▼                                     ▼
-┌─────────────────────┐              ┌──────────────────────────┐
-│  Renderer Process   │              │   Python Backend         │
-│  ─────────────────  │              │  ──────────────────────  │
-│                     │              │                          │
-│  React Components:  │              │  FastAPI Server:         │
-│  ├─ Header          │              │  └─ Routers:             │
-│  ├─ StatusPanel     │              │     ├─ /devices          │
-│  ├─ MetricsDisplay  │◄─────REST────┤     ├─ /config           │
-│  ├─ VisualFeedback  │              │     ├─ /session          │
-│  ├─ ControlPanel    │              │     ├─ /ai/...           │
-│  ├─ AIRecommend     │              │     └─ /live-coach       │
-│  ├─ LiveCoachFeed   │◄───WebSocket─┤                          │
-│  └─ DebugPanel      │              │  Services:               │
-│                     │              │  ├─ audio_processor      │
-└─────────────────────┘              │  ├─ ai_agent_service     │
-                                     │  ├─ live_coach_service   │
-                                     │  └─ session_service      │
-                                     │                          │
-                                     │  Core:                   │
-                                     │  ├─ audio_features       │
-                                     │  ├─ audio_metrics        │
-                                     │  ├─ scales               │
-                                     │  └─ smart_bulb           │
-                                     └──────────┬───────────────┘
-                                                │
-                                                ▼
-                                     ┌──────────────────────────┐
-                                     │   Audio Input Device     │
-                                     │  USB Interface / Mic     │
-                                     └──────────────────────────┘
-```
+**Frontend:**
+- React 18, TypeScript, Vite
+- shadcn/ui, Tailwind CSS
+- Recharts for visualizations
+- TanStack React Query
+- Deployed on Vercel
 
-### Data Flow: Session Execution
+**Backend:**
+- Python 3.10+, FastAPI
+- LangChain, LangGraph for AI chat
+- Supabase Python SDK
+- Deployed on Railway
 
-1. **User starts session** → Frontend calls `POST /session/start`
-2. **Backend initializes:**
-   - Spawns audio processing thread
-   - Configures audio input stream
-   - Creates session record in database
-   - Initializes WebSocket connection
-3. **Real-time audio loop:**
-   - Audio callback fills buffer (continuous)
-   - Processing thread analyzes frames every 300ms
-   - Metrics calculated and sent via WebSocket
-   - Frontend updates UI in real-time
-4. **Live AI coaching** (optional):
-   - Frontend requests feedback every 30s
-   - Backend sends metrics to LLM
-   - LLM generates coaching text
-   - Traced in Opik
-5. **User ends session** → Frontend calls `POST /session/end`
-6. **Backend finalizes:**
-   - Stops audio stream
-   - Calculates final metrics
-   - Saves session to database
-   - Returns summary to frontend
+### Portable Device
 
-### Communication Protocols
-
-**REST API:**
-- Configuration: GET/POST `/config`
-- Session control: POST `/session/start`, `/session/end`
-- AI recommendations: GET `/ai/start-session`
-- Live coaching: POST `/live-coach/feedback`
-
-**WebSocket:**
-- Endpoint: `ws://127.0.0.1:8000/ws/metrics`
-- Frequency: ~6.67 Hz (every 300ms)
-- Payload: JSON with current metrics and state
-
-**IPC (Electron):**
-- Main → Renderer: Python stdout/stderr logs
-- Renderer → Main: Window control events
+- Raspberry Pi 5 (8GB RAM)
+- Python 3.10+, FastAPI
+- Focusrite Scarlett Solo USB audio interface
 
 ---
 
-## Component 2: Web Dashboard
+## Database Schema
 
-### Purpose
-Cloud-based analytics platform for session review, trend analysis, and AI chat coaching.
+### Table: fretcoach.sessions
 
-### Technology Stack
+Stores all practice session data across all devices.
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | React 18, TypeScript, Vite |
-| UI Framework | shadcn/ui, Tailwind CSS |
-| Charts | Recharts |
-| State Management | TanStack React Query |
-| Routing | React Router v6 |
-| Backend | Python 3.10+, FastAPI |
-| Database Client | Supabase Python SDK |
-| AI Orchestration | LangChain, LangGraph |
-| Deployment | Vercel (frontend), Railway (backend) |
+```sql
+CREATE TABLE fretcoach.sessions (
+    session_id VARCHAR(255) NOT NULL,
+    user_id VARCHAR(255) NOT NULL,
 
-### Architecture Diagram
+    start_timestamp TIMESTAMP NOT NULL,
+    end_timestamp TIMESTAMP,
+
+    -- Metrics
+    pitch_accuracy DOUBLE PRECISION,
+    scale_conformity DOUBLE PRECISION,
+    timing_stability DOUBLE PRECISION,
+
+    -- Session configuration
+    scale_chosen VARCHAR(100) NOT NULL,
+    scale_type VARCHAR(20) DEFAULT 'natural',
+    sensitivity DOUBLE PRECISION NOT NULL,
+    strictness DOUBLE PRECISION NOT NULL,
+
+    -- Note counts
+    total_notes_played INTEGER DEFAULT 0,
+    correct_notes_played INTEGER DEFAULT 0,
+    bad_notes_played INTEGER DEFAULT 0,
+    total_inscale_notes INTEGER,
+
+    -- Session metadata
+    duration_seconds DOUBLE PRECISION,
+    ambient_light_option BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (session_id, user_id)
+);
+```
+
+**Indexes:**
+- `idx_sessions_start_timestamp` on `start_timestamp DESC`
+- `idx_sessions_user_id` on `user_id`
+
+### Table: fretcoach.ai_practice_plans
+
+Stores AI-generated practice recommendations.
+
+```sql
+CREATE TABLE fretcoach.ai_practice_plans (
+    practice_id UUID NOT NULL PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL,
+
+    practice_plan TEXT NOT NULL,
+    generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    executed_session_id VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**Indexes:**
+- `idx_practice_plans_execution` on `executed_session_id`
+- `idx_practice_plans_user_time` on `(user_id, generated_at DESC)`
+
+### Table: fretcoach.user_configs
+
+Stores user preferences for enabled metrics.
+
+```sql
+CREATE TABLE fretcoach.user_configs (
+    user_id VARCHAR(255) NOT NULL PRIMARY KEY,
+    enabled_metrics JSONB NOT NULL DEFAULT
+        '{"pitch_accuracy": true, "scale_conformity": true, "timing_stability": true}',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+## Desktop Application Architecture
 
 ```
-┌───────────────────────────────────────────────────────────┐
-│                    Web Browser (Client)                   │
-│  ───────────────────────────────────────────────────────  │
-│                                                           │
-│  React Application (TypeScript):                          │
-│  ├─ Pages:                                                │
-│  │  ├─ Index (Landing)                                    │
-│  │  ├─ Dashboard (Metrics)                                │
-│  │  └─ Sessions (History)                                 │
-│  ├─ Components:                                           │
-│  │  ├─ NavLink, SessionCard                               │
-│  │  ├─ Charts (LineChart, BarChart)                       │
-│  │  └─ AI Coach Chat Interface                            │
-│  └─ Hooks:                                                │
-│     └─ useSessions, useToast                              │
-└─────────────────────────┬─────────────────────────────────┘
-                          │ HTTPS
-                          ▼
-┌───────────────────────────────────────────────────────────┐
-│              FastAPI Backend (Python)                     │
-│  ───────────────────────────────────────────────────────  │
-│                                                           │
-│  Routers:                                                 │
-│  ├─ /sessions — CRUD operations                           │
-│  ├─ /chat — AI coach conversation                         │
-│  └─ /health — Status check                                │
-│                                                           │
-│  Services:                                                │
-│  ├─ Session aggregation queries                           │
-│  ├─ LangGraph agent for chat                              │
-│  └─ Supabase client for DB access                         │
-└─────────────────────────┬─────────────────────────────────┘
+┌──────────────────────────────────────────┐
+│         Electron Main Process            │
+│  • Window management                     │
+│  • Python subprocess spawning            │
+└────────────┬─────────────────────────────┘
+             │
+    ┌────────┴────────┐
+    │                 │
+    ▼                 ▼
+┌─────────┐    ┌──────────────────────┐
+│ React   │    │   Python Backend     │
+│ Frontend│◄───┤   FastAPI Server     │
+│         │    │                      │
+│         │    │  Routers:            │
+│         │    │  • /session          │
+│         │    │  • /config           │
+│         │    │  • /ai/*             │
+│         │    │  • /live-coach       │
+│         │    │                      │
+│         │    │  Core:               │
+│         │    │  • audio_processor   │
+│         │    │  • ai_agent_service  │
+│         │    │  • live_coach_service│
+└─────────┘    └──────────┬───────────┘
                           │
                           ▼
-┌───────────────────────────────────────────────────────────┐
-│                 PostgreSQL (Supabase)                     │
-│  ───────────────────────────────────────────────────────  │
-│  • fretcoach.sessions table                               │
-│  • fretcoach.ai_practice_plans table                      │
-└───────────────────────────────────────────────────────────┘
+               ┌──────────────────────┐
+               │  USB Audio Interface │
+               └──────────────────────┘
 ```
 
-### Features
+**Communication:**
+- REST API for session control and configuration
+- WebSocket (`ws://127.0.0.1:8000/ws/metrics`) for real-time metrics at ~6.67 Hz
+- IPC between Electron main and renderer processes
 
-**Dashboard View:**
-- Recent sessions list with key metrics
-- Performance trend charts (line graphs over time)
-- Aggregate statistics (total practice time, avg scores)
-- Session comparison (latest vs. average)
+---
 
-**AI Coach Chat:**
+## Web Application Architecture
+
+```
+┌─────────────────────────────────┐
+│    React Frontend (Vercel)      │
+│  • Dashboard with charts        │
+│  • Session history              │
+│  • AI Coach Chat                │
+└────────────┬────────────────────┘
+             │ HTTPS
+             ▼
+┌─────────────────────────────────┐
+│  FastAPI Backend (Railway)      │
+│  • /sessions endpoints          │
+│  • /chat (LangGraph agent)      │
+│  • Supabase client              │
+└────────────┬────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────┐
+│   PostgreSQL (Supabase)         │
+│  • fretcoach.sessions           │
+│  • fretcoach.ai_practice_plans  │
+│  • fretcoach.user_configs       │
+└─────────────────────────────────┘
+```
+
+---
+
+## Portable Application Architecture
+
+```
+┌────────────────────────────────────────┐
+│        Raspberry Pi 5                  │
+│  ────────────────────────────────────  │
+│                                        │
+│  Python Backend (FastAPI):             │
+│  • Same audio analysis engine          │
+│  • Local session storage (SQLite)      │
+│  • Periodic sync to Supabase           │
+│  • Smart bulb control via Tuya API     │
+│                                        │
+│  Optional UI:                          │
+│  • Web interface on local WiFi         │
+│  • Physical buttons/LEDs               │
+└──────────┬─────────────────────────────┘
+           │
+           ├──────► USB Audio (Scarlett Solo)
+           │              │
+           │              └──► Guitar Input
+           │
+           └──────► WiFi ──► Supabase (sync)
+```
+
+**Use Cases:**
+- Backstage warmup without laptop
+- Travel practice (fits in guitar case)
+- Offline practice (syncs later)
+
+---
+
+## AI System
+
+### LLM Providers
+
+Supports multiple providers via LangChain:
+- OpenAI (GPT-4o-mini)
+- Google Gemini (2.0-flash-exp, 2.5-flash)
+- Deepseek
+- Minimax
+
+### AI Workflows
+
+**1. Practice Recommendations (AI Mode)**
+- Fetch recent sessions from PostgreSQL
+- Analyze performance patterns
+- LLM generates structured recommendation (Pydantic)
+- Save to `ai_practice_plans` table
+- Traced in Opik with tags: `fretcoach-core`, `ai-mode`, `practice-recommendation`
+
+**2. Live Coaching**
+- Every 30 seconds during session
+- Send current metrics to LLM
+- Generate brief coaching feedback
+- Display in UI
+- Traced in Opik with tags: `fretcoach-core`, `ai-mode`, `live-feedback`
+
+**3. AI Chat (Hub Dashboard)**
+- LangGraph agent with database tools
+- Tools: `execute_sql_query`, `get_database_schema`
 - Conversational interface for practice guidance
-- LangGraph-powered agent with tools:
-  - `get_recent_sessions` — Fetch user history
-  - `analyze_performance` — Compute trends
-  - `generate_recommendation` — Create practice plans
-- Every message traced in Opik
+- Traced in Opik with tags: `fretcoach-hub`, `ai-coach-chat`, `from-hub-dashboard`
 
-**Session History:**
-- Filterable list of all past sessions
-- Detailed view for individual sessions
-- Export capabilities (future)
+---
 
-### Deployment
+## Observability with Opik
 
-**Frontend (Vercel):**
-- Automatic deployment from Git
-- Global CDN distribution
-- Environment variables configured in Vercel dashboard
+All LLM calls are traced via Opik integration.
+
+**Trace Organization:**
+- **Tags:** Categorize traces by type (e.g., `ai-coach-chat`, `ai-mode`, `live-feedback`)
+- **Thread IDs:** Group related calls (e.g., `hub-{user_id}`, `{session_id}-live-aicoach-feedback`)
+- **Metadata:** User IDs, session IDs, practice IDs
+
+See [opik-usage.md](../opik/opik-usage.md) for detailed implementation.
+
+---
+
+## API Endpoints
+
+### Desktop Backend
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/devices` | GET | List audio devices |
+| `/config` | GET/POST | Get/set configuration |
+| `/session/start` | POST | Start practice session |
+| `/session/end` | POST | End session and save |
+| `/ai/start-session` | GET | Get AI recommendation |
+| `/live-coach/feedback` | POST | Request live coaching |
+| `/ws/metrics` | WebSocket | Real-time metrics stream |
+
+### Web Backend
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/sessions` | GET | List user sessions |
+| `/sessions/{id}` | GET | Get session details |
+| `/chat` | POST | AI coach chat messages |
+| `/health` | GET | Health check |
+
+---
+
+## Deployment
+
+### Desktop Application
+- Built with electron-builder
+- Artifacts: `.dmg` (macOS), `.exe` (Windows), `.AppImage` (Linux)
+
+### Web Frontend
+- Deployed on Vercel
 - URL: [fretcoach.online](https://fretcoach.online)
-
-**Backend (Railway):**
-- Docker container or native Python runtime
 - Auto-deploy from Git
-- Environment variables in Railway settings
+
+### Web Backend
+- Deployed on Railway
+- Auto-deploy from Git
 - CORS configured for fretcoach.online
 
 ---
 
-## Component 3: Portable Device (Raspberry Pi)
-
-### Purpose
-Edge computing practice device—a guitar pedal-like unit running the same analysis engine locally.
-
-### Technology Stack
-
-| Layer | Technology |
-|-------|------------|
-| Hardware | Raspberry Pi 5 (8GB RAM) |
-| OS | Raspberry Pi OS (64-bit) |
-| Audio Interface | Focusrite Scarlett Solo USB |
-| Backend | Python 3.10+, FastAPI |
-| Audio Processing | NumPy, librosa, sounddevice |
-| Database Sync | Periodic sync to Supabase |
-| UI | Optional: small display or web interface |
-
-### Status
-
-**Current:** Prototyping phase (~30% complete)
-
-**Completed:**
-- Hardware setup (RPi 5 + Scarlett Solo)
-- OS installation and configuration
-- Python environment setup
-- Audio I/O testing
-
-**In Progress:**
-- Adapting audio analysis agent engine for ARM architecture
-- Optimizing for real-time performance on RPi
-- Implementing local session caching
-- Sync mechanism with cloud database
-
-**Planned:**
-- Physical enclosure design (3D printed pedal case)
-- Battery power management
-- LED status indicators
-- Button controls for start/stop
-
-### Architecture Concept
-
-```
-┌────────────────────────────────────────────┐
-│        Raspberry Pi 5                      │
-│  ────────────────────────────────────────  │
-│                                            │
-│  Python Backend (FastAPI):                 │
-│  ├─ Audio analysis agent engine (same as desktop)│
-│  ├─ Local session storage (SQLite)         │
-│  ├─ Periodic sync to Supabase              │
-│  └─ Smart bulb control                     │
-│                                            │
-│  Optional Web UI:                          │
-│  └─ Accessible via local WiFi              │
-└──────────────┬─────────────────────────────┘
-               │
-               ├──────────► USB Audio Interface (Scarlett Solo)
-               │                    │
-               │                    └──────► Guitar Input
-               │
-               └──────────► WiFi ──────► Supabase (when online)
-```
-
-### Use Cases
-
-1. **Backstage warmup** — Practice before a performance without a laptop
-2. **Travel practice** — Portable device fits in guitar case
-3. **Offline practice** — Works without internet (syncs later)
-4. **Bedroom practice** — Minimal setup, pedal-like form factor
-
----
-
-## Data Architecture
-
-### Database Schema
-
-**Table: `fretcoach.sessions`**
-
-```sql
-CREATE TABLE fretcoach.sessions (
-    session_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id VARCHAR(255) NOT NULL,
-    start_timestamp TIMESTAMP NOT NULL,
-    end_timestamp TIMESTAMP,
-    scale_chosen VARCHAR(100) NOT NULL,
-    scale_type VARCHAR(50) NOT NULL,
-    pitch_accuracy FLOAT,
-    scale_conformity FLOAT,
-    timing_stability FLOAT,
-    noise_control FLOAT,
-    total_notes_played INTEGER,
-    correct_notes_played INTEGER,
-    bad_notes_played INTEGER,
-    unique_notes_used INTEGER,
-    duration_seconds INTEGER,
-    strictness FLOAT,
-    sensitivity FLOAT,
-    ambient_lighting_used BOOLEAN DEFAULT FALSE,
-    device_type VARCHAR(50) DEFAULT 'desktop',
-    created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE INDEX idx_sessions_user_id ON fretcoach.sessions(user_id);
-CREATE INDEX idx_sessions_timestamp ON fretcoach.sessions(start_timestamp DESC);
-```
-
-**Table: `fretcoach.ai_practice_plans`**
-
-```sql
-CREATE TABLE fretcoach.ai_practice_plans (
-    practice_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id VARCHAR(255) NOT NULL,
-    practice_plan JSONB NOT NULL,
-    generated_at TIMESTAMP DEFAULT NOW(),
-    executed_session_id UUID REFERENCES fretcoach.sessions(session_id),
-    executed_at TIMESTAMP
-);
-
-CREATE INDEX idx_practice_plans_user_id ON fretcoach.ai_practice_plans(user_id);
-CREATE INDEX idx_practice_plans_generated_at ON fretcoach.ai_practice_plans(generated_at DESC);
-```
-
-### Data Flow: Cross-Component
-
-**Scenario:** User practices on desktop, reviews on web, then practices on portable device
-
-1. **Desktop practice:**
-   - Session data saved to `sessions` table
-   - AI recommendation (if used) saved to `ai_practice_plans` table
-
-2. **Web dashboard review:**
-   - Frontend fetches sessions via `/sessions` endpoint
-   - Backend queries Supabase for user's sessions
-   - AI chat can reference this session data
-
-3. **Portable device practice:**
-   - Device syncs latest sessions from Supabase
-   - User practices (data stored locally if offline)
-   - When online, syncs new session back to Supabase
-   - Desktop and web now see portable sessions
-
-**Synchronization strategy:**
-- Pull: Fetch sessions updated after last sync timestamp
-- Push: Upload local sessions not yet in cloud
-- Conflict resolution: Last-write-wins (sessions are immutable after creation)
-
----
-
-## AI System Architecture
-
-### LLM Provider Abstraction
-
-FretCoach supports multiple LLM providers through LangChain's unified interface:
-
-```python
-# OpenAI
-model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-
-# Google Gemini
-model = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp")
-
-# Deepseek
-model = ChatOpenAI(
-    base_url="https://api.deepseek.com",
-    model="deepseek-chat",
-    api_key=os.getenv("DEEPSEEK_API_KEY")
-)
-
-# Minimax
-model = ChatOpenAI(
-    base_url="https://api.minimax.chat/v1",
-    model="minimax-2.1-open",
-    api_key=os.getenv("MINIMAX_API_KEY")
-)
-```
-
-All providers traced identically through Opik.
-
-### AI Workflows
-
-**1. Practice Recommendation (AI Mode)**
-
-```
-User Request
-    ↓
-Fetch Recent Sessions (PostgreSQL)
-    ↓
-Analyze Performance Patterns
-    ↓
-LLM Call: Generate Recommendation
-    ├─ Input: Session metrics
-    ├─ Output: Structured (Pydantic)
-    └─ Traced: Opik
-    ↓
-Save to ai_practice_plans (PostgreSQL)
-    ↓
-Return to User
-```
-
-**2. Live Coaching (During Session)**
-
-```
-Session Running (metrics updating)
-    ↓
-Every 30s: Send Current Metrics
-    ↓
-Identify Weakest Metric
-    ↓
-LLM Call: Generate Coaching Feedback
-    ├─ Input: Real-time metrics
-    ├─ Output: Brief corrective text
-    └─ Traced: Opik
-    ↓
-Display in UI
-```
-
-**3. AI Chat (Web Dashboard)**
-
-```
-User Message
-    ↓
-LangGraph Agent
-    ├─ Tool: get_recent_sessions
-    ├─ Tool: analyze_trends
-    └─ Tool: generate_practice_plan
-    ↓
-LLM Reasoning + Tool Calls
-    ↓ (Each step traced)
-Opik
-    ↓
-Agent Response
-    ↓
-Display to User
-```
-
----
-
-## Observability with Comet Opik
-
-### Integration Points
-
-Every AI interaction is traced:
-
-**Desktop App:**
-- AI practice recommendations
-- Live coaching feedback
-- Session analysis
-
-**Web Dashboard:**
-- AI coach chat messages
-- Practice plan generation
-- Performance analysis
-
-### Trace Structure
-
-**Metadata:**
-- `user_id` — User identifier
-- `session_id` — Session identifier (for live coaching)
-- `practice_id` — Practice plan identifier (for AI mode)
-
-**Tags:**
-- `ai-mode` — Practice recommendations
-- `live-coach` — Real-time session feedback
-- `web-chat` — Dashboard chat interactions
-
-**Example trace:**
-```json
-{
-  "trace_id": "abc-def-123",
-  "name": "generate_ai_recommendation",
-  "tags": ["ai-mode", "recommendation"],
-  "metadata": {
-    "user_id": "user-paddy",
-    "practice_id": "practice-xyz"
-  },
-  "input": {
-    "recent_sessions": [...],
-    "user_profile": {...}
-  },
-  "output": {
-    "scale_name": "D Minor",
-    "scale_type": "pentatonic",
-    "focus_area": "timing",
-    "reasoning": "Your timing stability has been consistently low...",
-    "strictness": 0.6,
-    "sensitivity": 0.5
-  },
-  "duration_ms": 1234
-}
-```
-
----
-
-## Security Considerations
-
-### API Key Management
-
-- All API keys stored in `.env` files (never in code)
-- `.env` files gitignored
-- Production: Environment variables in deployment platform
-
-### Database Access
-
-- PostgreSQL with SSL/TLS encryption
-- Row-level security policies in Supabase
-- User data scoped by `user_id`
-
-### CORS Configuration
-
-Desktop app:
-```python
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Local Electron app
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-```
-
-Web backend:
-```python
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["https://fretcoach.online"],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["*"],
-)
-```
-
----
-
-## Scalability Considerations
-
-### Current Limits
-
-- **Desktop:** Single user, local processing
-- **Web:** Multi-user, shared backend
-- **Database:** Supabase free tier (500MB, 2GB bandwidth/month)
-
-### Scaling Strategy (Future)
+## Security
+
+**API Keys:**
+- Stored in `.env` files (gitignored)
+- Production: Environment variables in deployment platforms
 
 **Database:**
-- Migrate to paid Supabase tier or self-hosted PostgreSQL
-- Implement connection pooling (pgBouncer)
-- Add read replicas for analytics queries
+- SSL/TLS encryption
+- Row-level security (RLS) enabled on all tables
+- Service role policies for backend access
 
-**Web Backend:**
-- Containerize with Docker
-- Deploy to Kubernetes for auto-scaling
-- Add Redis for caching sessions
-- Implement rate limiting
-
-**Audio Processing:**
-- Desktop/portable remain single-user (local)
-- No scaling needed (runs on client)
-
----
-
-## Deployment Pipeline
-
-### Desktop Application
-
-**Build process:**
-1. Frontend: `npm run build` → Vite bundle
-2. Backend: Package Python dependencies with app
-3. Electron: `electron-builder` creates installers
-
-**Artifacts:**
-- macOS: `.dmg`, `.app`
-- Windows: `.exe`, `.msi`
-- Linux: `.AppImage`, `.deb`
-
-### Web Application
-
-**Frontend (Vercel):**
-```yaml
-# vercel.json
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "installCommand": "npm install",
-  "framework": "vite"
-}
-```
-
-**Backend (Railway):**
-```yaml
-# railway.json
-{
-  "build": {
-    "builder": "NIXPACKS"
-  },
-  "deploy": {
-    "startCommand": "uvicorn main:app --host 0.0.0.0 --port $PORT",
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
-  }
-}
-```
+**CORS:**
+- Desktop: `allow_origins=["*"]` (local only)
+- Web: `allow_origins=["https://fretcoach.online"]`
 
 ---
 
