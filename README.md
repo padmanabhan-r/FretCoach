@@ -282,6 +282,8 @@ Web platform for analytics and practice planning.
 - AI-generated practice plans
 - Session history and statistics
 
+> **Demo Note:** The live deployment at [fretcoach.online](https://www.fretcoach.online) shows two sample users for demonstration purposes.
+
 ### Getting Started
 
 **Local Development:**

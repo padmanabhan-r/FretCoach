@@ -219,6 +219,8 @@ CREATE TABLE fretcoach.user_configs (
 └─────────────────────────────────┘
 ```
 
+**Demo:** The live deployment at [fretcoach.online](https://fretcoach.online) shows two sample users for demonstration purposes.
+
 ---
 
 ## Portable Application Architecture

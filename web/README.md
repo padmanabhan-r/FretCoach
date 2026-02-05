@@ -10,6 +10,8 @@ Web platform for FretCoach practice tracking, AI coaching, and session analytics
 
 FretCoach Hub is the cloud analytics companion to FretCoach Studio and Portable. Review practice history, chat with the AI coach, generate personalized practice plans, and track progress across all devices.
 
+> **Demo Note:** The live deployment at [fretcoach.online](https://fretcoach.online) shows two sample users for demonstration purposes.
+
 ![FretCoach Hub Home](../docs/assets/images/hub/1.%20Hub%20-%20Home.png)
 
 ## Key Features
