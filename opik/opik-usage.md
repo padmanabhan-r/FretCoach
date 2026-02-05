@@ -152,3 +152,20 @@ Ran experiments to evaluate LLM performance using both default Opik metrics and 
   <br>
   <em>Experiments with custom metric</em>
 </p>
+
+---
+
+### 7. Optimization Studio
+
+Used Optimization Studio to improve the prompt used in the live feedback module.
+
+**Results:**
+- 32% increase in `llm_judge_metric` custom metric
+- Improved prompt quality for coaching feedback
+- Optimized for better real-time guidance
+
+<p align="center">
+  <img src="images/optimization-studio.png" width="700">
+  <br>
+  <em>Optimization Studio results for live feedback prompt</em>
+</p>
