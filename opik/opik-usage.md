@@ -12,6 +12,8 @@ All LLM calls are logged as traces in Opik with proper tags to organize and filt
 
 <p align="center">
   <img src="images/hub-traces.png" width="700">
+  <br>
+  <em>Hub coach chat traces with proper tags in Opik dashboard</em>
 </p>
 
 **AI Mode (Practice Recommendations):**
@@ -20,6 +22,8 @@ All LLM calls are logged as traces in Opik with proper tags to organize and filt
 
 <p align="center">
   <img src="images/ai-mode-traces.png" width="700">
+  <br>
+  <em>AI mode practice recommendation traces</em>
 </p>
 
 **Live AI Feedback in Session:**
@@ -28,6 +32,8 @@ All LLM calls are logged as traces in Opik with proper tags to organize and filt
 
 <p align="center">
   <img src="images/live-feedback-traces.png" width="700">
+  <br>
+  <em>Live AI feedback traces during practice sessions</em>
 </p>
 
 ---
@@ -56,4 +62,6 @@ Each trace uses a structured `thread_id` to group related LLM calls and maintain
 
 <p align="center">
   <img src="images/thread-management.png" width="700">
+  <br>
+  <em>Thread IDs grouping related traces in Opik</em>
 </p>
