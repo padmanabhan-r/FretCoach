@@ -65,3 +65,17 @@ Each trace uses a structured `thread_id` to group related LLM calls and maintain
   <br>
   <em>Thread IDs grouping related traces in Opik</em>
 </p>
+
+---
+
+### 3. Agent Graph Visualization
+
+LangGraph execution flows visualized in Opik for hub coach chats using `workflow.get_graph(xray=True)`.
+
+Shows agent reasoning path: agent → tool calls (`execute_sql_query`, `get_database_schema`) → decision nodes → response.
+
+<p align="center">
+  <img src="images/agent-graph.png" width="700">
+  <br>
+  <em>LangGraph agent execution flow in Opik</em>
+</p>
