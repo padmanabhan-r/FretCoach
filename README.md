@@ -20,17 +20,6 @@ This helps you learn correct technique **before bad habits form**.
 
 ---
 
-## Repository Structure
-
-> **Note:** This is a monorepo containing the core FretCoach systems (Studio and Portable applications). The **web platform components** (FretCoach Hub) are maintained in separate repositories:
->
-> - **Web Backend:** [github.com/padmanabhan-r/FretCoach-Web-Backend](https://github.com/padmanabhan-r/FretCoach-Web-Backend)
-> - **Web Frontend:** [github.com/padmanabhan-r/FretCoach-Web-Frontend](https://github.com/padmanabhan-r/FretCoach-Web-Frontend)
->
-> The `web/` directory in this repository contains reference implementations and development versions.
-
----
-
 ## The FretCoach Approach
 
 ![FretCoach Approach](images/FretCoach%20Approach.png)
@@ -397,6 +386,21 @@ FretCoach uses PostgreSQL hosted on Supabase with three core tables:
 - [Portable Application](https://padmanabhan-r.github.io/FretCoach/portable-app.html) — Raspberry Pi device documentation
 - [Web Dashboard](https://padmanabhan-r.github.io/FretCoach/web-dashboard.html) — Analytics and AI coach platform
 - [Opik Integration](opik/README.md) — Observability and monitoring
+
+---
+
+## Repository Structure
+
+> **Note:** This is a monorepo containing the core FretCoach systems (Studio, Portable and Hub applications). The **web platform components** (FretCoach Hub) are maintained in separate repositories for easy automated deployments to Railway and Vercel:
+>
+> - **Web Backend:** [github.com/padmanabhan-r/FretCoach-Web-Backend](https://github.com/padmanabhan-r/FretCoach-Web-Backend)
+> - **Web Frontend:** [github.com/padmanabhan-r/FretCoach-Web-Frontend](https://github.com/padmanabhan-r/FretCoach-Web-Frontend)
+>
+> The `web/` directory in this repository contains reference implementations and development versions.
+
+---
+
+> **⚠️ Important for Testing:** The smart bulb integration (ambient lighting) is completely optional. FretCoach works perfectly without it—just leave the `HAVELLS_*` environment variables blank in your `.env` file. The system will automatically disable lighting features and continue normally. All core functionality (audio analysis, AI coaching, metrics) works independently.
 
 ---
 
