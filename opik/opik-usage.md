@@ -169,3 +169,57 @@ Used Optimization Studio to improve the prompt used in the live feedback module.
   <br>
   <em>Optimization Studio results for live feedback prompt</em>
 </p>
+
+---
+
+### 8. OpikAssist for Token Usage Optimization
+
+Used OpikAssist to analyze traces and identify optimization opportunities for hub coach chats.
+
+**Identified Issues:**
+- Excessive token usage (4,877 tokens) and long duration (7,873 ms)
+- Lengthy prompts with redundant context and full SQL data
+
+**Actions Taken:**
+- Refined system and user prompts based on OpikAssist suggestions
+- Streamlined SQL result formatting to essential data only
+- Removed redundant context and consolidated guidelines
+
+**Results:**
+- Significant token usage reduction
+- Improved response latency
+- Better cost-performance ratio
+
+<p align="center">
+  <img src="images/opik-assist.png" width="700">
+  <br>
+  <em>OpikAssist analyzing trace for token usage optimization opportunities</em>
+</p>
+
+---
+
+### 9. Project-Specific Configurations
+
+Configured custom feedback definitions and AI providers for comprehensive evaluation.
+
+**Feedback Definitions:**
+- Created custom fields for manual LLM output rating
+- Enabled human-in-the-loop feedback on traces
+- Categorical ratings: "AI Coach Conversation Rating" and "User Feedback"
+
+**AI Providers:**
+- Added Perplexity's Sonar Pro for automated evaluations
+- Configured OpenRouter models for diverse evaluation perspectives
+- Enhanced evaluation capabilities beyond default Opik models
+
+<p align="center">
+  <img src="images/feedback-definitions.png" width="700">
+  <br>
+  <em>Custom feedback definitions for manual trace ratings</em>
+</p>
+
+<p align="center">
+  <img src="images/config-models.png" width="700">
+  <br>
+  <em>Custom AI providers configured for automated evaluations</em>
+</p>
