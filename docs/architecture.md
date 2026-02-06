@@ -362,6 +362,34 @@ See [opik-usage.md](../opik/opik-usage.md) for detailed implementation.
 
 ---
 
+## Future Expandability
+
+**Starts With Guitar, Expands Everywhere**
+
+One coaching core. Many instruments.
+AI-powered instant feedback for any skill-based training—music, sports, and beyond.
+
+<p align="center">
+  <img src="assets/images/future-expandability.jpg" alt="Future Expandability - Core Audio Analysis Agent" width="800"/>
+</p>
+
+The FretCoach architecture is designed for extensibility beyond guitar:
+
+**Core Analysis Engine:**
+- Modular audio processing pipeline adaptable to different instruments
+- Configurable metric evaluation system
+- Real-time feedback loop (<300ms) applicable across domains
+
+**Potential Expansions:**
+- **Piano:** Chord recognition, key velocity analysis, timing precision
+- **Vocals:** Pitch accuracy, vibrato control, breath support metrics
+- **Drums:** Rhythm consistency, dynamics control, polyrhythm coordination
+- **Beyond Music:** Any skill requiring real-time audio or motion feedback—sports coaching, speech training, physical therapy
+
+The dual-brain architecture (fast deterministic loop + slow AI loop) remains constant. Only the analysis parameters and domain-specific models need adaptation.
+
+---
+
 **Navigation:**
 - [← AI Coach Agent Engine](ai-coach-agent-engine.md)
 - [Environment Setup →](environment-setup.md)
