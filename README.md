@@ -55,7 +55,7 @@ FretCoach is built as a three-part system, with all components connected through
 
 ## For Commit To Change Hackathon Judges 🏆
 
-**Want to understand FretCoach super fast?** Check out the [quick deck](#) and [explainer video](#) for a rapid overview. But I would also suggest you read on—at least this README.md fully—to get a proper idea of this product.
+**Want to understand FretCoach super fast?** Check out the [quick deck](https://docs.google.com/presentation/d/1Mm2ERUg9ZhWOH_aVsTBwBKI8s9U_AHglDOdXagMTqBY/edit?usp=sharing) and [explainer video](https://youtu.be/ko7pAXDDkJQ) for a rapid overview. But I would also suggest you read on—at least this README.md fully—to get a proper idea of this product.
 
 **For judges of the "Best Use of Opik" category:** Please see [opik/opik-usage.md](opik/opik-usage.md) or [opik/opik-usage.pdf](opik/opik-usage.pdf) for detailed documentation on all the Opik features I've explored and implemented.
 
@@ -385,7 +385,7 @@ FretCoach uses PostgreSQL hosted on Supabase with three core tables:
 - [AI Coach Agent Engine](https://padmanabhan-r.github.io/FretCoach/ai-coach-agent-engine.html) — LLM-powered coaching (Slow Loop)
 - [Portable Application](https://padmanabhan-r.github.io/FretCoach/portable-app.html) — Raspberry Pi device documentation
 - [Web Dashboard](https://padmanabhan-r.github.io/FretCoach/web-dashboard.html) — Analytics and AI coach platform
-- [Opik Integration](opik/README.md) — Observability and monitoring
+- [Opik Integration](opik/opik-usage.md) — Observability and monitoring ([PDF version](opik/opik-usage.pdf))
 
 ---
 
