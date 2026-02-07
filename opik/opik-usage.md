@@ -1,5 +1,10 @@
 # Opik Integration in FretCoach
 
+**Workspace:** `padmanabhan-r-7119`
+**Projects:** `FretCoach` | `FretCoach-Hub`
+
+---
+
 ## Features Implemented
 
 ### 1. Traces with Metadata and Tags
@@ -254,6 +259,8 @@ Configured **11 online evaluation rules** to automatically score production trac
 
 A real-time dashboard monitoring key AI quality metrics across FretCoach's Studio and Hub applications.
 
+**📊 [View Live Dashboard](https://www.comet.com/opik/padmanabhan-r-7119/dashboards/019c0358-6adc-71f9-a73b-b18f0b20679d)**
+
 **Dashboard Structure:**
 
 The dashboard displays 7 core metrics organized by application:
@@ -289,4 +296,53 @@ The dashboard displays 7 core metrics organized by application:
   <img src="images/opik-dashboard.gif" width="700">
   <br>
   <em>Live production dashboard with real-time AI quality metrics</em>
+</p>
+
+---
+
+### 12. Alerts & Notifications
+
+Configured Slack alerts to proactively monitor AI quality and system health in production.
+
+**Setup:**
+- Created a dedicated Slack channel: `#opik-alerts`
+- Integrated Opik with Slack using webhook configuration
+- Configured alerts for critical metrics and system errors
+
+**Alert Types:**
+
+**1. Trace Errors Threshold**
+- **Trigger:** When trace error count exceeds 10 in the last 30 minutes
+- **Purpose:** Detect system failures or integration issues
+
+**2. Feedback Score Thresholds**
+- **Trigger:** When average metric scores fall below 0.6 in the last 30 minutes
+- **Monitored Metrics:**
+  - Hub Response Clarity < 0.6
+  - Hub Data Groundedness < 0.6
+  - Hub Context Usage Quality < 0.6
+  - Hub Answer Correctness < 0.6
+  - Hub Actionability < 0.6
+- **Purpose:** Early detection of AI quality degradation
+
+**3. Latency Alerts**
+- **Trigger:** When average latency exceeds 3 seconds in the last 30 minutes
+- **Purpose:** Monitor response time performance and identify slowdowns
+
+**Benefits:**
+- Proactive issue detection before users report problems
+- Real-time visibility into production AI quality
+- Team-wide awareness through Slack notifications
+- Quick response to quality degradation or system errors
+
+<p align="center">
+  <img src="images/opik-alerts-1.png" width="700">
+  <br>
+  <em>Alert configuration in Opik dashboard</em>
+</p>
+
+<p align="center">
+  <img src="images/opik-alerts-slack.png" width="700">
+  <br>
+  <em>Real-time alerts delivered to Slack #opik-alerts channel</em>
 </p>
