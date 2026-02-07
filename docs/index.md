@@ -23,6 +23,7 @@
 ### Getting Started
 - **[Introduction](introduction.md)** — The problem with traditional practice and how FretCoach solves it
 - **[Quickstart Guide](quickstart.md)** — Get up and running in 5 minutes
+- **[FAQ](faq.md)** — Frequently asked questions about FretCoach
 
 ### System Components
 - **[Desktop Application](desktop-app.md)** — Primary training environment with real-time analysis
