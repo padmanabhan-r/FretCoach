@@ -55,7 +55,13 @@ Desktop-only systems restrict practice to:
 
 ## Hardware Architecture
 
-![FretCoach Portable Hardware](assets/images/fretcoach-pedal.jpeg)
+<p align="center">
+  <img src="assets/images/fretcoach-pedal.jpeg" alt="FretCoach Portable Hardware" width="500"/>
+</p>
+
+<p align="center">
+  <img src="assets/images/portable/FretCoach Portable Rpi5.png" alt="FretCoach Portable Raspberry Pi 5" width="500"/>
+</p>
 
 ### Core Components
 

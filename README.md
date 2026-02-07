@@ -223,6 +223,10 @@ npm run dev  # Starts Electron + React frontend + Python FastAPI backend
   <img src="images/FretCoach Portable.png" alt="FretCoach Portable Home" width="600"/>
 </p>
 
+<p align="center">
+  <img src="images/FretCoach Portable Rpi5.png" alt="FretCoach Portable Raspberry Pi 5" width="500"/>
+</p>
+
 Raspberry Pi 5-based portable practice device. Same analysis engine as Studio, but on-the-go.
 
 **Status:** Prototyping phase — showcasing what's possible!
