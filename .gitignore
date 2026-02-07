@@ -85,6 +85,8 @@ OPIK-IMPACT-REPORT.md
 DEMO-SCRIPT.md
 SCREENSHOTS-GUIDE.md
 MERGE_READY.md
+opik/opik-usage-pdf.md
+opik/prod-dashboard-markdown.md
 
 # Generated evaluation results (regenerated each run)
 baseline_experiments.json
