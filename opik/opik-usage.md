@@ -4,11 +4,11 @@
 
 ### 1. Traces with Metadata and Tags
 
-All LLM calls are logged as traces in Opik with proper tags to organize and filter different types of interactions.
+All LLM calls are logged as traces in Opik with structured tags for filtering and organization.
 
 **Hub Coach Chats:**
-- Tags: `ai-coach-chat`,`fretcoach-hub`, `from-hub-dashboard`, `gemini-2.5-flash`, `practice-plan`
-- Used for AI coach conversations in the web dashboard
+- Tags: `ai-coach-chat`, `fretcoach-hub`, `from-hub-dashboard`, `gemini-2.5-flash`, `practice-plan`
+- Tracks AI coach conversations in the web dashboard
 
 <p align="center">
   <img src="images/hub-traces.png" width="700">
@@ -18,7 +18,7 @@ All LLM calls are logged as traces in Opik with proper tags to organize and filt
 
 **AI Mode (Practice Recommendations):**
 - Tags: `fretcoach-core`, `gpt-4o-mini`, `ai-mode`, `fretcoach-studio`, `practice-recommendation`
-- Used for generating personalized practice recommendations
+- Tracks personalized practice recommendations
 
 <p align="center">
   <img src="images/ai-mode-traces.png" width="700">
@@ -28,7 +28,7 @@ All LLM calls are logged as traces in Opik with proper tags to organize and filt
 
 **Live AI Feedback in Session:**
 - Tags: `fretcoach-core`, `gpt-4o-mini`, `ai-mode`, `fretcoach-studio`, `live-feedback`
-- Used for real-time coaching feedback during practice sessions
+- Tracks real-time coaching feedback during practice
 
 <p align="center">
   <img src="images/live-feedback-traces.png" width="700">
@@ -40,25 +40,12 @@ All LLM calls are logged as traces in Opik with proper tags to organize and filt
 
 ### 2. Thread Management
 
-Each trace uses a structured `thread_id` to group related LLM calls and maintain conversation context across multiple requests.
+Structured `thread_id` to group related LLM calls and maintain conversation context.
 
 **Thread Naming Conventions:**
-
-**Hub Coach Chats:**
-- Format: `hub-{user_id}`
-- Example: `hub-default_user`
-- Groups all coach chat messages for a user's conversation session
-
-**AI Mode (Practice Recommendations):**
-- Format: `{deployment}-ai-mode-{practice_id}`
-- Example: `studio-ai-mode-a1b2c3d4-e5f6-7890-abcd-ef1234567890`
-- Maintains thread across multiple recommendation requests until session starts
-- Uses practice_id to persist thread even when user requests new recommendations
-
-**Live AI Feedback:**
-- Format: `{session_id}-live-aicoach-feedback`
-- Example: `abc123-live-aicoach-feedback`
-- Groups all live feedback calls within a single practice session
+- **Hub Coach:** `hub-{user_id}` - Groups all coach chat messages for a user
+- **AI Mode:** `{deployment}-ai-mode-{practice_id}` - Maintains thread across recommendations
+- **Live Feedback:** `{session_id}-live-aicoach-feedback` - Groups feedback within a practice session
 
 <p align="center">
   <img src="images/thread-management.png" width="700">
@@ -70,9 +57,9 @@ Each trace uses a structured `thread_id` to group related LLM calls and maintain
 
 ### 3. Agent Graph Visualization
 
-LangGraph execution flows visualized in Opik for hub coach chats using `workflow.get_graph(xray=True)`.
+LangGraph execution flows visualized in Opik using `workflow.get_graph(xray=True)`.
 
-Shows agent reasoning path: agent → tool calls (`execute_sql_query`, `get_database_schema`) → decision nodes → response.
+Shows complete agent reasoning path: agent → tool calls (`execute_sql_query`, `get_database_schema`) → decision nodes → response.
 
 <p align="center">
   <img src="images/agent-graph.png" width="700">
@@ -84,34 +71,31 @@ Shows agent reasoning path: agent → tool calls (`execute_sql_query`, `get_data
 
 ### 4. Annotation Queues
 
-Used annotation queues to review and annotate agent outputs for quality evaluation.
+Used annotation queues for human-in-the-loop evaluation of agent outputs.
 
 **Implementation:**
-- Created custom feedback definitions for LLM output quality
-- Reviewed agent responses in annotation queues
-- Rated outputs using custom criteria
-- Human-in-the-loop evaluation for agent improvements
+- Custom feedback definitions for LLM output quality
+- Manual review and rating using custom criteria
+- Structured feedback collection for agent improvements
 
 <p align="center">
   <img src="images/annotation-queue.png" width="700">
   <br>
-  <em>Annotation queue for with reviewed LLM outputs</em>
+  <em>Annotation queue with reviewed LLM outputs</em>
 </p>
 
 ---
 
 ### 5. Datasets and Prompts
 
-Created and saved datasets and prompts for use in experiments, evaluations, and playground testing.
+Created datasets and prompts for reproducible experiments and evaluations.
 
 **Datasets:**
 - Curated test cases from real user sessions
-- Saved to Opik for reproducible evaluations
 - Used across experiment runs for consistent testing
 
 **Prompts:**
-- Stored coaching prompt templates
-- Version controlled in Opik
+- Version-controlled coaching prompt templates
 - Used in playground for rapid iteration
 
 <p align="center">
@@ -130,16 +114,14 @@ Created and saved datasets and prompts for use in experiments, evaluations, and 
 
 ### 6. Experiments and Custom Metrics
 
-Ran experiments to evaluate LLM performance using both default Opik metrics and custom-created metrics.
+Evaluated LLM performance using both default Opik metrics and custom-created metrics.
 
 **Default Metrics:**
-- Used Opik's built-in evaluation metrics
-- Measured response quality across test datasets
+- Opik's built-in evaluation metrics for response quality
 
 **Custom Metrics:**
-- Created custom metric for domain-specific evaluation
-- Tailored to guitar coaching context
-- Measured coaching quality and relevance
+- Domain-specific metrics tailored to guitar coaching context
+- Measures coaching quality and relevance
 
 <p align="center">
   <img src="images/experiments-default.png" width="700">
@@ -160,8 +142,8 @@ Ran experiments to evaluate LLM performance using both default Opik metrics and 
 Used Optimization Studio to improve the prompt used in the live feedback module.
 
 **Results:**
-- 32% increase in `llm_judge_metric` custom metric
-- Improved prompt quality for coaching feedback
+- **32% increase** in `llm_judge_metric` custom metric
+- Improved coaching feedback quality
 - Optimized for better real-time guidance
 
 <p align="center">
@@ -174,9 +156,9 @@ Used Optimization Studio to improve the prompt used in the live feedback module.
 
 ### 8. OpikAssist for Token Usage Optimization
 
-Used OpikAssist to analyze traces and identify optimization opportunities for hub coach chats.
+Used OpikAssist to analyze traces and optimize token usage for hub coach chats.
 
-**Identified Issues:**
+**Problem Identified:**
 - Excessive token usage (4,877 tokens) and long duration (7,873 ms)
 - Lengthy prompts with redundant context and full SQL data
 
@@ -193,7 +175,7 @@ Used OpikAssist to analyze traces and identify optimization opportunities for hu
 <p align="center">
   <img src="images/opik-assist.png" width="700">
   <br>
-  <em>OpikAssist analyzing trace for token usage optimization opportunities</em>
+  <em>OpikAssist analyzing trace for token usage optimization</em>
 </p>
 
 ---
@@ -203,13 +185,13 @@ Used OpikAssist to analyze traces and identify optimization opportunities for hu
 Configured custom feedback definitions and AI providers for comprehensive evaluation.
 
 **Feedback Definitions:**
-- Created custom fields for manual LLM output rating
-- Enabled human-in-the-loop feedback on traces
+- Custom fields for manual LLM output rating
+- Human-in-the-loop feedback on traces
 - Categorical ratings: "AI Coach Conversation Rating" and "User Feedback"
 
 **AI Providers:**
-- Added Perplexity's Sonar Pro for automated evaluations
-- Configured OpenRouter models for diverse evaluation perspectives
+- Perplexity's Sonar Pro for automated evaluations
+- OpenRouter models for diverse evaluation perspectives
 - Enhanced evaluation capabilities beyond default Opik models
 
 <p align="center">
