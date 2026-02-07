@@ -139,7 +139,7 @@ Evaluated LLM performance using both default Opik metrics and custom-created met
 
 ### 7. Optimization Studio
 
-Used Optimization Studio to improve the prompt used in the live feedback module.
+Used Optimization Studio with HRPO (Hierarchical Reflective Prompt Optimizer) to improve the prompt used in the live feedback module.
 
 **Results:**
 - **32% increase** in `llm_judge_metric` custom metric
