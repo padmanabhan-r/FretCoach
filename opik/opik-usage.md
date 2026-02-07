@@ -1,5 +1,10 @@
 # Opik Integration in FretCoach
 
+**Workspace:** `padmanabhan-r-7119`
+**Projects:** `FretCoach` | `FretCoach-Hub`
+
+---
+
 ## Features Implemented
 
 ### 1. Traces with Metadata and Tags
@@ -204,4 +209,142 @@ Configured custom feedback definitions and AI providers for comprehensive evalua
   <img src="images/config-models.png" width="700">
   <br>
   <em>Custom AI providers configured for automated evaluations</em>
+</p>
+
+---
+
+### 10. Online Evaluation
+
+Configured **11 online evaluation rules** to automatically score production traces using LLM-as-a-Judge metrics.
+
+**Purpose:**
+- Real-time quality monitoring of AI responses in production
+- Automatic evaluation without manual review
+- Early detection of performance degradation or quality issues
+
+**Rules Overview:**
+
+**Hub Coach (7 rules):**
+
+1. `hub_answer_correctness` - Validates factual accuracy
+2. `hub_data_groundedness` - Ensures grounding in database context
+3. `hub_context_usage_quality` - Checks effective use of retrieved data
+4. `hub_actionability` - Measures actionable guidance
+5. `hub_response_clarity` - Evaluates readability
+6. `hub_conversational_coherence` - Tracks conversation flow (thread-level)
+7. `hub_user_frustration_score` - Detects user frustration (thread-level)
+
+**Studio AI Mode (4 rules):**
+
+8. `studio_practice_recommendation_alignment` - Validates goal alignment
+9. `studio_immediate_actionability` - Ensures executable recommendations
+10. `studio_live_coach_feedback_quality` - Measures real-time coaching quality
+11. `studio_live_feedback_effectiveness` - Tracks session improvement (thread-level)
+
+📖 **[View complete rule prompts and variable mappings →](online-eval-rules.md)**
+
+<p align="center">
+  <img src="images/online-eval-rules-1.png" width="700">
+  <br>
+  <em>Online evaluation rules dashboard (1-10 of 11)</em>
+</p>
+
+<p align="center">
+  <img src="images/online-eval-rules-2.png" width="700">
+  <br>
+  <em>Online evaluation rules dashboard (11 of 11)</em>
+</p>
+
+---
+
+### 11. Production Dashboard
+
+A real-time dashboard monitoring key AI quality metrics across FretCoach's Studio and Hub applications.
+
+**📊 [View Live Dashboard](https://www.comet.com/opik/padmanabhan-r-7119/dashboards/019c0358-6adc-71f9-a73b-b18f0b20679d)**
+
+**Dashboard Structure:**
+
+The dashboard displays 7 core metrics organized by application:
+
+**🎸 FretCoach - Studio and Portable (Core Functionality)**
+
+*Evaluates practice recommendations and real-time coaching effectiveness.*
+
+| Metric | Range | What the Score Means |
+|--------|-------|----------------------|
+| 🎧 **Live Coach Feedback Quality** | **1 – 4** | `1` = Bad, `2` = Good, `3` = Very Good, `4` = Excellent |
+| 📐 **Practice Recommendation Alignment** | **0.0 – 1.0** | `1.0` = Aligned with the player's weaknesses; `0.0` = No alignment |
+| ⚡ **Practice Recommendation - Immediate Actionability** | **0.0 – 1.0** | `1.0` = Recommendation fully actionable; `0.0` = Not actionable |
+
+**🧠 FretCoach Hub (Web)**
+
+*Measures how well the Hub understands, answers, and guides users.*
+
+| Metric | Range | What the Score Means |
+|--------|-------|----------------------|
+| ✨ **Response Clarity** | **0.0 – 1.0** | `1.0` = Clear and structured response; `0.0` = Poor response |
+| 🔗 **Context Usage Quality** | **0.0 – 1.0** | `1.0` = Context effectively used; `0.0` = Poor usage of context |
+| 🎯 **Actionability** | **0.0 – 1.0** | `1.0` = Clear, executable next steps; `0.0` = Vague or non-actionable |
+| 🧾 **Data Groundedness** | **0.0 – 1.0** | `1.0` = Supported by user's practice data; `0.0` = Weak grounding |
+
+**Features:**
+- Real-time metric averages calculated from production traces
+- Automatic updates as new LLM calls are evaluated
+- Clear visibility into AI quality across different use cases
+- Easy identification of performance degradation
+
+<p align="center">
+  <img src="images/opik-dashboard.gif" width="700">
+  <br>
+  <em>Live production dashboard with real-time AI quality metrics</em>
+</p>
+
+---
+
+### 12. Alerts & Notifications
+
+Configured Slack alerts to proactively monitor AI quality and system health in production.
+
+**Setup:**
+- Created a dedicated Slack channel: `#opik-alerts`
+- Integrated Opik with Slack using webhook configuration
+- Configured alerts for critical metrics and system errors
+
+**Alert Types:**
+
+**1. Trace Errors Threshold**
+- **Trigger:** When trace error count exceeds 10 in the last 30 minutes
+- **Purpose:** Detect system failures or integration issues
+
+**2. Feedback Score Thresholds**
+- **Trigger:** When average metric scores fall below 0.6 in the last 30 minutes
+- **Monitored Metrics:**
+  - Hub Response Clarity < 0.6
+  - Hub Data Groundedness < 0.6
+  - Hub Context Usage Quality < 0.6
+  - Hub Answer Correctness < 0.6
+  - Hub Actionability < 0.6
+- **Purpose:** Early detection of AI quality degradation
+
+**3. Latency Alerts**
+- **Trigger:** When average latency exceeds 3 seconds in the last 30 minutes
+- **Purpose:** Monitor response time performance and identify slowdowns
+
+**Benefits:**
+- Proactive issue detection before users report problems
+- Real-time visibility into production AI quality
+- Team-wide awareness through Slack notifications
+- Quick response to quality degradation or system errors
+
+<p align="center">
+  <img src="images/opik-alerts-1.png" width="700">
+  <br>
+  <em>Alert configuration in Opik dashboard</em>
+</p>
+
+<p align="center">
+  <img src="images/opik-alerts-slack.png" width="700">
+  <br>
+  <em>Real-time alerts delivered to Slack #opik-alerts channel</em>
 </p>
