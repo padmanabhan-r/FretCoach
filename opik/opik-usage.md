@@ -224,7 +224,8 @@ Configured **11 online evaluation rules** to automatically score production trac
 
 **Rules Overview:**
 
-*Hub Coach (7 rules):*
+**Hub Coach (7 rules):**
+
 1. `hub_answer_correctness` - Validates factual accuracy
 2. `hub_data_groundedness` - Ensures grounding in database context
 3. `hub_context_usage_quality` - Checks effective use of retrieved data
@@ -233,7 +234,8 @@ Configured **11 online evaluation rules** to automatically score production trac
 6. `hub_conversational_coherence` - Tracks conversation flow (thread-level)
 7. `hub_user_frustration_score` - Detects user frustration (thread-level)
 
-*Studio AI Mode (4 rules):*
+**Studio AI Mode (4 rules):**
+
 8. `studio_practice_recommendation_alignment` - Validates goal alignment
 9. `studio_immediate_actionability` - Ensures executable recommendations
 10. `studio_live_coach_feedback_quality` - Measures real-time coaching quality
