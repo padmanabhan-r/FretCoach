@@ -27,7 +27,8 @@ The primary design constraint was how fast feedback reaches the player — to tr
 
 Everything in the live feedback path — live playing analysis and visual or ambient indicators — runs locally on-device using deterministic signal processing against a live audio stream.
 
-The AI cloud layer was deliberately kept out of the hot path. Rather than pushing LLM inference into the real-time loop, we separated concerns: the local engine handles detection and scoring, while AI operates only on aggregated signals. Live AI feedback, including spoken coaching via TTS models, is triggered by structured session events generated locally by the audio engine. The trigger itself is deterministic and local; cloud calls happen at controlled intervals. This keeps feedback feeling timely even with a network round trip, because the decision of *when* to speak is made locally.
+The AI cloud layer was deliberately kept out of the hot path. Rather than pushing LLM inference into the real-time loop, we separated concerns: the local engine handles detection and scoring, while AI operates only on aggregated signals. Live AI feedback, including spoken coaching via TTS models, is driven by aggregated performance metrics computed locally by the audio engine. These metrics are sent to the AI layer at user-configurable intervals, where an LLM (gpt-4o-mini) generates coaching guidance that is then converted to speech via a TTS model (gpt-4o-mini-TTS).
+All timing decisions are made locally and by the user; the cloud is used only for interpretation and speech generation. This keeps the real-time loop independent of network latency.
 
 ---
 
