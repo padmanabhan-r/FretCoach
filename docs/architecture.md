@@ -32,6 +32,8 @@ FretCoach is a guitar practice feedback system with three components sharing a c
 - Conversational AI chat on web dashboard
 - All LLM calls traced via Opik
 
+> **AI should augment real-time feedback systems, not replace the low-latency path.**
+
 ---
 
 ## Technology Stack

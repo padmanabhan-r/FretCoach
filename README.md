@@ -16,7 +16,7 @@
 
 This helps you learn correct technique **before bad habits form**.
 
-**Most tools correct mistakes. FretCoach prevents them from happening in the first place.**
+**Most tools tell you what you did wrong later. FretCoach helps you stop doing it again.**
 
 ---
 
@@ -419,9 +419,11 @@ AI-powered instant feedback for any skill-based training—music, sports, and be
   <img src="docs/assets/images/future-expandability.jpg" alt="Future Expandability - Core Audio Analysis Agent" width="800"/>
 </p>
 
-FretCoach's core audio analysis engine is designed to be instrument-agnostic. The same real-time feedback architecture that evaluates guitar playing can be adapted for piano, vocals, drums, and other instruments. 
-The long-term vision is an AI-powered instant feedback system that coaches in real time—
-across music, sports, and skill training—using sound, vision, and sensors.
+FretCoach's core audio analysis engine is designed to be instrument-agnostic. The same real-time feedback architecture that evaluates guitar playing can be adapted for piano, vocals, drums, and other instruments. Guitar is just the starting point.
+
+The long-term vision is an AI-powered instant feedback system that coaches in real time — across music, sports, and skill training — using sound, vision, and sensors. Imagine an AI coach saying *"Brace your core before you hit that deadlift"* — powered by a Raspberry Pi, camera modules, and real-time sensing. That kind of system could prevent injury, not just analyze mistakes after the fact.
+
+> **AI should augment real-time feedback systems, not replace the low-latency path.**
 
 > If feedback arrived the moment you made a mistake, how would that change the way you practice?
 > And what skill would you want AI to coach you on?
