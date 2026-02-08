@@ -132,6 +132,7 @@ DATABASE_URL=postgresql://user:pass@host:5432/fretcoach
 
 # LLM Providers
 GOOGLE_API_KEY=your_gemini_api_key
+GEMINI_MODEL=gemini-2.5-flash
 MINIMAX_API_KEY=your_minimax_api_key  # Optional fallback
 
 # Observability
