@@ -139,7 +139,7 @@ We refer to this pattern as **Real-time Augmented Feedback (RAF)** — analogous
 
 ---
 
-## System Architecture
+## FretCoach - System Architecture
 
 ### High-Level Architecture
 
@@ -343,44 +343,23 @@ Smart bulb integration for visual performance feedback.
 
 ## Technology Stack
 
-### Desktop Application
-| Layer | Technology |
-|-------|------------|
-| Desktop Runtime | Electron 28 |
-| Frontend | React 18, Vite, Tailwind CSS |
-| Backend | Python 3.12+, FastAPI 0.109+ |
-| Audio Processing | librosa, NumPy, SciPy, sounddevice |
-| Communication | REST API, WebSocket |
-
-### Web Platform
-| Layer | Technology |
-|-------|------------|
-| Frontend | React 18, TypeScript, Vite, Tailwind CSS |
-| UI Components | shadcn/ui, Radix UI, Recharts |
-| State Management | TanStack React Query, React Router v6 |
-| Backend | Python FastAPI, LangChain, LangGraph |
-| Deployment | Vercel (frontend), Railway (backend) |
-
-### Shared Infrastructure
-| Component | Technology |
-|-----------|------------|
-| Database | PostgreSQL (Supabase) |
-| LLM Providers | OpenAI (GPT-4o-mini, TTS), Google Gemini 3 Flash Preview |
-| AI Orchestration | LangChain, LangGraph |
-| Observability | Comet Opik |
-| Smart Bulb | Tuya Cloud API (tinytuya 1.17.4) |
+| Area | Technology |
+|------|------------|
+| **Desktop** | Electron 28, React 18, Vite, Tailwind CSS |
+| **Web Frontend** | React 18, TypeScript, shadcn/ui, Recharts, TanStack Query |
+| **Backend** | Python 3.12+, FastAPI, LangChain, LangGraph |
+| **Audio** | librosa, NumPy, SciPy, sounddevice |
+| **Database** | PostgreSQL (Supabase) |
+| **LLM** | OpenAI GPT-4o-mini + TTS, Google Gemini 3 Flash Preview |
+| **Observability** | Comet Opik |
+| **Deployment** | Vercel (frontend), Railway (backend) |
+| **Smart Bulb** | Tuya Cloud API (tinytuya) |
 
 ---
 
 ## Database Schema
 
-FretCoach uses PostgreSQL hosted on Supabase with three core tables:
-
-| Table | Purpose |
-|-------|---------|
-| `sessions` | Practice session data: metrics, scale config, note statistics, timestamps |
-| `ai_practice_plans` | AI-generated recommendations linked to sessions |
-| `user_configs` | User-specific metric preferences (pitch_accuracy, scale_conformity, timing_stability) |
+PostgreSQL on Supabase with three tables: `sessions` (metrics, scale config, timestamps), `ai_practice_plans` (AI-generated recommendations), and `user_configs` (per-user metric preferences).
 
 ---
 ## Feature Matrix
