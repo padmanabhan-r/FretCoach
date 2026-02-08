@@ -1,12 +1,12 @@
 # FretCoach : AI-Powered Adaptive Guitar Training
 
-> **Turn your 2026 guitar resolutions into reality.**
+> **It’s time to turn your 2026 guitar resolutions into reality.**
 
 ![FretCoach](images/FretCoach.jpeg)
 
-**A real-time practice coach that guides you while you play**
+**A real-time AI music practice system for guitar that listens, reacts, and coaches while you play.**
 
-> **Already know about FretCoach?** Jump to the [Quickstart Guide](docs/quickstart.md) to get started. **New here?** Read on to understand what makes this different.
+> **Already know about FretCoach and want to run the code right away?** Jump to the [Quickstart Guide](docs/quickstart.md) to get started. **New here?** Read on to understand what makes this different.
 
 ---
 
