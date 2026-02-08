@@ -27,7 +27,7 @@ Traditional practice relies on delayed feedback — from teachers, recordings, o
 **Close the feedback loop from days to milliseconds:**
 
 - **Local Audio Analysis Agent Engine (<300ms):** A real-time audio analysis engine (fast loop) that listens to every note and computes live performance metrics
-- **Slow Loop (AI Coach):** Aggregates session metrics over time to identify trends, generate targeted practice recommendations, and provide conversational coaching grounded in measured performance data
+- **Slow Loop (AI Coach):** Provides conversational coaching grounded in measured performance data during the session. Outside the session, aggregates metrics over time to identify trends and generate targeted practice recommendations.
 - **Multi-sensory feedback:** Visual on-screen cues, voice reinforcement, and ambient environmental feedback (*Yes! Your environment becomes a feedback channel*)
 - **Gamification:** Scores, color signals, and progress tracking to reinforce consistency and motivation
 
