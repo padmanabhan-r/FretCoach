@@ -57,23 +57,22 @@ The autonomous, agentic chatbot in FretCoach Hub was a deliberate design choice 
 
 ---
 
-## On the Opik Integration
-
-Every AI interaction was instrumented — not just logging completions, but feature-level tagging, full tool-call chains in the LangGraph agent, and user/session metadata attached to each trace. We also created evaluations, dashboards, and alerting workflows, treating this as a production system from day one.
-
-Constraints such as limited usage on free-tier models surfaced fallback behavior early. This instrumentation gave us visibility into when fallback models were triggered, how SQL generation behaved across different query types, and where latency clustered. Full Opik usage documentation is included in the attached PDF.
-
----
-
 ## Bigger Picture
 
-The feedback-loop problem isn't unique to guitar — it is simply a concrete starting point. The same architecture — fast deterministic sensing, structured event signals, and AI operating on aggregated context — applies anywhere immediate feedback matters: other instruments, vocals, sports, physical therapy, and skill training.
+The feedback-loop problem isn't unique to guitar — it is simply a concrete starting point. The same architecture applies anywhere immediate feedback matters: other instruments, vocals, sports, physical therapy, and skill training.
 
 FretCoach is a concrete implementation of a broader principle: **AI should augment real-time feedback systems**. We refer to this pattern as **Real-time Augmented Feedback (RAF)**, analogous to how RAG augments generation with retrieval.
 
 Imagine an AI coach saying, *"Brace your core before you hit that deadlift,"* powered by real-time sensing on a Raspberry Pi with camera modules. Such systems could prevent errors — or even injuries — rather than merely analyzing them after the fact.
 
 ---
+
+## On the Opik Integration
+
+Every AI interaction was instrumented — not just logging completions, but feature-level tagging, full tool-call chains in the LangGraph agent, and user/session metadata attached to each trace. We also created evaluations, dashboards, and alerting workflows, treating this as a production system from day one.
+
+Constraints such as limited usage on free-tier models surfaced fallback behavior early. This instrumentation gave us visibility into when fallback models were triggered, how SQL generation behaved across different query types, and where latency clustered. Full Opik usage documentation is included in the attached PDF.
+
 
 # One-liner
 
@@ -85,13 +84,14 @@ A real-time AI music practice system for guitar that listens, reacts, and coache
 
 > https://github.com/padmanabhan-r/FretCoach
 
+# Link to Demo Video
+
+> https://www.youtube.com/watch?v=ko7pAXDDkJQ
+
 # Link to Presentation
 
 > https://docs.google.com/presentation/d/1Mm2ERUg9ZhWOH_aVsTBwBKI8s9U_AHglDOdXagMTqBY/edit?usp=sharing
 
-# Link to Demo Video
-
-> https://www.youtube.com/watch?v=ko7pAXDDkJQ
 
 # Live Demo Link
 
