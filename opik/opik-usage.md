@@ -365,8 +365,8 @@ Opik traces surfaced actionable improvements that directly improved FretCoach's 
 
 | Insight | Discovery | Action Taken | Result |
 |---------|-----------|--------------|--------|
-| **Prompt verbosity** | Live coach prompts were verbose, causing slow responses | Tightened prompt to "1 sentence maximum" constraint | Significantly faster responses, more focused feedback |
-| **TTS latency spike** | TTS taking longer than expected on some calls | Implemented singleton audio player with `stop()` before new audio | Consistent TTS latency, no audio overlap |
+| **Prompt verbosity** | Live coach prompts were verbose, causing slow responses | Tightened prompt to "1-2 sentences, max 30 words" constraint | Significantly faster responses, more focused feedback |
+| **TTS latency spike** | TTS taking longer than expected on some calls | Implemented singleton audio player instance to prevent concurrent playback | Consistent TTS latency, no audio overlap |
 | **Prompt optimization** | Live feedback prompt quality measured via `llm_judge_metric` | Used Optimization Studio (HRPO) to refine the prompt | **32% increase** in live coaching response quality |
 | **Fallback model visibility** | ~15% of Hub Chat requests hit Gemini rate limits | Confirmed MiniMax fallback working seamlessly, kept hybrid approach | Zero user-facing errors on rate limit |
 | **Token cost patterns** | Different features had very different token footprints | Targeted `gpt-4o-mini` for cost-sensitive real-time features | Optimized cost-performance ratio per feature |
