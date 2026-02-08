@@ -54,12 +54,13 @@ OPENAI_API_KEY=sk-proj-...your_key
 
 ### Google Gemini
 
-Used for Gemini 2.5 Flash (practice plan generation, Hub chat agent).
+Used for Gemini (practice plan generation, Hub chat agent).
 
 Get API key: [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
 
 ```env
 GOOGLE_API_KEY=your_gemini_api_key
+GEMINI_MODEL=gemini-3-flash-preview
 ```
 
 **Cost:** Both providers offer free tiers suitable for personal use. FretCoach's AI calls are lightweight.
@@ -115,7 +116,7 @@ OPIK_WORKSPACE=your_workspace_name
 ### What Opik Tracks
 
 - **Live AI Coaching:** GPT-4o-mini calls with context and responses
-- **Practice Plan Generation:** Gemini 2.5 Flash LangGraph traces
+- **Practice Plan Generation:** Gemini 3 Flash Preview LangGraph traces
 - **Web AI Coach:** Text-to-SQL agent workflows and tool calls
 - **Token Usage:** Per-session and cumulative token consumption
 - **Latency Metrics:** Response times and performance bottlenecks

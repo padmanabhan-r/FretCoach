@@ -58,7 +58,7 @@ The AI coach uses your practice data to provide personalized recommendations and
 - "Why is my timing inconsistent?"
 
 **How it works:**
-- Uses Google Gemini 2.5 Flash (with MiniMax 2.1 fallback)
+- Uses Google Gemini 3 Flash Preview (with MiniMax 2.1 fallback)
 - Queries your session database for context
 - Generates data-driven recommendations
 - Creates practice plans you can save
@@ -132,6 +132,7 @@ DATABASE_URL=postgresql://user:pass@host:5432/fretcoach
 
 # LLM Providers
 GOOGLE_API_KEY=your_gemini_api_key
+GEMINI_MODEL=gemini-3-flash-preview
 MINIMAX_API_KEY=your_minimax_api_key  # Optional fallback
 
 # Observability

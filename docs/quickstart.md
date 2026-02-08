@@ -58,6 +58,7 @@ DB_PORT=5432
 # AI Services
 OPENAI_API_KEY=sk-...
 GOOGLE_API_KEY=...
+GEMINI_MODEL=gemini-3-flash-preview
 ```
 
 ### 4. Set Up Database

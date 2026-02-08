@@ -1,12 +1,12 @@
 # FretCoach : AI-Powered Adaptive Guitar Training
 
-> **Turn your 2026 guitar resolutions into reality.**
+> **It’s time to turn your 2026 guitar resolutions into reality.**
 
 ![FretCoach](images/FretCoach.jpeg)
 
-**A real-time practice coach that guides you while you play**
+**A real-time AI music practice system for guitar that listens, reacts, and coaches while you play.**
 
-> **Already know about FretCoach?** Jump to the [Quickstart Guide](docs/quickstart.md) to get started. **New here?** Read on to understand what makes this different.
+> **Already know about FretCoach and want to run the code right away?** Jump to the [Quickstart Guide](docs/quickstart.md) to get started. **New here?** Read on to understand what makes this different.
 
 ---
 
@@ -16,7 +16,7 @@
 
 This helps you learn correct technique **before bad habits form**.
 
-**Most tools correct mistakes. FretCoach prevents them from happening in the first place.**
+**Most tools tell you what you did wrong later. FretCoach helps you stop doing it again.**
 
 ---
 
@@ -89,7 +89,7 @@ We call this a **dual-brain architecture**, combining fast deterministic process
 - LLM-powered preventive coaching: Provides consistent vocal and textual feedback at regular intervals during live playing for instant improvement
 - Post-session pattern analysis and personalized practice plan curation based on identified weak areas
 - On-demand (not real-time critical)
-- Powered by LLM models: Gemini 2.5 Flash, OpenAI GPT-4o-mini, GPT-4o-mini-TTS
+- Powered by LLM models: Gemini 3 Flash Preview, OpenAI GPT-4o-mini, GPT-4o-mini-TTS
 
 > **Hybrid architecture: local speed + AI intelligence = intervention before habits solidify.**
 
@@ -144,7 +144,7 @@ Three feedback channels:
 │                     │  │ Backend:                    │  │ • Python FastAPI    │
 │ Features:           │  │ • Python FastAPI            │  │ • librosa + NumPy   │
 │ • Live Audio        │  │ • LangGraph + LangChain     │  │ • Same Engine       │
-│   Analysis          │  │ • Gemini 2.5 Flash          │  │                     │
+│   Analysis          │  │ • Gemini 3 Flash Preview          │  │                     │
 │ • Real-time         │  │                             │  │ Features:           │
 │   Metrics           │  │ Features:                   │  │ • Portable Practice │
 │ • AI Voice Coach    │  │ • AI Chat Coach             │  │ • Edge Processing   │
@@ -270,7 +270,7 @@ Web platform for analytics and practice planning.
 </p>
 
 ### Features
-- AI chat coach (text-to-SQL agent + Gemini 2.5 Flash)
+- AI chat coach (text-to-SQL agent + Gemini 3 Flash Preview)
 - Performance analytics and trend charts
 - AI-generated practice plans
 - Session history and statistics
@@ -337,7 +337,7 @@ Smart bulb integration for visual performance feedback.
 | Component | Technology |
 |-----------|------------|
 | Database | PostgreSQL (Supabase) |
-| LLM Providers | OpenAI (GPT-4o-mini, TTS), Google Gemini 2.5 Flash |
+| LLM Providers | OpenAI (GPT-4o-mini, TTS), Google Gemini 3 Flash Preview |
 | AI Orchestration | LangChain, LangGraph |
 | Observability | Comet Opik |
 | Smart Bulb | Tuya Cloud API (tinytuya 1.17.4) |
@@ -419,9 +419,11 @@ AI-powered instant feedback for any skill-based training—music, sports, and be
   <img src="docs/assets/images/future-expandability.jpg" alt="Future Expandability - Core Audio Analysis Agent" width="800"/>
 </p>
 
-FretCoach's core audio analysis engine is designed to be instrument-agnostic. The same real-time feedback architecture that evaluates guitar playing can be adapted for piano, vocals, drums, and other instruments. 
-The long-term vision is an AI-powered instant feedback system that coaches in real time—
-across music, sports, and skill training—using sound, vision, and sensors.
+FretCoach's core audio analysis engine is designed to be instrument-agnostic. The same real-time feedback architecture that evaluates guitar playing can be adapted for piano, vocals, drums, and other instruments. Guitar is just the starting point.
+
+The long-term vision is an AI-powered instant feedback system that coaches in real time — across music, sports, and skill training — using sound, vision, and sensors. Imagine an AI coach saying *"Brace your core before you hit that deadlift"* — powered by a Raspberry Pi, camera modules, and real-time sensing. That kind of system could prevent injury, not just analyze mistakes after the fact.
+
+> **AI should augment real-time feedback systems, not replace the low-latency path.**
 
 > If feedback arrived the moment you made a mistake, how would that change the way you practice?
 > And what skill would you want AI to coach you on?
