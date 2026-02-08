@@ -14,9 +14,9 @@
 
 **FretCoach is a real-time AI guitar practice system** that listens as you play and delivers **instant feedback**, fixing mistakes **in the moment** — not after the session is over.
 
-Traditional practice relies on delayed feedback — from teachers, recordings, or self-review — by which time mistakes have already turned into muscle memory. FretCoach closes this gap by delivering immediate, multi-sensory feedback that helps players correct technique **before bad habits form**.
+Traditional practice relies on delayed feedback — from teachers, recordings, or self-review — by which time mistakes have already turned into muscle memory. FretCoach closes this gap by delivering immediate, multi-sensory feedback that enables correction before errors are reinforced through repetition.
 
-**Most tools tell you what you did wrong later. FretCoach helps you stop doing it again.**
+**Most tools explain errors after the fact. FretCoach intervenes before repetition turns them into defaults.**
 
 ---
 
@@ -26,12 +26,12 @@ Traditional practice relies on delayed feedback — from teachers, recordings, o
 
 **Close the feedback loop from days to milliseconds:**
 
-- **Local Audio Analysis Agent Engine (<300ms):** A real-time audio analysis engine (fast loop) that listens to every note and computes live performance metrics
-- **Slow Loop (AI Coach):** Provides conversational coaching grounded in measured performance data during the session. Outside the session, aggregates metrics over time to identify trends and generate targeted practice recommendations.
-- **Multi-sensory feedback:** Visual on-screen cues, voice reinforcement, and ambient environmental feedback (*Yes! Your environment becomes a feedback channel*)
+- **Local Audio Analysis Agent Engine:** A real-time audio analysis engine that listens to every note and computes live performance metrics
+- **AI Practice Coach:** Provides conversational coaching grounded in measured performance data during the session. Outside the session, aggregates metrics over time to identify trends and generate targeted practice recommendations based on weak areas.
+- **Multi-sensory feedback:** Visual live on-screen metrics, spoken feedback, and ambient environmental feedback (*Yes! Your environment becomes a feedback channel*) through smart light changes.
 - **Gamification:** Scores, color signals, and progress tracking to reinforce consistency and motivation
 
-Every note you play is evaluated immediately. Correct patterns are reinforced. Incorrect ones are flagged **before they turn into habits**.
+Every note you play is evaluated immediately, with deviations detected in real time.
 
 **Result:** Neuroadaptive learning that shapes motor behavior in real time—not retroactively.
 
@@ -55,15 +55,15 @@ FretCoach is built as a three-part system, with all components connected through
 
 ## For Commit To Change Hackathon Judges 🏆
 
-**Want to understand FretCoach super fast?** Check out the <a href="https://docs.google.com/presentation/d/1Mm2ERUg9ZhWOH_aVsTBwBKI8s9U_AHglDOdXagMTqBY/edit?usp=sharing" target="_blank">quick deck</a> and <a href="https://youtu.be/ko7pAXDDkJQ" target="_blank">explainer video</a> for a rapid overview. But I would also suggest you read on—at least this README.md fully—to get a proper idea of this product.
+**Want to understand FretCoach super fast?** Check out the <a href="https://docs.google.com/presentation/d/1Mm2ERUg9ZhWOH_aVsTBwBKI8s9U_AHglDOdXagMTqBY/edit?usp=sharing" target="_blank">quick deck</a> and <a href="https://youtu.be/ko7pAXDDkJQ" target="_blank">explainer video</a> for a rapid overview. I’d strongly recommend reading this README end-to-end to understand the full system design.
 
 **For judges of the "Best Use of Opik" category:** Please see [opik/opik-usage.md](opik/opik-usage.md) or [opik/opik-usage.pdf](opik/opik-usage.pdf) for detailed documentation on all the Opik features I've explored and implemented.
 
-**Personal note:** Wow, what a tool! Why have I not been using Opik for my LLM projects before? I'm genuinely impressed—from advanced tracing capabilities, agent graphs for LangGraph visualization, custom eval metrics, and dashboards, to AI Assist. Right after this hackathon, I'm certain I'll be integrating Opik into my work projects. This isn't just hackathon enthusiasm—I've found a tool that solves real problems I face daily with LLM observability and optimization.
+**Personal note on Opik:** Wow, what a tool! Why have I not been using Opik for my LLM projects before? I'm genuinely impressed—from advanced tracing capabilities, agent graphs for LangGraph visualization, custom eval metrics, and dashboards, to AI Assist. Right after this hackathon, I'm certain I'll be integrating Opik into my work projects. This isn't just hackathon enthusiasm—I've found a tool that solves real problems I face daily with LLM observability and optimization.
 
 ---
 
-## How It Works
+## What FretCoach Is and How It Operates
 
 ### Preventive Neurofeedback Music Learning System
 
@@ -125,6 +125,7 @@ Three feedback channels:
                     │                                             │
                     │  • Practice Sessions & Metrics              │
                     │  • AI-Generated Practice Plans              │
+                    │  • User Configs & Preferences               │
                     │  • Cross-Device Synchronization             │
                     └──────┬──────────────┬──────────────┬────────┘
                            │              │              │
