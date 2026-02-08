@@ -115,6 +115,30 @@ Three feedback channels:
 
 ---
 
+## Future Expandability
+
+**Starts With Guitar, Expands Everywhere**
+
+One coaching core. Many instruments.
+AI-powered instant feedback for any skill-based training—music, sports, and beyond.
+
+<p align="center">
+  <img src="docs/assets/images/future-expandability.jpg" alt="Future Expandability - Core Audio Analysis Agent" width="800"/>
+</p>
+
+FretCoach's core audio analysis engine is designed to be instrument-agnostic. The same real-time feedback architecture that evaluates guitar playing can be adapted for piano, vocals, drums, and other instruments. Guitar is just the starting point.
+
+The long-term vision is an AI-powered instant feedback system that coaches in real time — across music, sports, and skill training — using sound, vision, and sensors. Imagine an AI coach saying *"Brace your core before you hit that deadlift"* — powered by a Raspberry Pi, camera modules, and real-time sensing. That kind of system could prevent injury, not just analyze mistakes after the fact.
+
+We refer to this pattern as **Real-time Augmented Feedback (RAF)** — analogous to how RAG augments generation with retrieval, but applied to real-time sensing and coaching.
+
+> **AI should augment real-time feedback systems, not replace the low-latency path.**
+
+> If feedback arrived the moment you made a mistake, how would that change the way you practice?
+> And what skill would you want AI to coach you on?
+
+---
+
 ## System Architecture
 
 ### High-Level Architecture
@@ -409,30 +433,6 @@ FretCoach uses PostgreSQL hosted on Supabase with three core tables:
 ---
 
 > **⚠️ Important for Testing:** The smart bulb integration (ambient lighting) is completely optional. FretCoach works perfectly without it—just leave the `HAVELLS_*` environment variables blank in your `.env` file. The system will automatically disable lighting features and continue normally. All core functionality (audio analysis, AI coaching, metrics) works independently.
-
----
-
-## Future Expandability
-
-**Starts With Guitar, Expands Everywhere**
-
-One coaching core. Many instruments.
-AI-powered instant feedback for any skill-based training—music, sports, and beyond.
-
-<p align="center">
-  <img src="docs/assets/images/future-expandability.jpg" alt="Future Expandability - Core Audio Analysis Agent" width="800"/>
-</p>
-
-FretCoach's core audio analysis engine is designed to be instrument-agnostic. The same real-time feedback architecture that evaluates guitar playing can be adapted for piano, vocals, drums, and other instruments. Guitar is just the starting point.
-
-The long-term vision is an AI-powered instant feedback system that coaches in real time — across music, sports, and skill training — using sound, vision, and sensors. Imagine an AI coach saying *"Brace your core before you hit that deadlift"* — powered by a Raspberry Pi, camera modules, and real-time sensing. That kind of system could prevent injury, not just analyze mistakes after the fact.
-
-We refer to this pattern as **Real-time Augmented Feedback (RAF)** — analogous to how RAG augments generation with retrieval, but applied to real-time sensing and coaching.
-
-> **AI should augment real-time feedback systems, not replace the low-latency path.**
-
-> If feedback arrived the moment you made a mistake, how would that change the way you practice?
-> And what skill would you want AI to coach you on?
 
 ---
 

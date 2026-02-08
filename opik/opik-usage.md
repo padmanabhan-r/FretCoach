@@ -1,8 +1,8 @@
 # Opik Integration in FretCoach
 
-**Workspace:** `padmanabhan-r-7119`
+**Workspace:** `padmanabhan-r-7119` [Click To View Workspace](https://www.comet.com/opik/padmanabhan-r-7119/home)
 **Projects:** `FretCoach` | `FretCoach-Hub`
-**Link:** [View Workspace →](https://www.comet.com/opik/padmanabhan-r-7119/home)
+**📊 Production Dashboard:** [Click To View Dashboard](https://www.comet.com/opik/padmanabhan-r-7119/dashboards/019c0358-6adc-71f9-a73b-b18f0b20679d)
 
 ---
 
