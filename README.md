@@ -71,7 +71,7 @@ FretCoach is a **Preventive Neurofeedback System** — it shapes motor behavior 
 
 > **Prevention is neuroadaptive. Correction is retrofitting.**
 
-We call this a **dual-brain architecture**, combining fast deterministic processing with intelligent AI coaching.
+This system follows a **dual-brain architecture**, which we call **Real-time Augmented Feedback (RAF)**—analogous to how RAG augments generation with retrieval, RAF augments real-time execution by pairing fast deterministic processing with intelligent AI coaching.
 
 ![FretCoach Brain Architecture](images/FretCoach%20Brain.png)
 
@@ -177,8 +177,8 @@ We refer to this pattern as **Real-time Augmented Feedback (RAF)** — analogous
 │ • Smart Lighting    │  │                             │  │ • Database Sync     │
 │                     │  │                             │  │                     │
 └──────────┬──────────┘  └─────────────────────────────┘  └──────────┬──────────┘
-           │                                                          │
-           ▼                                                          ▼
+           │                                                         │
+           ▼                                                         ▼
    ┌───────────────┐                                          ┌──────────────┐
    │ Scarlett Solo │                                          │ Integrated   │
    │  USB Audio    │                                          │ Audio Input  │
