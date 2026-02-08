@@ -319,5 +319,5 @@ Web Dashboard (Generate Plan) → Studio/Portable (AI Mode loads plan)
 
 **Navigation:**
 - [← Portable Application](portable-app.md)
-- [Audio Analysis Engine →](audio-analysis-agent-engine.md)
+- [Architecture →](architecture.md)
 - [Back to Index](index.md)

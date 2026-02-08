@@ -33,7 +33,7 @@ All AI interactions traced through **Comet Opik** for observability.
 │     ↓                                                    │
 │  2. Analyze Performance Patterns                         │
 │     ↓                                                    │
-│  3. LLM Call (OpenAI/Gemini/Deepseek/Minimax)           │
+│  3. LLM Call (OpenAI/Gemini/Minimax)                    │
 │     ├─ System Prompt: Coaching expertise                │
 │     ├─ User Prompt: Session data + request              │
 │     └─ Structured Output: Pydantic model                │
@@ -624,20 +624,6 @@ model = ChatGoogleGenerativeAI(
 **Cost:** Free tier available  
 **Use case:** High-throughput coaching
 
-### Deepseek Chat 3.1
-
-```python
-model = ChatOpenAI(
-    base_url="https://api.deepseek.com",
-    model="deepseek-chat",
-    api_key=os.getenv("DEEPSEEK_API_KEY")
-)
-```
-
-**Pros:** Very cheap, good reasoning  
-**Cost:** ~$0.27 per 1M input tokens  
-**Use case:** Cost-sensitive deployments
-
 ### Minimax 2.1
 
 ```python
@@ -654,11 +640,12 @@ model = ChatOpenAI(
 
 ### Provider Selection
 
-Configure via environment variable:
+The Studio backend uses `gpt-4o-mini` (hardcoded). The Hub backend defaults to Gemini 3 Flash Preview, with fallback options:
 
 ```bash
-# .env
-LLM_PROVIDER=openai  # or gemini, deepseek, minimax
+# .env (Hub backend)
+USE_OPENAI_MODEL=true   # Switch to GPT-4o-mini instead of Gemini
+MINIMAX_API_KEY=...     # Used automatically as fallback if primary fails
 ```
 
 All providers work seamlessly with Opik tracing—no code changes needed.
@@ -880,5 +867,5 @@ except ImportError:
 
 **Navigation:**
 - [← Audio Analysis Agent Engine](audio-analysis-agent-engine.md)
-- [Architecture →](architecture.md)
+- [Environment Setup →](environment-setup.md)
 - [Back to Index](index.md)

@@ -178,23 +178,11 @@ other_weight = remaining_weight / (num_enabled - 1)  # Split among others
 equal_weight = 1.0 / num_enabled  # Equal split among enabled
 ```
 
-**Example scenarios:**
-1. **Focus on rhythm only:**
-   - Enable: Timing Stability only
-   - Disable: Pitch Accuracy, Scale Conformity
-   - Result: 50% timing, 50% noise (equal split)
-
-2. **Ignore timing for slow practice:**
-   - Enable: Pitch Accuracy, Scale Conformity
-   - Disable: Timing Stability
-   - Result: 40-55% pitch, remainder split between scale and noise
-
-3. **All metrics (default):**
-   - Enable: All metrics
-   - Result: 40-55% pitch, remainder split among scale, timing, and noise
+**Example scenario:**
+- **All metrics (default):** Enable all metrics → 40-55% pitch, remainder split among scale, timing, and noise
 
 **Persistence:**
-- Preferences saved to `backend/core/session_config.json`
+- Preferences saved to `backend/core/session_config.json` and the `fretcoach.user_configs` database table
 - Global setting across all future sessions
 - Can be changed anytime during scale/AI recommendation setup
 
