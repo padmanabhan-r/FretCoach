@@ -145,13 +145,13 @@ Three feedback channels:
 │                     │  │ Backend:                    │  │ • Python FastAPI    │
 │ Features:           │  │ • Python FastAPI            │  │ • librosa + NumPy   │
 │ • Live Audio        │  │ • LangGraph + LangChain     │  │ • Same Engine       │
-│   Analysis          │  │ • Gemini 3 Flash Preview          │  │                     │
-│ • Real-time         │  │                             │  │ Features:           │
-│   Metrics           │  │ Features:                   │  │ • Portable Practice │
-│ • AI Voice Coach    │  │ • AI Chat Coach             │  │ • Edge Processing   │
-│ • Practice Plans    │  │ • Session Analytics         │  │ • Offline Capable   │
-│ • Smart Lighting    │  │ • Performance Trends        │  │ • Smart Lighting    │
-│                     │  │ • Practice Plan Generator   │  │ • Database Sync     │
+│   Analysis          │  │ Features:                   │  │                     │
+│ • Real-time         │  │ • AI Chat Coach             │  │ • Portable Practice │
+│   Metrics           │  │ • Session Analytics         │  │ • Edge Processing   │
+│ • AI Voice Coach    │  │ • Performance Trends        │  │ • Offline Capable   │
+│ • Practice Plans    │  │ • Practice Plan Generator   │  │ • Smart Lighting    │
+│ • Smart Lighting    │  │                             │  │ • Database Sync     │
+│                     │  │                             │  │                     │
 └──────────┬──────────┘  └─────────────────────────────┘  └──────────┬──────────┘
            │                                                          │
            ▼                                                          ▼
@@ -176,6 +176,8 @@ Three feedback channels:
                         └───────────────────────────────┘
 ```
 ---
+
+> **Setup:** Install [uv](https://docs.astral.sh/uv/) and run `uv sync` for Python dependencies. Install [Node.js 18+](https://nodejs.org/) and run `npm install` for JavaScript components.
 
 ## 1. FretCoach Studio (Desktop Application)
 
@@ -244,12 +246,18 @@ Raspberry Pi 5-based portable practice device. Same analysis engine as Studio, b
 - Focusrite Scarlett Solo USB
 - microSD 64GB+
 
+**Getting Started:**
+```bash
+cd portable
+./start.sh
+```
+
 **Current Progress:**
 - ✅ Hardware setup complete
 - ✅ Audio I/O testing successful
 - ✅ Software integration in progress
 - ✅ Database sync mechanism implemented
-- 📋 **Planned:** Physical enclosure design, footswitch control, LCD touchscreen interface 
+- 📋 **Planned:** Physical enclosure design, footswitch control, LCD touchscreen interface
 
 ---
 
@@ -257,10 +265,6 @@ Raspberry Pi 5-based portable practice device. Same analysis engine as Studio, b
 
 **Website:** [fretcoach.online](https://www.fretcoach.online)
 **Analytics and AI Coach Dashboard:** [fretcoach.online/dashboard](https://www.fretcoach.online/dashboard)
-
-> **Production Repositories:**
-> - Backend: [github.com/padmanabhan-r/FretCoach-Web-Backend](https://github.com/padmanabhan-r/FretCoach-Web-Backend)
-> - Frontend: [github.com/padmanabhan-r/FretCoach-Web-Frontend](https://github.com/padmanabhan-r/FretCoach-Web-Frontend)
 
 Web platform for analytics and practice planning.
 
@@ -285,7 +289,6 @@ Web platform for analytics and practice planning.
 **Backend:**
 ```bash
 cd web/web-backend
-pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
