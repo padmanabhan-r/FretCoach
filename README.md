@@ -12,9 +12,9 @@
 
 ## Overview
 
-**FretCoach is a real-time AI guitar practice system** that listens as you play and delivers **instant feedback**, fixing mistakes **in the moment**—not days later.
+**FretCoach is a real-time AI guitar practice system** that listens as you play and delivers **instant feedback**, fixing mistakes **in the moment** — not after the session is over.
 
-This helps you learn correct technique **before bad habits form**.
+Traditional practice relies on delayed feedback — from teachers, recordings, or self-review — by which time mistakes have already turned into muscle memory. FretCoach closes this gap by delivering immediate, multi-sensory feedback that helps players correct technique **before bad habits form**.
 
 **Most tools tell you what you did wrong later. FretCoach helps you stop doing it again.**
 
@@ -27,7 +27,7 @@ This helps you learn correct technique **before bad habits form**.
 **Close the feedback loop from days to milliseconds:**
 
 - **Local Audio Analysis Agent Engine (<300ms):** A real-time audio analysis engine (fast loop) that listens to every note and computes live performance metrics
-- **AI Practice Coach:** Provides strategic guidance and practice insights based on your playing patterns (slow loop)
+- **Slow Loop (AI Coach):** Aggregates session metrics over time to identify trends, generate targeted practice recommendations, and provide conversational coaching grounded in measured performance data
 - **Multi-sensory feedback:** Visual on-screen cues, voice reinforcement, and ambient environmental feedback (*Yes! Your environment becomes a feedback channel*)
 - **Gamification:** Scores, color signals, and progress tracking to reinforce consistency and motivation
 
@@ -422,6 +422,8 @@ AI-powered instant feedback for any skill-based training—music, sports, and be
 FretCoach's core audio analysis engine is designed to be instrument-agnostic. The same real-time feedback architecture that evaluates guitar playing can be adapted for piano, vocals, drums, and other instruments. Guitar is just the starting point.
 
 The long-term vision is an AI-powered instant feedback system that coaches in real time — across music, sports, and skill training — using sound, vision, and sensors. Imagine an AI coach saying *"Brace your core before you hit that deadlift"* — powered by a Raspberry Pi, camera modules, and real-time sensing. That kind of system could prevent injury, not just analyze mistakes after the fact.
+
+We refer to this pattern as **Real-time Augmented Feedback (RAF)** — analogous to how RAG augments generation with retrieval, but applied to real-time sensing and coaching.
 
 > **AI should augment real-time feedback systems, not replace the low-latency path.**
 
