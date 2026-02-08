@@ -1,8 +1,29 @@
 # Opik Integration in FretCoach
 
-**Workspace:** `padmanabhan-r-7119` [Click To View Workspace](https://www.comet.com/opik/padmanabhan-r-7119/home)
-**Projects:** `FretCoach` | `FretCoach-Hub`
+<p align="center">
+  <img src="images/opik-doc-header.png" width="800">
+</p>
+
+**Workspace:** `padmanabhan-r-7119` [Click To View Workspace](https://www.comet.com/opik/padmanabhan-r-7119/home)\
+**Projects:** `FretCoach` | `FretCoach-Hub`\
 **📊 Production Dashboard:** [Click To View Dashboard](https://www.comet.com/opik/padmanabhan-r-7119/dashboards/019c0358-6adc-71f9-a73b-b18f0b20679d)
+
+## Contents
+
+- [Overview](#overview)
+- [1. Traces with Metadata and Tags](#1-traces-with-metadata-and-tags)
+- [2. Thread Management](#2-thread-management)
+- [3. Agent Graph Visualization](#3-agent-graph-visualization)
+- [4. Annotation Queues](#4-annotation-queues)
+- [5. Datasets and Prompts](#5-datasets-and-prompts)
+- [6. Experiments and Custom Metrics](#6-experiments-and-custom-metrics)
+- [7. Optimization Studio](#7-optimization-studio)
+- [8. OpikAssist for Token Usage Optimization](#8-opikassist-for-token-usage-optimization)
+- [9. Project-Specific Configurations](#9-project-specific-configurations)
+- [10. Online Evaluation](#10-online-evaluation)
+- [11. Production Dashboard](#11-production-dashboard)
+- [12. Alerts & Notifications](#12-alerts--notifications)
+- [13. Key Insights](#13-key-insights-gained-from-production-observability)
 
 ---
 

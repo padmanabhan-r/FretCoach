@@ -8,6 +8,24 @@
 
 > **Already know about FretCoach and want to run the code right away?** Jump to the [Quickstart Guide](docs/quickstart.md) to get started. **New here?** Read on to understand what makes this different.
 
+## Contents
+
+- [Overview](#overview)
+- [The FretCoach Approach](#the-fretcoach-approach)
+- [Platform Ecosystem](#platform-ecosystem)
+- [For Commit To Change Hackathon Judges](#for-commit-to-change-hackathon-judges-)
+- [What FretCoach Is and How It Operates](#what-fretcoach-is-and-how-it-operates)
+- [Future Expandability](#future-expandability)
+- [System Architecture](#fretcoach---system-architecture)
+  - [1. FretCoach Studio](#1-fretcoach-studio-desktop-application)
+  - [2. FretCoach Portable](#2-fretcoach-portable-raspberry-pi-device)
+  - [3. FretCoach Hub](#3-fretcoach-hub-web-platform)
+  - [4. Ambient Lighting](#4-ambient-lighting)
+- [Technology Stack](#technology-stack)
+- [Feature Matrix](#feature-matrix)
+- [Documentation](#documentation)
+- [Repository Structure](#repository-structure)
+
 ---
 
 ## Overview
@@ -128,7 +146,7 @@ AI-powered instant feedback for any skill-based training—music, sports, and be
 
 FretCoach's core audio analysis engine is designed to be instrument-agnostic. The same real-time feedback architecture that evaluates guitar playing can be adapted for piano, vocals, drums, and other instruments. Guitar is just the starting point.
 
-The long-term vision is an AI-powered instant feedback system that coaches in real time — across music, sports, and skill training — using sound, vision, and sensors. Imagine an AI coach saying *"Brace your core before you hit that deadlift"* — powered by a Raspberry Pi, camera modules, and real-time sensing. That kind of system could prevent injury, not just analyze mistakes after the fact.
+The long-term vision is an AI-powered instant feedback system that coaches in real time — across music, sports, and skill training — using sound, vision, and sensors. Imagine an AI coach saying *"Don't round your back"* the moment a beginner's form breaks during a deadlift. That kind of system could prevent injury, not just analyze mistakes after the fact.
 
 This broader vision is what **Real-time Augmented Feedback (RAF)** enables — AI-augmented real-time coaching, across any domain.
 
@@ -203,7 +221,7 @@ This broader vision is what **Real-time Augmented Feedback (RAF)** enables — A
 
 > **Setup:** Install [uv](https://docs.astral.sh/uv/) and run `uv sync` for Python dependencies. Install [Node.js 18+](https://nodejs.org/) and run `npm install` for JavaScript components.
 
-## 1. FretCoach Studio (Desktop Application)
+### 1. FretCoach Studio (Desktop Application)
 
 **Location:** `/application/`
 
@@ -214,7 +232,7 @@ Desktop application for focused practice sessions.
   <img src="docs/assets/images/studio/9. Studio - Live Session.png" alt="FretCoach Studio Live Session" width="400"/>
 </p>
 
-### Features
+#### Features
 - Real-time audio analysis (USB interface or built-in mic)
 - Live visual metrics and performance scoring
 - Manual (choose scale/settings) and AI practice modes (recommended plans)
@@ -222,7 +240,7 @@ Desktop application for focused practice sessions.
 - Ambient lighting feedback
 - Automatic session logging and summaries
 
-### Getting Started
+#### Getting Started
 **Prerequisites:**
 - Node.js 18+
 - Python 3.12+
@@ -238,7 +256,7 @@ npm run dev  # Starts Electron + React frontend + Python FastAPI backend
 
 ---
 
-## 2. FretCoach Portable (Raspberry Pi Device)
+### 2. FretCoach Portable (Raspberry Pi Device)
 
 > **Like a portable guitar pedal**
 > In prototyping — evolving into a physical unit with enclosure, LCD display, and footswitch for On/Off control.
@@ -285,7 +303,7 @@ cd portable
 
 ---
 
-## 3. FretCoach Hub (Web Platform)
+### 3. FretCoach Hub (Web Platform)
 
 **Website:** [fretcoach.online](https://www.fretcoach.online)
 **Analytics and AI Coach Dashboard:** [fretcoach.online/dashboard](https://www.fretcoach.online/dashboard)
@@ -298,7 +316,7 @@ Web platform for analytics and practice planning.
   <img src="docs/assets/images/hub/4. Hub - AI Coach.png" alt="FretCoach Hub AI Coach" width="400"/>
 </p>
 
-### Features
+#### Features
 - AI chat coach (text-to-SQL agent + Gemini 3 Flash Preview)
 - Performance analytics and trend charts
 - AI-generated practice plans
@@ -306,7 +324,7 @@ Web platform for analytics and practice planning.
 
 > **Demo Note:** The live deployment at [fretcoach.online](https://www.fretcoach.online) shows two sample users for demonstration purposes.
 
-### Getting Started
+#### Getting Started
 
 **Local Development:**
 
@@ -327,11 +345,11 @@ npm run dev  # http://localhost:5173
 
 ---
 
-## 4. Ambient Lighting
+### 4. Ambient Lighting
 
 Smart bulb integration for visual performance feedback.
 
-### Color Coding
+#### Color Coding
 - 🟢 Green — Good playing (70%+)
 - 🟡 Yellow-Green — Could be better (50-70%)
 - 🟠 Yellow — Average (30-50%)
@@ -354,12 +372,6 @@ Smart bulb integration for visual performance feedback.
 | **Observability** | Comet Opik |
 | **Deployment** | Vercel (frontend), Railway (backend) |
 | **Smart Bulb** | Tuya Cloud API (tinytuya) |
-
----
-
-## Database Schema
-
-PostgreSQL on Supabase with three tables: `sessions` (metrics, scale config, timestamps), `ai_practice_plans` (AI-generated recommendations), and `user_configs` (per-user metric preferences).
 
 ---
 ## Feature Matrix
