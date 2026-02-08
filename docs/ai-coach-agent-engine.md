@@ -460,7 +460,7 @@ Recent Sessions:
 Provide personalized coaching advice based on this data."""
 ```
 
-4. **LLM Response Generation** — Gemini 2.5 Flash with fallback:
+4. **LLM Response Generation** — Gemini 3 Flash Preview with fallback:
 
 ```python
 def invoke_with_fallback(messages, thread_id: str):
@@ -535,7 +535,7 @@ return {
    Weakest area: timing
    Recent practice: C Major, A Minor
    ```
-5. **LLM generates response** (Gemini 2.5 Flash)
+5. **LLM generates response** (Gemini 3 Flash Preview)
 6. **Return with practice plan card**
 
 **Agent response:**
@@ -608,7 +608,7 @@ model = ChatOpenAI(
 **Cost:** ~$0.15 per 1M input tokens  
 **Use case:** All coaching features
 
-### Google Gemini 2.5 Flash
+### Google Gemini 3 Flash Preview
 
 ```python
 from langchain_google_genai import ChatGoogleGenerativeAI

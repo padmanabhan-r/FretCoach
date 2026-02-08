@@ -77,7 +77,7 @@ The difference: Guitar Hero is a game. GarageBand is a production tool. FretCoac
 - Runs locally on-device with zero cloud dependency
 
 **AI Coach Agent (Slow Loop) — "Right Brain":**
-- Powered by LLMs (Gemini 2.5 Flash for Hub, GPT-4o-mini for Studio)
+- Powered by LLMs (Gemini 3 Flash Preview for Hub, GPT-4o-mini for Studio)
 - Provides three types of coaching:
   1. **Live voice coaching:** Speaks feedback during practice sessions at regular intervals
   2. **Practice plan generation:** Analyzes your session history and creates personalized recommendations
@@ -281,13 +281,13 @@ Audio analysis must be **fast, deterministic, and reliable**—it can't afford t
 3. **Conversational Coaching (Hub):**
    - LangGraph agent with text-to-SQL tool
    - Answers questions like "What's my weakest metric?" or "Show my progress over time"
-   - Uses Gemini 2.5 Flash for natural language understanding
+   - Uses Gemini 3 Flash Preview for natural language understanding
    - Database-grounded responses with citation of actual session data
 
 **Technology Stack:**
 - LangChain + LangGraph for agent orchestration
 - OpenAI GPT-4o-mini (Studio coaching)
-- Google Gemini 2.5 Flash (Hub conversational coach)
+- Google Gemini 3 Flash Preview (Hub conversational coach)
 - Comet Opik for LLM observability and evaluation
 
 **Runs:** On-demand, triggered by user actions or periodic intervals
@@ -551,7 +551,7 @@ FretCoach is building toward a future where instant, intelligent feedback accele
 **Backend:**
 - **Python FastAPI:** API server
 - **LangChain + LangGraph:** AI agent orchestration
-- **Google Gemini 2.5 Flash:** Conversational AI coach with text-to-SQL capabilities
+- **Google Gemini 3 Flash Preview:** Conversational AI coach with text-to-SQL capabilities
 - **SQLAlchemy:** Database ORM for PostgreSQL
 - **Pydantic:** Data validation and serialization
 
@@ -569,7 +569,7 @@ FretCoach is building toward a future where instant, intelligent feedback accele
 
 **LLM Providers:**
 - **OpenAI:** GPT-4o-mini (Studio coaching, practice plans)
-- **Google Gemini 2.5 Flash:** Conversational coach (Hub)
+- **Google Gemini 3 Flash Preview:** Conversational coach (Hub)
 - **GPT-4o-mini-TTS:** Voice synthesis (Studio live coaching)
 
 **AI Orchestration:**
@@ -623,7 +623,7 @@ FretCoach is building toward a future where instant, intelligent feedback accele
 ❌ **Needs internet connection:**
 - AI-generated practice plan recommendations (LLM API calls)
 - Live voice coaching during sessions (GPT-4o-mini + TTS)
-- FretCoach Hub conversational AI coach (Gemini 2.5 Flash)
+- FretCoach Hub conversational AI coach (Gemini 3 Flash Preview)
 - Database sync with Supabase
 
 **Why it needs internet:**
@@ -1396,7 +1396,7 @@ If you use AI-powered features (practice plan generation, voice coaching), you'l
 | Service | Feature | Cost | Free Tier |
 |---------|---------|------|-----------|
 | **OpenAI API** | GPT-4o-mini (practice plans, voice coaching) | ~$0.15 per 1M input tokens, $0.60 per 1M output tokens | $5 free credit for new accounts |
-| **Google Gemini API** | Gemini 2.5 Flash (Hub AI coach) | Free tier: 1500 requests/day | Generous free tier |
+| **Google Gemini API** | Gemini 3 Flash Preview (Hub AI coach) | Free tier: 1500 requests/day | Generous free tier |
 | **Supabase** | Database hosting | Free tier: 500MB storage, unlimited API requests | Free forever plan available |
 
 **Estimated Monthly Costs (AI Features):**

@@ -79,7 +79,7 @@ See **[Introduction](introduction.md#the-ecosystem)** for details on:
 | Component | Technology |
 |-----------|------------|
 | Database | PostgreSQL (Supabase) |
-| LLM Providers | OpenAI (GPT-4o-mini, TTS), Google Gemini 2.5 Flash |
+| LLM Providers | OpenAI (GPT-4o-mini, TTS), Google Gemini 3 Flash Preview |
 | AI Orchestration | LangChain, LangGraph |
 | Observability | Comet Opik |
 | Smart Bulb | Tuya Cloud API (tinytuya 1.17.4) |

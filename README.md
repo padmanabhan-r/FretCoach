@@ -89,7 +89,7 @@ We call this a **dual-brain architecture**, combining fast deterministic process
 - LLM-powered preventive coaching: Provides consistent vocal and textual feedback at regular intervals during live playing for instant improvement
 - Post-session pattern analysis and personalized practice plan curation based on identified weak areas
 - On-demand (not real-time critical)
-- Powered by LLM models: Gemini 2.5 Flash, OpenAI GPT-4o-mini, GPT-4o-mini-TTS
+- Powered by LLM models: Gemini 3 Flash Preview, OpenAI GPT-4o-mini, GPT-4o-mini-TTS
 
 > **Hybrid architecture: local speed + AI intelligence = intervention before habits solidify.**
 
@@ -144,7 +144,7 @@ Three feedback channels:
 │                     │  │ Backend:                    │  │ • Python FastAPI    │
 │ Features:           │  │ • Python FastAPI            │  │ • librosa + NumPy   │
 │ • Live Audio        │  │ • LangGraph + LangChain     │  │ • Same Engine       │
-│   Analysis          │  │ • Gemini 2.5 Flash          │  │                     │
+│   Analysis          │  │ • Gemini 3 Flash Preview          │  │                     │
 │ • Real-time         │  │                             │  │ Features:           │
 │   Metrics           │  │ Features:                   │  │ • Portable Practice │
 │ • AI Voice Coach    │  │ • AI Chat Coach             │  │ • Edge Processing   │
@@ -270,7 +270,7 @@ Web platform for analytics and practice planning.
 </p>
 
 ### Features
-- AI chat coach (text-to-SQL agent + Gemini 2.5 Flash)
+- AI chat coach (text-to-SQL agent + Gemini 3 Flash Preview)
 - Performance analytics and trend charts
 - AI-generated practice plans
 - Session history and statistics
@@ -337,7 +337,7 @@ Smart bulb integration for visual performance feedback.
 | Component | Technology |
 |-----------|------------|
 | Database | PostgreSQL (Supabase) |
-| LLM Providers | OpenAI (GPT-4o-mini, TTS), Google Gemini 2.5 Flash |
+| LLM Providers | OpenAI (GPT-4o-mini, TTS), Google Gemini 3 Flash Preview |
 | AI Orchestration | LangChain, LangGraph |
 | Observability | Comet Opik |
 | Smart Bulb | Tuya Cloud API (tinytuya 1.17.4) |

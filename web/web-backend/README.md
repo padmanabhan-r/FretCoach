@@ -10,7 +10,7 @@ Python API providing practice session data and a LangGraph-powered AI coach that
 
 - Python 3.12 + FastAPI + Uvicorn
 - LangChain + LangGraph (AI orchestration)
-- Google Gemini 2.5 Flash (primary LLM)
+- Google Gemini 3 Flash Preview (primary LLM)
 - MiniMax 2.1 (fallback LLM)
 - PostgreSQL via Supabase
 - Comet Opik (observability)

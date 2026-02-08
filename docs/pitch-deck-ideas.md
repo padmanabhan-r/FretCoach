@@ -130,7 +130,7 @@ All components share a central database for seamless cross-device sync.
 
 FretCoach supports four LLM providers, all traced identically through Opik:
 - **OpenAI GPT-4o Mini** — Fast, reliable, good reasoning
-- **Google Gemini 2.5 Flash** — Very fast, multimodal capable
+- **Google Gemini 3 Flash Preview** — Very fast, multimodal capable
 - **Deepseek Chat 3.1** — Cost-effective, good reasoning
 - **Minimax 2.1** — Multilingual support
 
