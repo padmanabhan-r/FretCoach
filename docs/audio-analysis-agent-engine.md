@@ -970,6 +970,6 @@ The **Audio Analysis Agent** is the deterministic foundation of FretCoach's prev
 ---
 
 **Navigation:**
-- [← Web Dashboard](web-dashboard.md)
+- [← Architecture](architecture.md)
 - [AI Coach Agent Engine →](ai-coach-agent-engine.md)
 - [Back to Index](index.md)

@@ -93,5 +93,5 @@ VITE_API_BASE_URL=http://localhost:8000
 
 For detailed usage and architecture:
 - [System Architecture](../docs/architecture.md#component-2-web-dashboard)
-- [AI Coaching System](../docs/ai-coaching.md)
+- [AI Coaching System](../docs/ai-coach-agent-engine.md)
 - [Quickstart Guide](../docs/quickstart.md)
