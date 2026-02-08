@@ -81,10 +81,18 @@ A real-time AI music practice system for guitar that listens, reacts, and coache
 
 ---
 
-# Slide Deck
+# Link to Code
 
-[View on Google Slides](https://docs.google.com/presentation/d/1Mm2ERUg9ZhWOH_aVsTBwBKI8s9U_AHglDOdXagMTqBY/edit?usp=sharing)
+> https://github.com/padmanabhan-r/FretCoach
 
-# Video
+# Link to Presentation
 
-[Watch on YouTube](https://www.youtube.com/watch?v=ko7pAXDDkJQ)
+> https://docs.google.com/presentation/d/1Mm2ERUg9ZhWOH_aVsTBwBKI8s9U_AHglDOdXagMTqBY/edit?usp=sharing
+
+# Link to Demo Video
+
+> https://www.youtube.com/watch?v=ko7pAXDDkJQ
+
+# Live Demo Link
+
+> https://www.fretcoach.online/
