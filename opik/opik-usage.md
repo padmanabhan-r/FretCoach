@@ -8,7 +8,7 @@
 
 ## Overview
 
-FretCoach traces three distinct AI coaching features — real-time live coaching, AI practice recommendations, and a natural language web dashboard agent. Opik provides the observability layer to monitor, evaluate, and continuously improve these features in production, giving us visibility into prompt quality, token costs, response latency, and AI coaching quality at scale.
+FretCoach traces three distinct AI coaching features — real-time live coaching, AI practice recommendations, and a web based chatbot agent (AI Coach). Opik provides the observability layer to monitor, evaluate, and continuously improve these features in production, giving us visibility into prompt quality, token costs, response latency, and AI coaching quality at scale.
 
 ---
 
@@ -16,7 +16,7 @@ FretCoach traces three distinct AI coaching features — real-time live coaching
 
 ### 1. Traces with Metadata and Tags
 
-All LLM calls are logged as traces in Opik with structured tags for filtering and organization.
+All LLM calls are logged as traces in Opik with structured tags for filtering, organization and applying targeted online evaluation rules.
 
 **Hub Coach Chats:**
 - Tags: `ai-coach-chat`, `fretcoach-hub`, `from-hub-dashboard`, `gemini-2.5-flash`, `practice-plan`
@@ -56,7 +56,7 @@ All LLM calls are logged as traces in Opik with structured tags for filtering an
 Structured `thread_id` to group related LLM calls and maintain conversation context.
 
 **Thread Naming Conventions:**
-- **Hub Coach:** `hub-{user_id}` - Groups all coach chat messages for a user
+- **Hub Coach:** `hub-aicoach-chat-{timestamp}` - Groups all coach chat messages for a user
 - **AI Mode:** `{deployment}-ai-mode-{practice_id}` - Maintains thread across recommendations
 - **Live Feedback:** `{session_id}-live-aicoach-feedback` - Groups feedback within a practice session
 
@@ -103,13 +103,9 @@ Used annotation queues for human-in-the-loop evaluation of agent outputs.
 
 Created datasets and prompts for reproducible experiments and evaluations.
 
-**Datasets:**
 - Curated test cases from real user sessions
-- Used across experiment runs for consistent testing
-
-**Prompts:**
+- Used in experiment runs for testing
 - Version-controlled coaching prompt templates
-- Used in playground for rapid iteration
 
 <p align="center">
   <img src="images/datasets.png" width="700">
