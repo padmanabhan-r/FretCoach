@@ -359,6 +359,6 @@ git check-ignore backend/.env  # Should output: backend/.env
 ---
 
 **Navigation:**
-- [← Architecture](architecture.md)
+- [← AI Coach Agent Engine](ai-coach-agent-engine.md)
 - [Troubleshooting →](troubleshooting.md)
 - [Back to Index](index.md)

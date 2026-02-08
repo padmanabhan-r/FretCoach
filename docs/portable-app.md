@@ -486,50 +486,11 @@ sudo raspi-config
 
 ## Hardware Expansion Ideas
 
-### Pedalboard Integration
+The Pi 5's GPIO and USB ports enable further customization:
 
-**Concept:** Mount FretCoach Portable in a guitar pedalboard
-
-**Benefits:**
-- Familiar form factor for guitarists
-- Durable enclosure
-- Integrated power supply
-- Footswitch accessibility
-
-**Implementation:**
-- 3D-print custom enclosure matching pedalboard dimensions
-- Add footswitch via GPIO (start/stop sessions)
-- Integrate LED status indicators
-- Velcro mounting for pedalboard attachment
-
-### Battery Power
-
-**Concept:** Portable power for truly mobile practice
-
-**Requirements:**
-- 20,000mAh USB-C PD battery pack (45W output)
-- Pi 5 + Scarlett Solo + Smart Bulb = ~10W total
-- Runtime: 4-6 hours continuous practice
-
-**Recommended batteries:**
-- Anker 737 Power Bank (24,000mAh, 140W)
-- UGREEN 145W Power Bank (25,000mAh)
-
-### Touchscreen Display
-
-**Concept:** Eliminate external monitor dependency
-
-**Recommended:**
-- Official Raspberry Pi 7" Touchscreen Display
-- 800x480 resolution
-- DSI connector (no HDMI lag)
-- Multi-touch support
-
-**Benefits:**
-- All-in-one device
-- Touch-optimized UI
-- Portable setup
-- No keyboard/mouse needed
+- **Pedalboard integration:** 3D-print a pedalboard-format enclosure with footswitch (GPIO) for hands-free session control
+- **Battery power:** A 20,000mAh+ USB-C PD pack (~45W) gives 4–6 hours of runtime
+- **Touchscreen:** The official Raspberry Pi 7" display (DSI connector) eliminates the need for an external monitor
 
 ---
 

@@ -163,5 +163,5 @@ If not running, start it manually from `backend/` directory.
 For detailed usage and architecture:
 - [Desktop App Guide](../docs/desktop-app.md)
 - [System Architecture](../docs/architecture.md#component-1-desktop-application)
-- [AI Coaching System](../docs/ai-coaching.md)
+- [AI Coaching System](../docs/ai-coach-agent-engine.md)
 - [Audio Processing Mathematics](../docs/appendix-audio-math.md)

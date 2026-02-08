@@ -393,6 +393,6 @@ The dual-brain architecture (fast deterministic loop + slow AI loop) remains con
 ---
 
 **Navigation:**
-- [← AI Coach Agent Engine](ai-coach-agent-engine.md)
-- [Environment Setup →](environment-setup.md)
+- [← Web Dashboard](web-dashboard.md)
+- [Audio Analysis Engine →](audio-analysis-agent-engine.md)
 - [Back to Index](index.md)
