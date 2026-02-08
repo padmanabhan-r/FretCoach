@@ -2,6 +2,13 @@
 
 **Workspace:** `padmanabhan-r-7119`
 **Projects:** `FretCoach` | `FretCoach-Hub`
+**Link:** [View Workspace →](https://www.comet.com/opik/padmanabhan-r-7119/home)
+
+---
+
+## Overview
+
+FretCoach traces three distinct AI coaching features — real-time live coaching, AI practice recommendations, and a natural language web dashboard agent. Opik provides the observability layer to monitor, evaluate, and continuously improve these features in production, giving us visibility into prompt quality, token costs, response latency, and AI coaching quality at scale.
 
 ---
 
@@ -34,6 +41,7 @@ All LLM calls are logged as traces in Opik with structured tags for filtering an
 **Live AI Feedback in Session:**
 - Tags: `fretcoach-core`, `gpt-4o-mini`, `ai-mode`, `fretcoach-studio`, `live-feedback`
 - Tracks real-time coaching feedback during practice
+- TTS audio generation traced separately via `@track` decorator for independent failure tracking and latency monitoring
 
 <p align="center">
   <img src="images/live-feedback-traces.png" width="700">
@@ -348,3 +356,19 @@ Configured Slack alerts to proactively monitor AI quality and system health in p
   <br>
   <em>Real-time alerts delivered to Slack #opik-alerts channel</em>
 </p>
+
+---
+
+### 13. Key Insights Gained from Production Observability
+
+Opik traces surfaced actionable improvements that directly improved FretCoach's quality and performance:
+
+| Insight | Discovery | Action Taken | Result |
+|---------|-----------|--------------|--------|
+| **Prompt verbosity** | Live coach prompts were verbose, causing slow responses | Tightened prompt to "1 sentence maximum" constraint | Significantly faster responses, more focused feedback |
+| **TTS latency spike** | TTS taking longer than expected on some calls | Implemented singleton audio player with `stop()` before new audio | Consistent TTS latency, no audio overlap |
+| **Prompt optimization** | Live feedback prompt quality measured via `llm_judge_metric` | Used Optimization Studio (HRPO) to refine the prompt | **32% increase** in live coaching response quality |
+| **Fallback model visibility** | ~15% of Hub Chat requests hit Gemini rate limits | Confirmed MiniMax fallback working seamlessly, kept hybrid approach | Zero user-facing errors on rate limit |
+| **Token cost patterns** | Different features had very different token footprints | Targeted `gpt-4o-mini` for cost-sensitive real-time features | Optimized cost-performance ratio per feature |
+
+**Ongoing:** All 11 online evaluation rules continue to run in production, monitoring AI quality across both Studio and Hub with automatic alerts when scores degrade.
