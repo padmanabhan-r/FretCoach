@@ -130,7 +130,7 @@ FretCoach's core audio analysis engine is designed to be instrument-agnostic. Th
 
 The long-term vision is an AI-powered instant feedback system that coaches in real time — across music, sports, and skill training — using sound, vision, and sensors. Imagine an AI coach saying *"Brace your core before you hit that deadlift"* — powered by a Raspberry Pi, camera modules, and real-time sensing. That kind of system could prevent injury, not just analyze mistakes after the fact.
 
-We refer to this pattern as **Real-time Augmented Feedback (RAF)** — analogous to how RAG augments generation with retrieval, but applied to real-time sensing and coaching.
+This broader vision is what **Real-time Augmented Feedback (RAF)** enables — AI-augmented real-time coaching, across any domain.
 
 > **AI should augment real-time feedback systems, not replace the low-latency path.**
 
