@@ -445,4 +445,8 @@ Extra hands are always welcome to help build the product and scale it across mul
 
 **FretCoach** — *Built with love for the music and the guitar* 🎸
 
+---
+
+**Author:** [Padmanabhan Rajendrakumar](https://www.linkedin.com/in/padmanabhan-rajendrakumar/)
+
 
