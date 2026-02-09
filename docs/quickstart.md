@@ -34,8 +34,7 @@ cd FretCoach
 ### 2. Set Up Backend Environment
 
 ```bash
-cd backend
-uv sync  # Install dependencies with uv
+uv sync  # Install dependencies with uv (run from project root)
 ```
 
 > **Note:** If you don't have `uv` installed, get it from [uv installation guide](https://docs.astral.sh/uv/getting-started/installation/)
@@ -129,36 +128,36 @@ Follow the on-screen instructions to configure audio, select practice mode, and 
 
 ---
 
-## Web Dashboard Setup (Optional)
+## Web Dashboard Setup
 
 The web dashboard lets you review sessions, chat with the AI coach, and generate practice plans.
 
-### 1. Set Up Backend
+### 1. Ensure Backend Dependencies
+
+Ensure backend dependencies are installed (from step 2 above - `uv sync` at project root).
+
+### 2. Configure Environment
 
 ```bash
 cd web/web-backend
-uv sync
 cp ../../backend/.env .env  # Use same credentials as desktop backend
-```
-
-### 2. Start Backend
-
-```bash
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ### 3. Set Up Frontend
 
 ```bash
-cd web/web-frontend
+cd ../web-frontend
 npm install
 echo "VITE_API_BASE_URL=http://localhost:8000" > .env
 ```
 
-### 4. Start Frontend
+### 4. Start Web Dashboard
+
+From the `web` directory, use the start script to launch both backend and frontend:
 
 ```bash
-npm run dev
+cd ..  # Now in web/ directory
+./start.sh
 ```
 
 Visit http://localhost:8080 in your browser.
@@ -185,7 +184,7 @@ Visit http://localhost:8080 in your browser.
 ### Understanding Metrics
 
 - **Pitch Accuracy:** How cleanly you're fretting notes
-- **Scale Conformity:** Whether you're playing notes within the chosen scale
+- **Scale Conformity:** Whether you're playing notes within the chosen scale and covering as much of the fretboard as possible
 - **Timing Stability:** Consistency of note spacing
 - **Noise Control:** Clarity of playing (string buzz, fret noise)
 
@@ -193,7 +192,7 @@ Visit http://localhost:8080 in your browser.
 
 ## Troubleshooting
 
-- **Backend won't start:** Ensure dependencies are installed with `uv sync` in the backend directory
+- **Backend won't start:** Ensure dependencies are installed with `uv sync` from the project root
 - **No audio detected:** Check device connection and microphone permissions in system settings
 - **Database connection failed:** Verify Supabase credentials in `.env` file
 - **AI coach not responding:** Check API keys are valid and account has sufficient credits

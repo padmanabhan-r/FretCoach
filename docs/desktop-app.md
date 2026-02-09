@@ -31,7 +31,7 @@ Personal practice studio with AI coach analyzing every note.
 The backend continuously processes audio in overlapping windows (0.8 seconds by default) and calculates four metrics:
 
 - **Pitch Accuracy** — Evaluates intonation against detected notes
-- **Scale Conformity** — Checks if notes are within the chosen scale
+- **Scale Conformity** — Checks if notes are within the chosen scale and measures fretboard coverage
 - **Timing Stability** — Measures consistency of note spacing
 - **Noise Control** — Assesses signal clarity
 

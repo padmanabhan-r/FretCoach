@@ -36,7 +36,7 @@ FretCoach provides instant feedback through three channels:
 ### 1. Visual Feedback
 Real-time metrics on screen:
 - **Pitch Accuracy** — Note accuracy
-- **Scale Conformity** — Scale adherence
+- **Scale Conformity** — Scale adherence and fretboard coverage
 - **Timing Stability** — Rhythm consistency
 - **Noise Control** — String noise detection
 

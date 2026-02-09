@@ -150,7 +150,7 @@ FretCoach allows users to enable/disable individual metrics based on practice fo
 ### Available Metrics
 
 - **Pitch Accuracy** (optional) - Note accuracy and intonation
-- **Scale Conformity** (optional) - Adherence to target scale
+- **Scale Conformity** (optional) - Adherence to target scale and fretboard coverage
 - **Timing Stability** (optional) - Rhythmic consistency
 - **Noise Control** (mandatory) - Always enabled as baseline quality metric
 
