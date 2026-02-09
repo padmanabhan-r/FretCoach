@@ -257,6 +257,7 @@ npm run dev  # Starts Electron + React frontend + Python FastAPI backend
 ### 2. FretCoach Portable (Raspberry Pi Device)
 
 > **Like a portable guitar pedal**
+>
 > In prototyping — evolving into a physical unit with enclosure, LCD display, and footswitch for On/Off control.
 
 
@@ -303,7 +304,7 @@ cd portable
 
 ### 3. FretCoach Hub (Web Platform)
 
-**Website:** [fretcoach.online](https://www.fretcoach.online)
+**Website:** [fretcoach.online](https://www.fretcoach.online)<br>
 **Analytics and AI Coach Dashboard:** [fretcoach.online/dashboard](https://www.fretcoach.online/dashboard)
 
 Web platform for analytics and practice planning.
@@ -325,6 +326,14 @@ Web platform for analytics and practice planning.
 #### Getting Started
 
 **Local Development:**
+
+Start both backend and frontend together using the start script:
+```bash
+cd web
+./start.sh
+```
+
+Or manually start them separately:
 
 **Backend:**
 ```bash
