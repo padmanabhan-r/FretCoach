@@ -426,7 +426,6 @@ Smart bulb integration for visual performance feedback.
 > - **Web Backend:** [github.com/padmanabhan-r/FretCoach-Web-Backend](https://github.com/padmanabhan-r/FretCoach-Web-Backend)
 > - **Web Frontend:** [github.com/padmanabhan-r/FretCoach-Web-Frontend](https://github.com/padmanabhan-r/FretCoach-Web-Frontend)
 >
-> The `web/` directory in this repository contains reference implementations and development versions.
 
 ---
 
