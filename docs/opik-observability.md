@@ -23,7 +23,7 @@ All LLM interactions are traced using LangChain's `OpikTracer`, custom functions
 **Location:** `backend/api/services/ai_agent_service.py`
 
 When users start AI Mode, the system:
-- Fetches their last 5 practice sessions from PostgreSQL
+- Fetches their previous practice sessions from PostgreSQL
 - Analyzes performance patterns to identify the weakest metric
 - Generates a structured practice plan via GPT-4o-mini with LangChain structured output
 

@@ -90,7 +90,7 @@ Select Scale → Adjust Settings → Start Session → Play → Get Feedback →
 **Use case:** Adaptive learning with personalized recommendations
 
 **How it works:**
-1. System analyzes your last 5 practice sessions from the database
+1. System analyzes your previous practice sessions from the database
 2. AI identifies your weakest performance area (pitch, scale, or timing)
 3. Recommends a specific scale, scale type, and difficulty settings
 4. Provides reasoning for the recommendation
