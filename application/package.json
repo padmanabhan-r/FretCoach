@@ -1,6 +1,6 @@
 {
   "name": "fretcoach",
-  "version": "0.1.0",
+  "version": "0.3.1",
   "description": "FretCoach Studio - AI-Powered Adaptive Guitar Training - Real-time Coaching, ANYWHERE",
   "main": "electron/main.js",
   "author": "FretCoach Team",
