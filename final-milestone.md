@@ -66,7 +66,7 @@ The feedback-loop problem isn't unique to guitar — it is simply a concrete sta
 
 FretCoach is a concrete implementation of a broader principle: **AI should augment real-time feedback systems**. We refer to this pattern as **Real-time Augmented Feedback (RAF)**, analogous to how RAG augments generation with retrieval.
 
-Imagine an AI coach saying *"Don't round your back"* the moment a beginner's form breaks during a deadlift — powered by real-time sensing. Such systems could prevent errors — or even injuries — rather than merely analyzing them after the fact.
+Imagine an AI system that detects when a beginner's deadlift form breaks and responds with multi-sensory feedback — a haptic pulse alerts them, followed instantly by a corrective voice cue: "Don't round your back." Such systems could prevent errors — or even injuries — rather than merely analyzing them after the fact.
 
 ---
 

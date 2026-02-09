@@ -146,7 +146,7 @@ AI-powered instant feedback for any skill-based training—music, sports, and be
 
 FretCoach's core audio analysis engine is designed to be instrument-agnostic. The same real-time feedback architecture that evaluates guitar playing can be adapted for piano, vocals, drums, and other instruments. Guitar is just the starting point.
 
-The long-term vision is an AI-powered instant feedback system that coaches in real time — across music, sports, and skill training — using sound, vision, and sensors. Imagine an AI coach saying *"Don't round your back"* the moment a beginner's form breaks during a deadlift. That kind of system could prevent injury, not just analyze mistakes after the fact.
+The long-term vision is an AI-powered instant feedback system that coaches in real time — across music, sports, and skill training — using sound, vision, and sensors. Imagine an AI system that detects when a beginner's deadlift form breaks and responds with multi-sensory feedback — a haptic pulse alerts them, followed instantly by a corrective voice cue: "Don't round your back." That kind of system could prevent injury, not just analyze mistakes after the fact.
 
 This broader vision is what **Real-time Augmented Feedback (RAF)** enables — AI-augmented real-time coaching, across any domain.
 
