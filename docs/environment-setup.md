@@ -63,7 +63,29 @@ GOOGLE_API_KEY=your_gemini_api_key
 GEMINI_MODEL=gemini-3-flash-preview
 ```
 
-**Cost:** Both providers offer free tiers suitable for personal use. FretCoach's AI calls are lightweight.
+### Additional AI Providers (Optional)
+
+FretCoach supports multiple AI providers for flexibility:
+
+```env
+# Groq (optional - fast inference)
+GROQ_API_KEY=your_groq_api_key
+
+# OpenRouter (optional - access to multiple models)
+OPENROUTER_API_KEY=your_openrouter_api_key
+
+# Perplexity (optional - for research capabilities)
+PPLX_API_KEY=your_perplexity_api_key
+
+# Tavily (optional - for research agents with external search)
+TAVILY_API_KEY=your_tavily_api_key
+
+# Anthropic via Minimax (optional)
+ANTHROPIC_BASE_URL=https://api.minimax.io/anthropic
+ANTHROPIC_API_KEY=your_anthropic_api_key
+```
+
+**Cost:** All providers offer free tiers suitable for personal use. FretCoach's AI calls are lightweight.
 
 ## Smart Bulb Setup (Tuya)
 
@@ -81,10 +103,10 @@ Ambient lighting provides real-time visual feedback during practice.
 4. Get credentials from Cloud → API Explorer
 
 ```env
-TUYA_CLIENT_ID=your_client_id
-TUYA_CLIENT_SECRET=your_client_secret
-TUYA_DEVICE_ID=your_bulb_device_id
-TUYA_REGION=us  # or eu, cn, in
+HAVELLS_ACCESS_ID=your_access_id
+HAVELLS_ACCESS_SECRET=your_access_secret
+HAVELLS_DEVICE_ID=your_bulb_device_id
+HAVELLS_REGION=in  # or us, eu, cn
 ```
 
 **Finding Device ID:**
@@ -111,6 +133,8 @@ LLM tracing and monitoring for AI coaching calls. FretCoach uses **Comet Opik** 
 ```env
 OPIK_API_KEY=your_opik_key
 OPIK_WORKSPACE=your_workspace_name
+OPIK_PROJECT_NAME=FretCoach
+OPIK_URL_OVERRIDE=https://www.comet.com/opik/api
 ```
 
 ### What Opik Tracks
@@ -142,6 +166,20 @@ USER_ID=your_unique_user_id
 ```
 
 **Default:** If not set, uses `default_user`
+
+## Deployment Configuration
+
+Configure deployment type and debugging options.
+
+```env
+# Deployment Type (required for backend)
+DEPLOYMENT_TYPE=fretcoach-studio
+# To switch to portable deployment, uncomment the following line:
+# DEPLOYMENT_TYPE=fretcoach-portable
+
+# Debug Configuration (optional)
+FRETCOACH_DEBUG_AUDIO=1  # Enable audio analysis debugging
+```
 
 ## User Metric Preferences
 
@@ -199,14 +237,33 @@ DB_PASSWORD=...
 
 OPENAI_API_KEY=...
 GOOGLE_API_KEY=...
+GEMINI_MODEL=gemini-3-flash-preview
 
-# Optional
-TUYA_CLIENT_ID=...
-TUYA_CLIENT_SECRET=...
-TUYA_DEVICE_ID=...
-TUYA_REGION=us
+# Deployment Type
+DEPLOYMENT_TYPE=fretcoach-studio
 
+# Optional - Additional AI Providers
+GROQ_API_KEY=...
+OPENROUTER_API_KEY=...
+PPLX_API_KEY=...
+TAVILY_API_KEY=...
+ANTHROPIC_BASE_URL=https://api.minimax.io/anthropic
+ANTHROPIC_API_KEY=...
+
+# Optional - Smart Bulb
+HAVELLS_ACCESS_ID=...
+HAVELLS_ACCESS_SECRET=...
+HAVELLS_DEVICE_ID=...
+HAVELLS_REGION=in
+
+# Optional - Observability
 OPIK_API_KEY=...
+OPIK_WORKSPACE=...
+OPIK_PROJECT_NAME=FretCoach
+OPIK_URL_OVERRIDE=https://www.comet.com/opik/api
+
+# Optional - Debug
+FRETCOACH_DEBUG_AUDIO=1
 ```
 
 ### FretCoach Hub (Web Platform)
@@ -215,13 +272,34 @@ OPIK_API_KEY=...
 
 **Required variables:**
 ```env
+# Database connection string format
+DATABASE_URL=postgresql://postgres.your-project-id:your-password@aws-region.pooler.supabase.com:5432/postgres
+
+# Or use component format
 DB_HOST=...
 DB_PORT=5432
 DB_NAME=postgres
 DB_USER=postgres
 DB_PASSWORD=...
 
+# Model configuration
+USE_OPENAI_MODEL=false
+OPENAI_MODEL=gpt-4o-mini
+GEMINI_MODEL=gemini-3-flash-preview
+
+# API Keys
 GOOGLE_API_KEY=...
+OPENAI_API_KEY=...
+
+# Optional - Observability
+OPIK_API_KEY=...
+OPIK_WORKSPACE=...
+OPIK_PROJECT_NAME=FretCoach
+OPIK_URL_OVERRIDE=https://www.comet.com/opik/api
+
+# Optional - Anthropic
+ANTHROPIC_BASE_URL=https://api.minimax.io/anthropic
+ANTHROPIC_API_KEY=...
 ```
 
 **Frontend location:** `web/web-frontend/.env`
@@ -242,14 +320,19 @@ DB_HOST=...
 DB_PORT=5432
 DB_NAME=...
 
-# Optional - Smart Bulb (Tuya)
-TUYA_CLIENT_ID=...
-TUYA_CLIENT_SECRET=...
-TUYA_DEVICE_ID=...
-TUYA_REGION=us  # or eu, cn, in
+# Deployment Type
+DEPLOYMENT_TYPE=fretcoach-portable
 
-OPENAI_API_KEY=...  # For AI Mode
-GOOGLE_API_KEY=...  # For AI Practice Plans
+# Optional - Smart Bulb
+HAVELLS_ACCESS_ID=...
+HAVELLS_ACCESS_SECRET=...
+HAVELLS_DEVICE_ID=...
+HAVELLS_REGION=in  # or us, eu, cn
+
+# For AI Mode
+OPENAI_API_KEY=...
+GOOGLE_API_KEY=...
+GEMINI_MODEL=gemini-3-flash-preview
 ```
 
 ## Full Template
@@ -267,16 +350,33 @@ DB_PASSWORD=your_supabase_password
 # AI Services - Required for AI features
 OPENAI_API_KEY=sk-proj-...
 GOOGLE_API_KEY=...
+GEMINI_MODEL=gemini-3-flash-preview
 
-# Smart Bulb (Tuya) - Optional
-TUYA_CLIENT_ID=...
-TUYA_CLIENT_SECRET=...
-TUYA_DEVICE_ID=...
-TUYA_REGION=us
+# Deployment Type
+DEPLOYMENT_TYPE=fretcoach-studio
+
+# Additional AI Providers - Optional
+GROQ_API_KEY=...
+OPENROUTER_API_KEY=...
+PPLX_API_KEY=...
+TAVILY_API_KEY=...
+ANTHROPIC_BASE_URL=https://api.minimax.io/anthropic
+ANTHROPIC_API_KEY=...
+
+# Smart Bulb - Optional
+HAVELLS_ACCESS_ID=...
+HAVELLS_ACCESS_SECRET=...
+HAVELLS_DEVICE_ID=...
+HAVELLS_REGION=in
 
 # Observability - Optional
 OPIK_API_KEY=...
 OPIK_WORKSPACE=...
+OPIK_PROJECT_NAME=FretCoach
+OPIK_URL_OVERRIDE=https://www.comet.com/opik/api
+
+# Debug - Optional
+FRETCOACH_DEBUG_AUDIO=1
 
 # User ID - Optional (defaults to 'default_user')
 USER_ID=...

@@ -58,6 +58,9 @@ DB_PORT=5432
 OPENAI_API_KEY=sk-...
 GOOGLE_API_KEY=...
 GEMINI_MODEL=gemini-3-flash-preview
+
+# Deployment Type
+DEPLOYMENT_TYPE=fretcoach-studio
 ```
 
 ### 4. Set Up Database
