@@ -1,320 +1,180 @@
 # Opik Observability in FretCoach
 
-How we integrated Opik to monitor, debug, and improve FretCoach's AI coaching features.
+How we integrated Comet Opik to monitor, debug, and optimize FretCoach's AI coaching features in production.
 
 ---
 
-## Integration Overview
+## Overview
 
-FretCoach traces **three AI coaching features** through Opik:
+FretCoach uses **Comet Opik** for comprehensive LLM observability across three AI coaching features:
 
-1. **AI Practice Recommendations** — AI Mode practice plan generation
-2. **Live Session Coaching** — Real-time feedback during practice (LLM + TTS)
-3. **Web Chat Agent** — Natural language queries on the dashboard
+1. **AI Practice Recommendations** — Personalized practice plans generated via LangChain structured output
+2. **Live Session Coaching** — Real-time feedback during practice (LLM text generation + TTS audio)
+3. **Web Chat Agent** — Natural language queries with LangGraph-based text-to-SQL agent
 
-All LLM interactions are traced with LangChain's `OpikTracer`, and custom functions use the `@track` decorator.
-
----
-
-## 1. AI Practice Recommendations
-
-**File:** `backend/api/services/ai_agent_service.py`
-
-### What We Trace
-
-When a user starts AI Mode, we:
-- Fetch their last 5 sessions from the database
-- Analyze performance patterns (weakest metric)
-- Generate a personalized practice plan via LLM with structured output
-
-### Implementation
-
-```python
-from opik.integrations.langchain import OpikTracer
-
-def get_opik_config(user_id: str, practice_id: str) -> dict:
-    """Configure Opik tracing for AI recommendations"""
-    tracer = OpikTracer(
-        tags=["ai-mode", "practice-plan"],
-        metadata={
-            "user_id": user_id,
-            "practice_id": practice_id
-        }
-    )
-    return {
-        "callbacks": [tracer],
-        "configurable": {"thread_id": f"user-{user_id}"}
-    }
-
-# Usage with LangChain structured output
-llm_with_structure = model.with_structured_output(PracticeRecommendation)
-recommendation = llm_with_structure.invoke(
-    [SystemMessage(content=system_prompt),
-     HumanMessage(content=user_prompt)],
-    config=get_opik_config(user_id, practice_id)
-)
-```
-
-### Metadata Strategy
-
-- **`user_id`** — Links traces to specific users for pattern analysis
-- **`practice_id`** — UUID for each generated plan (correlates with database)
-- **Thread ID** — Groups all recommendations for a single user over time
-
-### Tags
-
-- `"ai-mode"` — All AI practice recommendations
-- `"practice-plan"` — Specifically plan generation (vs other AI features)
+All LLM interactions are traced using LangChain's `OpikTracer`, custom functions use the `@track` decorator, and LangGraph workflows are visualized with agent graphs.
 
 ---
 
-## 2. Live Session Coaching (LLM + TTS)
+## Integration Architecture
 
-**File:** `backend/api/services/live_coach_service.py`
+### 1. AI Practice Recommendations
 
-### What We Trace
+**Location:** `backend/api/services/ai_agent_service.py`
 
-During practice sessions (every 30s):
-- LLM generates coaching feedback based on current metrics
-- TTS converts feedback to speech using `gpt-4o-mini-tts`
-- Both operations are traced as separate spans
+When users start AI Mode, the system:
+- Fetches their last 5 practice sessions from PostgreSQL
+- Analyzes performance patterns to identify the weakest metric
+- Generates a structured practice plan via GPT-4o-mini with LangChain structured output
 
-### Implementation
-
-**LLM Coaching:**
-```python
-def get_opik_config(session_id: str, trace_name: str) -> dict:
-    tracer = OpikTracer(
-        tags=["live-coach", trace_name],
-        metadata={"session_id": session_id}
-    )
-    return {
-        "callbacks": [tracer],
-        "configurable": {"thread_id": f"session-{session_id}"}
-    }
-
-# Every 30s during practice
-opik_config = get_opik_config(session_id, "live-feedback")
-response = await live_coach_model.ainvoke(
-    [
-        {"role": "system", "content": COACHING_SYSTEM_PROMPT},
-        {"role": "user", "content": user_message}
-    ],
-    config=opik_config
-)
-```
-
-**TTS Generation:**
-```python
-from opik import track
-
-@track(name="live-coach-tts", tags=["tts", "live-coach"])
-async def generate_and_play_tts(
-    feedback_text: str,
-    session_id: Optional[str] = None
-) -> Dict[str, Any]:
-    """
-    Generate and play TTS audio.
-    Traced separately to monitor TTS latency and failures.
-    """
-    player = get_audio_player()
-    player.stop()  # Prevent overlap
-
-    async with openai_client.audio.speech.with_streaming_response.create(
-        model="gpt-4o-mini-tts",
-        voice="onyx",
-        input=feedback_text,
-        instructions="Speak in a direct, encouraging tone...",
-        response_format="pcm",
-    ) as response:
-        await player.play(response)
-
-    return {"status": "played", "model": "gpt-4o-mini-tts"}
-```
-
-### Why Separate Traces for TTS?
-
-We trace TTS separately (not as a nested span) because:
-- **TTS failures shouldn't fail the LLM trace** — If TTS breaks, we still want the text feedback
-- **Independent latency monitoring** — TTS latency (2-3s) vs LLM latency (1-2s)
-- **Different failure modes** — Audio playback issues vs LLM errors
-
-### Metadata Strategy
-
-- **`session_id`** — Links all traces from a single practice session
-- **Thread ID** — Groups all live coaching calls within one session (see conversation flow)
-
-### Tags
-
-- `"live-coach"` — All live coaching features
-- `"live-feedback"` — LLM-generated coaching text
-- `"tts"` — TTS audio generation
-- `"session-summary"` — End-of-session summary (different prompt)
+**Tracing approach:**
+- Uses `OpikTracer` as LangChain callback
+- Tags: `ai-mode`, `practice-plan`
+- Metadata: `user_id`, `practice_id` (links traces to database records)
+- Thread ID: `user-{user_id}` (groups recommendations over time)
 
 ---
 
-## 3. Web Chat Agent (Text-to-SQL)
+### 2. Live Session Coaching
 
-**File:** `web/web-backend/routers/chat.py`
+**Location:** `backend/api/services/live_coach_service.py`
 
-### What We Trace
+During practice sessions, the system provides coaching feedback every 30 seconds:
+- **LLM generates text feedback** based on current performance metrics
+- **TTS converts text to speech** using `gpt-4o-mini-tts`
+- Both operations are **traced separately** for independent failure tracking
 
-Users ask natural language questions:
+**Why separate TTS traces?**
+- TTS failures shouldn't break LLM text generation
+- Independent latency monitoring (TTS is the bottleneck: 2-3s vs LLM: 1-2s)
+- Different failure modes (audio playback vs LLM errors)
+
+**Tracing approach:**
+- LLM calls use `OpikTracer` with LangChain
+- TTS uses `@track` decorator for custom function tracing
+- Tags: `live-coach`, `live-feedback`, `tts`
+- Metadata: `session_id` (links all traces from one practice session)
+- Thread ID: `session-{session_id}` (shows coaching conversation flow)
+
+---
+
+### 3. Web Chat Agent (LangGraph)
+
+**Location:** `web/web-backend/routers/chat_langgraph.py`
+
+The web dashboard features an AI coach chatbot that answers natural language questions about practice data:
 - "What should I practice next?"
 - "Show me my progress trends"
-- "Compare my latest session to my average"
+- "How did my timing improve this week?"
 
-We trace:
-- Intent detection
-- Database queries triggered
-- LLM response generation
-- Multi-turn conversations
+**Agent architecture:**
+- Built with **LangGraph** for multi-step reasoning
+- Tools: `execute_sql_query`, `get_database_schema`, `generate_practice_plan`
+- Fallback: Gemini 2.5 Flash → Minimax Claude (on rate limits)
 
-### Implementation
-
-```python
-def invoke_with_fallback(messages, thread_id: str):
-    """
-    Try Gemini, fall back to MiniMax on rate limits.
-    Both use OpikTracer for conversation tracking.
-    """
-    tracer = OpikTracer(
-        tags=["ai-coach", "web-chat"],
-        metadata={"thread_id": thread_id}
-    )
-    config = {"callbacks": [tracer]}
-
-    if thread_id:
-        config["configurable"] = {"thread_id": thread_id}
-
-    try:
-        return gemini_model.invoke(messages, config=config)
-    except Exception as e:
-        if "RESOURCE_EXHAUSTED" in str(e):
-            # Fallback traced with same config
-            return minimax_model.invoke(messages, config=config)
-        raise
-```
-
-### Metadata Strategy
-
-- **`thread_id`** — Chat conversation ID (groups all messages from one chat session)
-- **`user_id`** — Embedded in system prompt context (visible in trace)
-
-### Tags
-
-- `"ai-coach"` — All AI coaching features
-- `"web-chat"` — Specifically web dashboard chat (vs desktop app)
-- `"practice-plan"` — When user asks for practice recommendations
-
----
-
-## Thread Hierarchy Example
-
-Here's how Opik groups a typical practice session:
-
-```
-🧵 Thread: session-abc123
-│
-├─ 📊 Trace: Live Coaching Feedback (timestamp: 00:30)
-│   ├─ LLM Call: gpt-4o-mini (1.2s, 120 tokens)
-│   ├─ Tags: ["live-coach", "live-feedback"]
-│   └─ Output: "Your timing is drifting—lock in with the beat."
-│
-├─ 📊 Trace: TTS Generation (timestamp: 00:32)
-│   ├─ OpenAI TTS: gpt-4o-mini-tts (2.1s)
-│   ├─ Tags: ["tts", "live-coach"]
-│   └─ Status: played
-│
-├─ 📊 Trace: Live Coaching Feedback (timestamp: 01:00)
-│   ├─ LLM Call: gpt-4o-mini (1.3s, 135 tokens)
-│   └─ Output: "Pitch accuracy is solid—focus on reducing string noise."
-│
-└─ 📊 Trace: Session Summary (timestamp: session end)
-    ├─ LLM Call: gpt-4o-mini (1.5s, 180 tokens)
-    ├─ Tags: ["live-coach", "session-summary"]
-    └─ Output: "Great session! Your pitch improved..."
-```
-
-**Thread ID** (`session-abc123`) groups all traces chronologically, showing the coaching conversation flow.
-
----
-
-## Insights We've Gained
-
-### 1. Prompt Optimization
-
-**Initial prompt:** 150+ tokens, verbose instructions
-**Opik trace:** LLM responses were too long (200+ tokens), taking 2-3s
-**Action:** Reduced prompt to "1 sentence maximum"
-**Result:** 50% faster responses (1-1.5s), more focused feedback
-
-### 2. TTS Latency Bottleneck
-
-**Opik revealed:** TTS taking 3-4s on some calls
-**Investigation:** Audio overlap causing queuing delays
-**Action:** Implemented singleton player with `stop()` before new audio
-**Result:** Consistent 2s TTS latency, no crackling
-
-### 3. Fallback Model Usage
-
-**Gemini rate limits:** ~15% of web chat requests
-**Opik traces:** Fallback to MiniMax working seamlessly
-**Insight:** Users don't notice the switch (quality maintained)
-**Action:** Kept hybrid approach, added rate limit monitoring
-
-### 4. Token Usage Patterns
-
-**AI Mode:** 300-400 tokens per recommendation (includes context)
-**Live Coach:** 100-150 tokens per feedback call (brief, focused)
-**Web Chat:** 200-500 tokens (conversational, varies by question)
-
-**Cost optimization:** Live coaching uses `gpt-4o-mini` (cheap, fast), not Opus
+**Tracing approach:**
+- LangGraph workflow traced via `OpikTracer`
+- Agent graph visualization enabled with `workflow.get_graph(xray=True)`
+- Tags: `ai-coach`, `web-chat`, `practice-plan`
+- Metadata: `thread_id` (conversation ID), `user_id`
+- Shows full agent reasoning path: agent → tool calls → decision nodes → response
 
 ---
 
 ## Tagging Strategy
 
-Our tagging hierarchy enables efficient filtering:
+Our hierarchical tag structure enables efficient filtering and analysis:
 
-| Tag | Purpose | Example Filters |
-|-----|---------|----------------|
-| `"ai-mode"` | AI practice recommendations | Filter all practice plan generations |
-| `"live-coach"` | Live session coaching | Filter all real-time coaching traces |
-| `"web-chat"` | Web dashboard chat | Filter web vs desktop interactions |
-| `"tts"` | TTS audio generation | Monitor TTS latency and failures |
-| `"session-summary"` | End-of-session summaries | Different prompt template than live feedback |
-| `"practice-plan"` | Practice plan generation | Cross-feature (AI Mode + Web Chat) |
+| Tag | Purpose | Applied To |
+|-----|---------|------------|
+| `ai-mode` | AI practice recommendations | Practice plan generation |
+| `live-coach` | Live session coaching | Real-time feedback during practice |
+| `web-chat` | Web dashboard chat | Chatbot interactions |
+| `tts` | TTS audio generation | Speech synthesis operations |
+| `practice-plan` | Practice plan generation | Cross-feature (AI Mode + Web Chat) |
+| `live-feedback` | Live coaching text | LLM responses during sessions |
 
-**Multi-tag filtering example:**
-`tags:["live-coach"] AND tags:["tts"]` → All TTS calls during live coaching
+**Example filters:**
+- `tag:live-coach AND tag:tts` → All TTS calls during live coaching
+- `tag:web-chat AND tag:practice-plan` → Practice plans requested via chat
+
+---
+
+## Thread Management
+
+Threads group related traces chronologically, enabling conversation flow analysis:
+
+**Thread naming conventions:**
+- `user-{user_id}` → AI practice recommendations across multiple sessions
+- `session-{session_id}` → Live coaching within a single practice session
+- `hub-aicoach-chat-{timestamp}` → Web dashboard chat conversations
+
+**Example session thread:**
+```
+🧵 Thread: session-abc123
+│
+├─ Trace: Live Coaching (00:30) → "Your timing is drifting—lock in with the beat"
+├─ Trace: TTS Generation (00:32) → Audio playback (2.1s)
+├─ Trace: Live Coaching (01:00) → "Pitch accuracy is solid—focus on reducing string noise"
+└─ Trace: Session Summary (end) → "Great session! Your pitch improved..."
+```
+
+---
+
+## Key Insights from Production
+
+### 1. Prompt Optimization
+- **Initial:** 150+ token prompts → 200+ token responses (2-3s latency)
+- **Opik revealed:** Verbose outputs slowing live feedback
+- **Action:** Reduced to "1 sentence maximum" constraint
+- **Result:** 50% faster responses (1-1.5s), more focused feedback
+
+### 2. TTS Latency Bottleneck
+- **Opik traces showed:** TTS taking 3-4s on some calls
+- **Root cause:** Audio overlap causing queuing delays
+- **Action:** Implemented singleton player with `stop()` before new audio
+- **Result:** Consistent 2s TTS latency, eliminated crackling
+
+### 3. Fallback Model Monitoring
+- **Gemini rate limits:** ~15% of web chat requests
+- **Opik visibility:** Seamless fallback to Minimax Claude
+- **Insight:** Users don't notice the switch (quality maintained)
+- **Action:** Kept hybrid approach, added rate limit monitoring
+
+### 4. Token Usage Patterns
+- **AI Mode:** 300-400 tokens per recommendation (includes context)
+- **Live Coach:** 100-150 tokens per feedback (brief, focused)
+- **Web Chat:** 200-500 tokens (conversational, varies by question)
+
+**Cost optimization:** Live coaching uses `gpt-4o-mini` (cheap, fast), not larger models
+
+---
+
+## Production Features Implemented
+
+Beyond basic tracing, FretCoach leverages advanced Opik features:
+
+- **Agent Graph Visualization** — LangGraph execution flow with tool calls and decision nodes
+- **Annotation Queues** — Manual quality review of LLM responses
+- **Datasets & Prompts** — Versioned prompt templates for experiments
+- **Experiments** — A/B testing prompt variations with custom metrics
+- **Optimization Studio** — Systematic prompt refinement with side-by-side comparison
+- **Online Evaluation** — Automated quality scoring with custom LLM judges
+- **Production Dashboard** — Real-time monitoring with token usage, latency, and error rates
+- **Alerts** — Notifications for rate limits, failures, and quality degradation
+
+> **For detailed Opik usage with screenshots and implementation details, see:** [opik/opik-usage.md](../opik/opik-usage.md)
 
 ---
 
 ## Graceful Degradation
 
-Opik is **optional** in FretCoach. If unavailable:
+Opik is **optional** in FretCoach. If API keys are missing or Opik is unavailable:
+- System continues functioning identically
+- No crashes, no errors
+- Tracing is silently disabled
 
-```python
-# backend/api/services/live_coach_service.py
-try:
-    from opik.integrations.langchain import OpikTracer
-    from opik import track
-    OPIK_ENABLED = True
-except ImportError:
-    OpikTracer = None
-    track = lambda **kwargs: lambda f: f  # No-op decorator
-    OPIK_ENABLED = False
-
-def get_opik_config(session_id: str, trace_name: str) -> dict:
-    if not OPIK_ENABLED or not OpikTracer:
-        return {}  # No tracing, system continues normally
-
-    tracer = OpikTracer(...)
-    return {"callbacks": [tracer]}
-```
-
-**Result:** System functions identically with or without Opik—no crashes, no errors.
+Implementation uses try-except import pattern with no-op fallbacks for decorators and callbacks.
 
 ---
 
@@ -325,46 +185,29 @@ def get_opik_config(session_id: str, trace_name: str) -> dict:
 ```env
 # backend/.env or web/web-backend/.env
 OPIK_API_KEY=your_opik_api_key
-OPIK_WORKSPACE=your_workspace  # Optional
+OPIK_WORKSPACE=your_workspace_name
+OPIK_PROJECT_NAME=FretCoach
+OPIK_URL_OVERRIDE=https://www.comet.com/opik/api
 ```
 
-**No API key?** Tracing is silently disabled, no impact on functionality.
+**No API key?** Tracing is disabled, no impact on functionality.
 
 ---
 
-## Key Decisions
+## Live Workspace
 
-### Why OpikTracer + @track?
+**Workspace:** [FretCoach Opik Workspace](https://www.comet.com/opik/padmanabhan-r-7119/home)
 
-- **`OpikTracer`** (LangChain integration): Automatic prompt/response logging, works with structured outputs
-- **`@track`** (function decorator): Trace custom operations like TTS, database queries
+**Projects:**
+- `FretCoach` — Desktop app (AI Mode, Live Coaching)
+- `FretCoach-Hub` — Web dashboard (Chat Agent)
 
-### Why Separate TTS Traces?
-
-- Independent failure tracking (TTS can fail without breaking LLM response)
-- Separate latency monitoring (TTS is the bottleneck, not LLM)
-
-### Why Thread IDs?
-
-- **Session threads** (`session-{id}`): See live coaching evolution over 20-minute practice
-- **User threads** (`user-{id}`): Track AI recommendations across multiple days
-- **Chat threads** (`chat-{id}`): Multi-turn conversations in web dashboard
-
----
-
-## Live Traces
-
-**Opik Project:** [FretCoach Traces](https://comet.com/opik/padmanabhan-r-7119/projects/019bcefc-a27c-718d-8c5f-36472d5decb2)
-
-**Useful filters:**
-- `tag:ai-mode` — AI practice plan generation
-- `tag:live-coach` — Real-time coaching during sessions
-- `tag:tts` — TTS audio generation
-- `tag:web-chat` — Web dashboard conversations
+**Production Dashboard:** [View Dashboard](https://www.comet.com/opik/padmanabhan-r-7119/dashboards/019c0358-6adc-71f9-a73b-b18f0b20679d)
 
 ---
 
 **Navigation:**
-- [← Back to Index](index.md)
+- [← Environment Setup](environment-setup.md)
 - [AI Coach Agent Engine →](ai-coach-agent-engine.md)
 - [Audio Analysis Agent Engine →](audio-analysis-agent-engine.md)
+- [Back to Index](index.md)
