@@ -56,7 +56,7 @@ Conversational interface for practice guidance using your session data.
 - "Which scales have I practiced?"
 
 **How it works:**
-- Google Gemini 3 Flash Preview (with MiniMax Claude fallback)
+- Google Gemini 3 Flash Preview (with Minimax MiniMax-M2.1 fallback)
 - Queries session database for context
 - Generates data-driven recommendations
 - Creates practice plans you can save
