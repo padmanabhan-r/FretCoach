@@ -165,7 +165,7 @@ elif any(word in message for word in ["practice", "recommend", "suggest"]):
 - `get_comparison_chart_data()` — Session comparisons
 - `generate_practice_recommendation()` — Next session suggestion
 
-**Models:** Gemini 3 Flash Preview (primary), Minimax 2.1 (fallback on rate limits)
+**Models:** Gemini 3 Flash Preview (primary), Minimax (MiniMax-M2.1) fallback on rate limits
 
 **Tracing:** Opik tags: `web-chat`, `ai-coach`
 
@@ -188,9 +188,9 @@ FretCoach supports multiple providers, all traced via Opik:
 - **Pros:** Very fast, free tier available
 - **Cost:** Free tier available
 
-### Minimax 2.1
+### Minimax (MiniMax-M2.1)
 - **Use:** Hub AI chat (fallback on rate limits)
-- **Model:** `minimax-2.1-open` via Anthropic API
+- **Model:** MiniMax-M2.1
 - **Pros:** Reliable fallback, multilingual support
 
 ### Provider Selection
@@ -349,7 +349,7 @@ except Exception as e:
 ```
 
 **Rate Limiting:**
-- Automatic fallback to Minimax on Gemini rate limits
+- Automatic fallback to Minimax (MiniMax-M2.1) on Gemini rate limits
 - Retry with exponential backoff
 - User-friendly error messages
 

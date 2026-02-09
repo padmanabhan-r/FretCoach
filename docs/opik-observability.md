@@ -70,7 +70,7 @@ The web dashboard features an AI coach chatbot that answers natural language que
 **Agent architecture:**
 - Built with **LangGraph** for multi-step reasoning
 - Tools: `execute_sql_query`, `get_database_schema`, `generate_practice_plan`
-- Fallback: Gemini 2.5 Flash → Minimax Claude (on rate limits)
+- Fallback: Gemini 3 Flash Preview → Minimax (MiniMax-M2.1) on rate limits
 
 **Tracing approach:**
 - LangGraph workflow traced via `OpikTracer`
@@ -137,7 +137,7 @@ Threads group related traces chronologically, enabling conversation flow analysi
 
 ### 3. Fallback Model Monitoring
 - **Gemini rate limits:** ~15% of web chat requests
-- **Opik visibility:** Seamless fallback to Minimax Claude
+- **Opik visibility:** Seamless fallback to Minimax (MiniMax-M2.1)
 - **Insight:** Users don't notice the switch (quality maintained)
 - **Action:** Kept hybrid approach, added rate limit monitoring
 

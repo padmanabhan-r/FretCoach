@@ -62,7 +62,7 @@ GOOGLE_API_KEY=...
 GEMINI_MODEL=gemini-3-flash-preview
 ```
 
-### Anthropic via Minimax (Optional)
+### Minimax (MiniMax-M2.1) - Optional Fallback
 Fallback model for rate-limited scenarios.
 
 ```env

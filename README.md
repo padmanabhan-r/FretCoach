@@ -53,7 +53,7 @@ Every note you play is evaluated immediately, with deviations detected in real t
 
 **Result:** Neuroadaptive learning that shapes motor behavior in real time—not retroactively.
 
-> 🧠 **Neuroscience insight:** It’s 10–20× harder to unlearn a motor habit than to prevent one. Early-stage neuroplasticity is fast and fragile—and FretCoach operates inside this critical window.
+> 🧠 **Neuroscience insight:** It's significantly harder to unlearn a motor habit than to prevent one ([Dayan & Cohen](https://pmc.ncbi.nlm.nih.gov/articles/PMC3217208/)). Early-stage neuroplasticity is fast and fragile—and FretCoach operates inside this critical window.
 
 ---
 
@@ -258,7 +258,7 @@ npm run dev  # Starts Electron + React frontend + Python FastAPI backend
 
 > **Like a portable guitar pedal**
 >
-> In prototyping — evolving into a physical unit with enclosure, LCD display, and footswitch for On/Off control.
+> Software functional; hardware enclosure in design phase — evolving into a physical unit with custom enclosure, LCD display, and footswitch for On/Off control.
 
 
 **Location:** `/portable/`
@@ -273,7 +273,7 @@ npm run dev  # Starts Electron + React frontend + Python FastAPI backend
 
 Raspberry Pi 5-based portable practice device. Same analysis engine as Studio, but on-the-go.
 
-**Status:** Prototyping phase — showcasing what's possible!
+**Status:** Software fully functional; physical enclosure and touchscreen interface in design phase
 
 ### Features
 - Same core engine as the FretCoach Studio
@@ -423,10 +423,10 @@ Smart bulb integration for visual performance feedback.
 
 ## Repository Structure
 
-> **Note:** This is a monorepo containing the core FretCoach systems (Studio, Portable and Hub applications). The **web platform components** (FretCoach Hub) are maintained in separate repositories for easy automated deployments to Railway and Vercel:
+> **Note:** This is a monorepo containing the core FretCoach systems (Studio, Portable, and Hub applications). The web platform code exists both in this repository (`/web/web-backend/`, `/web/web-frontend/`) and as separate deployment repositories for automated CI/CD to Railway and Vercel:
 >
-> - **Web Backend:** [github.com/padmanabhan-r/FretCoach-Web-Backend](https://github.com/padmanabhan-r/FretCoach-Web-Backend)
-> - **Web Frontend:** [github.com/padmanabhan-r/FretCoach-Web-Frontend](https://github.com/padmanabhan-r/FretCoach-Web-Frontend)
+> - **Web Backend:** [github.com/padmanabhan-r/FretCoach-Web-Backend](https://github.com/padmanabhan-r/FretCoach-Web-Backend) (mirrors `/web/web-backend/`)
+> - **Web Frontend:** [github.com/padmanabhan-r/FretCoach-Web-Frontend](https://github.com/padmanabhan-r/FretCoach-Web-Frontend) (mirrors `/web/web-frontend/`)
 >
 
 ---
