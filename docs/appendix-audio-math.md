@@ -310,4 +310,5 @@ All calculations happen locally on your computer in real-time (<300ms).
 
 **Navigation:**
 - [← Troubleshooting Guide](troubleshooting.md)
+- [FAQ →](faq.md)
 - [Back to Index](index.md)
