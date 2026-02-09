@@ -140,6 +140,6 @@ Smart bulb integration for visual performance feedback.
 
 ---
 
-**FretCoach** — *Building with love for the music and the guitar* 🎸
+**FretCoach** — *Built with love for the music and the guitar* 🎸
 
 
