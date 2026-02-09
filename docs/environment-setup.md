@@ -14,121 +14,93 @@ Each component requires a `.env` file with specific credentials. Follow the sect
 
 ## Database Configuration (Supabase)
 
-FretCoach uses PostgreSQL hosted on Supabase for session tracking and practice plan storage.
+FretCoach uses PostgreSQL hosted on Supabase for session tracking, practice plans, and user preferences.
 
 **Required for:** All components (Studio, Hub, Portable)
 
-Create a Supabase project at [supabase.com](https://supabase.com) and add to your `.env`:
+### Setup Steps
 
-```env
-DB_HOST=your_supabase_host.supabase.co
-DB_PORT=5432
-DB_NAME=postgres
-DB_USER=postgres
-DB_PASSWORD=your_supabase_password
-```
+1. **Create Supabase project** at [supabase.com](https://supabase.com)
 
-**Testing connection:**
-```bash
-# From any backend directory
-uv run python -c "from backend.core.session_logger import SessionLogger; print('Connected!')"
-```
+2. **Run schema creation script:**
+   ```bash
+   psql -h your_host -U postgres -d postgres -f backend/sql/fretcoach_supabase_schema.sql
+   ```
+   Or copy the contents into Supabase SQL Editor and run it.
+
+3. **Add credentials to `.env`:**
+   ```env
+   DB_HOST=your_supabase_host.supabase.co
+   DB_PORT=5432
+   DB_NAME=postgres
+   DB_USER=postgres
+   DB_PASSWORD=your_supabase_password
+   ```
 
 **Note:** Session logging is optional. If database is unavailable, practice sessions continue without persistence.
 
 ## AI Services API Keys
 
-FretCoach uses multiple AI providers for coaching and practice plan generation.
-
 **Required for:** AI Practice Mode, Live Coaching, Hub Chat
 
 ### OpenAI
-
-Used for GPT-4o-mini-TTS (vocal coaching) and ChatGPT-based coaching.
+For GPT-4o-mini (text) and GPT-4o-mini-TTS (voice coaching).
 
 Get API key: [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
 
 ```env
-OPENAI_API_KEY=sk-proj-...your_key
+OPENAI_API_KEY=sk-proj-...
 ```
 
 ### Google Gemini
-
-Used for Gemini (practice plan generation, Hub chat agent).
+For practice plans and Hub chat agent.
 
 Get API key: [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
 
 ```env
-GOOGLE_API_KEY=your_gemini_api_key
+GOOGLE_API_KEY=...
 GEMINI_MODEL=gemini-3-flash-preview
 ```
 
-### Additional AI Providers (Optional)
-
-FretCoach supports multiple AI providers for flexibility:
+### Anthropic via Minimax (Optional)
+Fallback model for rate-limited scenarios.
 
 ```env
-# Groq (optional - fast inference)
-GROQ_API_KEY=your_groq_api_key
-
-# OpenRouter (optional - access to multiple models)
-OPENROUTER_API_KEY=your_openrouter_api_key
-
-# Perplexity (optional - for research capabilities)
-PPLX_API_KEY=your_perplexity_api_key
-
-# Tavily (optional - for research agents with external search)
-TAVILY_API_KEY=your_tavily_api_key
-
-# Anthropic via Minimax (optional)
 ANTHROPIC_BASE_URL=https://api.minimax.io/anthropic
-ANTHROPIC_API_KEY=your_anthropic_api_key
+ANTHROPIC_API_KEY=...
 ```
 
-**Cost:** All providers offer free tiers suitable for personal use. FretCoach's AI calls are lightweight.
+## Smart Bulb Setup (Optional)
 
-## Smart Bulb Setup (Tuya)
+Ambient lighting provides real-time sensory feedback during practice.
 
-Ambient lighting provides real-time visual feedback during practice.
-
-**Required for:** Ambient lighting feature (optional)
-
-**Compatible devices:** Any Tuya-compatible smart bulb (Havells, Wipro, generic Tuya)
+**Compatible devices:** Any Tuya-compatible smart bulb
 
 **Setup:**
-
-1. Install bulb and connect to Tuya Smart app
+1. Connect bulb to Tuya Smart app
 2. Create developer account at [iot.tuya.com](https://iot.tuya.com)
-3. Create Cloud Project and link your app account
-4. Get credentials from Cloud → API Explorer
+3. Create Cloud Project and get credentials
 
 ```env
-HAVELLS_ACCESS_ID=your_access_id
-HAVELLS_ACCESS_SECRET=your_access_secret
-HAVELLS_DEVICE_ID=your_bulb_device_id
+HAVELLS_ACCESS_ID=...
+HAVELLS_ACCESS_SECRET=...
+HAVELLS_DEVICE_ID=...
 HAVELLS_REGION=in  # or us, eu, cn
 ```
 
-**Finding Device ID:**
-```bash
-# Use Tuya API Explorer or device list endpoint
-# Device ID is shown in Tuya Smart app → Device Settings → Device Information
-```
-
-**Note:** Ambient lighting is optional. Practice works without smart bulb integration.
+**Note:** Completely optional. Leave blank to disable.
 
 ## Observability (Opik)
 
-LLM tracing and monitoring for AI coaching calls. FretCoach uses **Comet Opik** for comprehensive LLM observability.
+**Comet Opik** provides LLM tracing and monitoring for AI coaching features.
 
-**Required for:** Production monitoring and optimization (optional for development)
+**Required for:** Production monitoring (optional for development)
 
-### Setup Steps
+### Quick Setup
 
-1. **Create account:** Sign up at [comet.com/opik](https://www.comet.com/opik)
-2. **Create workspace:** Set up a new workspace for FretCoach
-3. **Generate API key:** Navigate to Settings → API Keys
-4. **Add to .env:**
+1. Create account at [comet.com/opik](https://www.comet.com/opik)
+2. Generate API key from Settings → API Keys
+3. Add to `.env`:
 
 ```env
 OPIK_API_KEY=your_opik_key
@@ -137,87 +109,25 @@ OPIK_PROJECT_NAME=FretCoach
 OPIK_URL_OVERRIDE=https://www.comet.com/opik/api
 ```
 
-### What Opik Tracks
+**What's tracked:** LLM calls, token usage, latency, errors, and agent workflows.
 
-- **Live AI Coaching:** GPT-4o-mini calls with context and responses
-- **Practice Plan Generation:** Gemini 3 Flash Preview LangGraph traces
-- **Web AI Coach:** Text-to-SQL agent workflows and tool calls
-- **Token Usage:** Per-session and cumulative token consumption
-- **Latency Metrics:** Response times and performance bottlenecks
-- **Error Traces:** Failed LLM calls with full context
+**For detailed implementation:** See [Opik Observability](opik-observability.md)
 
-### Features Used
+**Note:** If not configured, AI features work normally without observability.
 
-- **Tracing:** End-to-end LangChain/LangGraph execution traces
-- **Agent Graphs:** Visual representation of multi-step agent workflows
-- **Custom Metrics:** Practice-specific evaluation metrics
-- **Dashboards:** Real-time monitoring of AI coach performance
-
-**For detailed Opik implementation:** See [Opik Observability](opik-observability.md)
-
-**Note:** If not configured, AI features work without observability, but you won't have visibility into LLM performance and costs.
-
-## User ID Configuration
-
-Required for multi-user deployments. Single-user setups can use default.
+## Additional Configuration
 
 ```env
+# User ID (optional - defaults to 'default_user')
 USER_ID=your_unique_user_id
+
+# Deployment Type (required)
+DEPLOYMENT_TYPE=fretcoach-studio  # or fretcoach-portable
+
+# Debug Audio Analysis (optional)
+FRETCOACH_DEBUG_AUDIO=1
 ```
 
-**Default:** If not set, uses `default_user`
-
-## Deployment Configuration
-
-Configure deployment type and debugging options.
-
-```env
-# Deployment Type (required for backend)
-DEPLOYMENT_TYPE=fretcoach-studio
-# To switch to portable deployment, uncomment the following line:
-# DEPLOYMENT_TYPE=fretcoach-portable
-
-# Debug Configuration (optional)
-FRETCOACH_DEBUG_AUDIO=1  # Enable audio analysis debugging
-```
-
-## User Metric Preferences
-
-FretCoach allows users to enable/disable individual metrics based on practice focus. Preferences are stored in the `user_configs` database table and persist across sessions.
-
-### Available Metrics
-
-- **Pitch Accuracy** (optional) - Note accuracy and intonation
-- **Scale Conformity** (optional) - Adherence to target scale and fretboard coverage
-- **Timing Stability** (optional) - Rhythmic consistency
-- **Noise Control** (mandatory) - Always enabled as baseline quality metric
-
-### How It Works
-
-1. **Configuration:** Toggle metrics in Manual/AI Mode settings
-2. **Storage:** Preferences saved to `user_configs` table per USER_ID
-3. **Persistence:** Settings automatically applied to future sessions
-4. **Adaptive Scoring:** Overall quality score recalculated from enabled metrics only
-5. **AI Adaptation:** Coach feedback focuses only on tracked metrics
-
-### Database Schema
-
-The `user_configs` table stores:
-```sql
-CREATE TABLE user_configs (
-    user_id TEXT PRIMARY KEY,
-    pitch_accuracy BOOLEAN DEFAULT TRUE,
-    scale_conformity BOOLEAN DEFAULT TRUE,
-    timing_stability BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
-```
-
-**Example Use Cases:**
-- **Slow practice:** Disable timing, focus on pitch + scale
-- **Rhythm training:** Enable only timing stability
-- **Default:** All metrics enabled for comprehensive evaluation
 
 ## Component-Specific .env Locations
 
@@ -242,11 +152,7 @@ GEMINI_MODEL=gemini-3-flash-preview
 # Deployment Type
 DEPLOYMENT_TYPE=fretcoach-studio
 
-# Optional - Additional AI Providers
-GROQ_API_KEY=...
-OPENROUTER_API_KEY=...
-PPLX_API_KEY=...
-TAVILY_API_KEY=...
+# Optional - Fallback AI Provider
 ANTHROPIC_BASE_URL=https://api.minimax.io/anthropic
 ANTHROPIC_API_KEY=...
 
@@ -355,11 +261,7 @@ GEMINI_MODEL=gemini-3-flash-preview
 # Deployment Type
 DEPLOYMENT_TYPE=fretcoach-studio
 
-# Additional AI Providers - Optional
-GROQ_API_KEY=...
-OPENROUTER_API_KEY=...
-PPLX_API_KEY=...
-TAVILY_API_KEY=...
+# Fallback AI Provider - Optional
 ANTHROPIC_BASE_URL=https://api.minimax.io/anthropic
 ANTHROPIC_API_KEY=...
 
@@ -384,77 +286,27 @@ USER_ID=...
 
 ## Troubleshooting
 
-### Database connection fails
+**Database connection fails:**
+- Verify Supabase project is active and credentials are correct
+- Check `DB_HOST` includes `.supabase.co`
 
-**Error:** `psycopg2.OperationalError: could not connect to server`
-
-**Solutions:**
-- Verify Supabase project is active
-- Check `DB_HOST` uses full Supabase URL (includes `.supabase.co`)
-- Confirm password matches Supabase project settings
-- Test network connectivity to Supabase
-
-### OpenAI API key invalid
-
-**Error:** `openai.error.AuthenticationError: Incorrect API key`
-
-**Solutions:**
-- Regenerate key at platform.openai.com
-- Ensure key starts with `sk-proj-` (new format)
+**API key invalid:**
+- Regenerate key from provider dashboard
 - Check for whitespace in `.env` file
-- Verify billing is enabled on OpenAI account
+- Verify billing is enabled (if required)
 
-### Smart bulb not responding
+**Environment variables not loading:**
+- Verify `.env` file exists in correct location (`backend/.env` or `web/web-backend/.env`)
+- Restart backend server after modifying `.env`
 
-**Error:** No color changes during practice
-
-**Solutions:**
-- Verify Tuya credentials in Cloud project
-- Confirm `TUYA_DEVICE_ID` matches actual device
-- Check bulb is online in Tuya Smart app
-- Ensure correct region (`us`, `eu`, `cn`, `in`)
-- Test API access in Tuya API Explorer
-
-### Environment variables not loading
-
-**Error:** `KeyError: 'OPENAI_API_KEY'`
-
-**Solutions:**
-- Verify `.env` file exists in correct location
-- Check file is named exactly `.env` (not `env.txt` or `.env.example`)
-- Restart backend server after creating/modifying `.env`
-- Use absolute path verification:
-  ```bash
-  cat backend/.env  # Should show your variables
-  ```
-
-### Gemini API quota exceeded
-
-**Error:** `google.generativeai.types.generation_types.BlockedPromptException`
-
-**Solutions:**
-- Check quota at [aistudio.google.com](https://aistudio.google.com)
-- Free tier: 15 requests/minute, 1500 requests/day
-- Reduce AI coach usage or upgrade to paid tier
+**Smart bulb not responding:**
+- Leave `HAVELLS_*` variables blank to disable (completely optional)
 
 ## Security Notes
 
-**Never commit `.env` files to version control.**
-
-`.env` is gitignored by default. Verify:
-```bash
-git check-ignore backend/.env  # Should output: backend/.env
-```
-
-**Supabase security:**
-- Use Row Level Security (RLS) for production
-- Rotate database password periodically
-- Limit database access to required IPs only
-
-**API key rotation:**
-- Rotate OpenAI/Gemini keys every 90 days
-- Use separate keys for development/production
-- Monitor usage in provider dashboards
+- **Never commit `.env` files** — gitignored by default
+- **Rotate API keys periodically** — Use separate keys for dev/production
+- **Supabase:** Enable Row Level Security (RLS) for production
 
 ---
 

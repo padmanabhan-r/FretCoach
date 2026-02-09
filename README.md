@@ -406,6 +406,8 @@ Smart bulb integration for visual performance feedback.
 
 📚 **For comprehensive documentation, visit: [FretCoach Docs](https://padmanabhan-r.github.io/FretCoach/)**
 
+> **Note:** Documentation is under active refinement for clarity and completeness. The current version represents an initial draft.
+
 ### Quick Links
 
 - [Architecture Overview](https://padmanabhan-r.github.io/FretCoach/architecture.html) — Comprehensive technical documentation

@@ -104,7 +104,7 @@ All components share a central database for seamless cross-device sync.
 ### Three Intelligent Coaching Modes
 
 **1. Practice Recommendations (AI Mode)**
-- Analyzes your last 5 practice sessions from database
+- Analyzes your previous practice sessions from database
 - Identifies weakest performance area (pitch, scale, or timing)
 - LLM generates personalized recommendation:
   - Which scale to practice

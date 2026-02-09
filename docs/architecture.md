@@ -43,8 +43,8 @@ FretCoach is a guitar practice feedback system with three components sharing a c
 | Component | Technology |
 |-----------|------------|
 | Frontend | React 18, Vite, JavaScript, Tailwind CSS |
-| Desktop Runtime | Electron 27 |
-| Backend | Python 3.10+, FastAPI |
+| Desktop Runtime | Electron 28 |
+| Backend | Python 3.12+, FastAPI |
 | Audio Processing | NumPy, librosa, sounddevice |
 | AI Orchestration | LangChain, LangGraph |
 | Database | psycopg2 (PostgreSQL) |
@@ -60,7 +60,7 @@ FretCoach is a guitar practice feedback system with three components sharing a c
 - Deployed on Vercel
 
 **Backend:**
-- Python 3.10+, FastAPI
+- Python 3.12+, FastAPI
 - LangChain, LangGraph for AI chat
 - Supabase Python SDK
 - Deployed on Railway
@@ -68,7 +68,7 @@ FretCoach is a guitar practice feedback system with three components sharing a c
 ### Portable Device
 
 - Raspberry Pi 5 (8GB RAM)
-- Python 3.10+, FastAPI
+- Python 3.12+, FastAPI
 - Focusrite Scarlett Solo USB audio interface
 
 ---
@@ -234,20 +234,20 @@ CREATE TABLE fretcoach.user_configs (
 │                                        │
 │  Python Backend (FastAPI):             │
 │  • Same audio analysis engine          │
-│  • Local session storage (SQLite)      │
-│  • Periodic sync to Supabase           │
+│  • Direct PostgreSQL connection        │
 │  • Smart bulb control via Tuya API     │
 │                                        │
-│  Optional UI:                          │
-│  • Web interface on local WiFi         │
-│  • Physical buttons/LEDs               │
+│  Terminal UI (Rich library):           │
+│  • Live metric display                 │
+│  • Session controls                    │
+│  • Mode selection                      │
 └──────────┬─────────────────────────────┘
            │
            ├──────► USB Audio (Scarlett Solo)
            │              │
            │              └──► Guitar Input
            │
-           └──────► WiFi ──► Supabase (sync)
+           └──────► WiFi ──► Supabase (PostgreSQL)
 ```
 
 **Use Cases:**
@@ -262,10 +262,9 @@ CREATE TABLE fretcoach.user_configs (
 ### LLM Providers
 
 Supports multiple providers via LangChain:
-- OpenAI (GPT-4o-mini)
-- Google Gemini (2.0-flash-exp, 2.5-flash)
-- Deepseek
-- Minimax
+- OpenAI (GPT-4o-mini) — Desktop live coaching and TTS
+- Google Gemini (gemini-3-flash-preview) — Web Hub AI chat (primary)
+- Minimax (MiniMax-M2.1 via Anthropic) — Web Hub fallback on rate limits
 
 ### AI Workflows
 
