@@ -150,10 +150,8 @@ The long-term vision is an AI-powered instant feedback system that coaches in re
 
 This broader vision is what **Real-time Augmented Feedback (RAF)** enables — AI-augmented real-time coaching, across any domain.
 
-> **AI should augment real-time feedback systems, not replace the low-latency path.**
-
-> If feedback arrived the moment you made a mistake, how would that change the way you practice?
-> And what skill would you want AI to coach you on?
+> **If feedback arrived the moment you made a mistake, how would that change the way you practice?**
+> **And what skill would you want AI to coach you on?**
 
 ---
 
